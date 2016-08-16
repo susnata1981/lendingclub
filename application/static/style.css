@@ -1,0 +1,155 @@
+body {
+    background-color: #fafafa;
+    font-family: 'Roboto', sans-serif;
+}
+
+nav {
+    background-color: #01579b;
+}
+
+.header-item {
+    font-size: 1.8em;
+    font-family: monospace;
+}
+
+
+    h1, h2, h3, h4, h5 {
+        color: #555;
+    }
+
+    p {
+        color: #555;
+        margin: 0;
+    }
+
+    figure {
+        margin: 0;
+        padding: 0;
+    }
+
+    #cover-image-section {
+        height: 600px;
+        /*background-image: url('smile.jpg');*/
+        background-color: #66bb6a;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-blend-mode: darken;
+        -webkit-clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 80%);
+    }
+
+    .cover-image-section-title {
+        position: relative;
+        top: 120px;
+        text-align: center;
+    }
+
+    .signup-form {
+        position: relative;
+        top: 120px;
+    }
+
+    .circle {
+        border-radius: 100px;
+        width: 180px;
+        height: 180px;
+        text-align: center;
+        line-height: 180px;
+        background-color: #66bb6a;
+        margin: auto;
+    }
+
+    #how-it-works-section {
+        text-align: center;
+    }
+
+    #how-it-works-section p {
+        margin-bottom: 16px;
+    }
+
+    /*.active {
+        visibility: visible;
+    }
+
+    .inactive {
+        visibility: hidden;
+    }*/
+
+    .sub-section-header {
+        margin: 32px;
+        font-weight: 300;
+    }
+
+    .sub-section {
+        padding: 24px;
+    }
+
+    .plan-overview {
+        background: #fff;
+    }
+    .plan-overview h5, .plan-overview h6 {
+        text-align:center;
+    }
+    .plan-overview h5 {
+        font-size: 1.2em;
+    }
+    .sub-section p {
+        margin: 16px auto;
+        font-size: 1.2em;
+        font-weight: 300;
+    }
+
+    .how-it-works-header h3 {
+        margin: 32px;
+        font-weight: 300;
+    }
+
+    .how-it-works-header hr {
+        width: 70%;
+    }
+
+    #how-it-works-section ul li {
+        margin: 20px 0;
+        display: inline-block;
+    }
+
+    .how-it-works-item-title {
+        font-size: 1.3em;
+        margin: auto;
+    }
+
+    .how-it-works-item-description {
+        font-family: Tahoma, sans-serif;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    .input-field label {
+     color: #1b5e20;
+   }
+   /* label focus color */
+   .input-field input[type=email]:focus + label {
+     color: #000;
+   }
+   .input-field input[type=email] {
+     border-bottom: 1px solid #1b5e20;
+   }
+   /* label underline focus color */
+   .input-field input[type=email]:focus {
+     border-bottom: 1px solid #000;
+     box-shadow: 0 1px 0 0 #000;
+   }
+   /* valid color */
+   .input-field input[type=email].valid {
+     border-bottom: 1px solid #000;
+     box-shadow: 0 1px 0 0 #000;
+   }
+   /* invalid color */
+   .input-field input[type=email].invalid {
+     border-bottom: 1px solid #000;
+     box-shadow: 0 1px 0 0 #000;
+   }
+   /* icon prefix focus color */
+   .input-field .prefix.active {
+     color: #000;
+   }
+</style>

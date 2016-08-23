@@ -8,13 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.0/jquery.waypoints.min.js"></script>
-    <link rel="stylesheet" href={{url_for('static', filename='style.css')}}>
-    <script type="text/javascript" src={{url_for('static', filename='script.js')}}></script>
-    <title>Ziplly</title>
-    <script type="text/javascript">
-        $SCRIPT_ROOT={{request.script_root|tojson|safe}}
+    <link rel="stylesheet" href={{url_for( 'static', filename='style.css' )}}>
+    <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
+    <script>
+
     </script>
+    <title>Ziplly</title>
 </head>
 
 <body>
@@ -31,26 +30,39 @@
             </nav>
         </header> -->
         <section id="cover-image-section">
-            <div class="row cover-image-section-title">
-                <ul class="col s8 offset-s2">
-                    <h3 class="grey-text text-darken-3">Borrow money at
-                        <span class="white-text accent-2">NO INTEREST</span
-                    </h3>
-                    <h5 class="grey-text text-darken-2">Better alternative to Payday Loans</h5>
-                    <h6 class="grey-text text-darken-2">Coming soon</h6>
-                </ul>
-            </div>
-            <div class="row signup-form">
-                <form class="col s4 offset-s4" action="{{url_for('home.register_user')}}" method="POST">
-                    <div class="input-field">
-                        <input id="email red" name="email" type="email" class="validate">
-                        <label for="email red">Email</label>
-                        <button id="notify-btn" class="btn red">Notify me</button>
+            <div class="row">
+                <!-- <div class="carousel carousel-slider offset-s1 col s3">
+                    <a class="carousel-item" href="#one!"><img src={{url_for( 'static', filename='request-money.png' )}} width="340" height="auto" /></a>
+                    <a class="carousel-item" href="#two!"><img src={{url_for( 'static', filename='request-info.png' )}} width="340" height="auto" /></a>
+                    <a class="carousel-item" href="#three!"><img src={{url_for( 'static', filename='membership-info.png' )}} width="340" height="auto" /></a>
+                </div> -->
+                <div class="offset-s1 col s3">
+                    <img src={{url_for( 'static', filename='sms-screenshot.gif' )}} width="340" height="auto" />
+                </div>
+                <div class="offset-s1 col s6" id="main-heading-section">
+                    <div class="row">
+                        <div class="col s12">
+                            <h1 class="grey-text text-darken-3">
+                        <span class="white-text accent-2">No Interest</span>
+                        Lending
+                    </h1>
+                            <h5 class="grey-text text-darken-2">Better alternative to Payday Loans</h5>
+                            <h6 class="grey-text text-darken-2">Coming soon</h6>
+                        </div>
                     </div>
-                </form>
+                    <div class="row signup-form">
+                        <form class="col s8" action="{{url_for('home.register_user')}}" method="POST">
+                            <div class="input-field">
+                                <input id="email red" name="email" type="email" required>
+                                <label for="email red">Email</label>
+                                <button id="notify-btn" class="btn red">Notify me</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
-        <section class="sub-section grey lighten-5">
+        <section id="how-it-works-section" class="sub-section grey lighten-5">
             <h3 class="sub-section-header">How it works</h3>
             <div class="row">
                 <ul>
@@ -75,40 +87,26 @@
                             Earn Rewards
                         </p>
                         <p class="how-it-works-item-description">
-                            Earn points for paying off the loan in time. Redeem
-                            those points for cash.
+                            Earn points for paying off the loan in time. Redeem those points for cash.
                         </p>
                     </li>
                 </ul>
             </div>
         </section>
-        <section class="sub-section green accent-1">
+        <section id="our-story-section" class="sub-section green accent-1">
             <h3 class="sub-section-header">Why Ziplly?</h3>
             <p>
-                Erica is a single mom to her 2 wonderful daughters 6 and 8 years old.
-                In order to make ends meet, she has to work 2 jobs - as a full-time
-                school teacher and as a part time waitress over weekends. Spending time
-                with her daughters is a luxury that she can barely afford.
-                In 2015 Christmas, like every other parent, she wanted to surprise her
-                babies with gifts. Unfortunately, she didn't have the money. Borrowing
-                from friends or family was not an option. Her only option was Payday Loans.
-                She took out a loan for $275 to buy gifts for her daughters. Being cash
-                strapped, she couldn't pay back the loan in due time and ended up renewing
-                it 5 times, getting slapped on with late charges and additional interests
-                every single time. After 4 long months, she was able to pay back the loan
-                - a total amount of $575 for a loan of only $275. Is that fair we ask?
+                Erica is a single mom to her 2 wonderful daughters 6 and 8 years old. In order to make ends meet, she has to work 2 jobs - as a full-time school teacher and as a part time waitress over weekends. Spending time with her daughters is a luxury that she can
+                barely afford. In 2015 Christmas, like every other parent, she wanted to surprise her babies with gifts. Unfortunately, she didn't have the money. Borrowing from friends or family was not an option. Her only option was Payday Loans. She
+                took out a loan for $275 to buy gifts for her daughters. Being cash strapped, she couldn't pay back the loan in due time and ended up renewing it 5 times, getting slapped on with late charges and additional interests every single time.
+                After 4 long months, she was able to pay back the loan - a total amount of $575 for a loan of only $275. Is that fair we ask?
             </p>
             <p>
-                This is the state of affairs in our society. Honest hard working people
-                with limited resources are being exploited by predatory lending practices.
-                Erica and thousands of others have fallen prey to these Payday loan
-                businesses, designed to profit off of other peoples unfortunate circumstances.
-
-                We want to provide a cheaper and better alternative to short term borrowing
-                needs.
+                This is the state of affairs in our society. Honest hard working people with limited resources are being exploited by predatory lending practices. Erica and thousands of others have fallen prey to these Payday loan businesses, designed to profit off of
+                other peoples unfortunate circumstances. We want to provide a cheaper, sustainable and better alternative to short term borrowing needs.
             </p>
         </section>
-        <section id="plan-overview" class="sub-section plan-overview">
+        <section id="plan-overview-section" class="sub-section plan-overview">
             <h3 class="sub-section-header">Our plans</h3>
             <div class="row">
                 <div class="col s10 offset-s1">
@@ -171,7 +169,7 @@
                             </tr>
                             <tr>
                                 <td class="light-blue lighten-5">
-                                    <h5 class="brown-text">Has Rewards</h5>
+                                    <h5 class="brown-text">Rewards</h5>
                                 </td>
                                 <td class="green accent-1">
                                     <h5 class="blue-text">Yes</h5>
@@ -185,53 +183,60 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s6 offset-s2" id="plan-comparison">
+                <div class="col s8 offset-s2" id="interest-comparison">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s8 offset-s2" id="principal-comparison">
                 </div>
             </div>
         </section>
-        <section class="sub-section yellow lighten-2 center">
+        <section id="misson-statement-section" class="sub-section yellow lighten-2 center">
             <h3 class="sub-section-header">Our Mission</h3>
             <h5 class="grey-text text-darken-3">
                 We want to make borrowing money easier, cheaper and transparent.
             </h5>
         </section>
-        <section class="sub-section">
+        <section id="faq-section" class="sub-section">
             <h3 class="sub-section-header">F.A.Q.</h3>
             <div>
                 <blockquote>
-                    1. Is there a contract for the plan?
+                    Can I cancel the service after enrolling?
                 </blockquote>
                 <p>
-                    The plans are based on yearly contract but if you don't like
-                    the service you can cancel anytime. You need to have paid off
-                    any loan in order to cancel the plan. Once you cancel, you'll
-                    loose all benefits. In order to join back, you'll need to pay
-                    back the missed payments.
+                    You can cancel anytime you want, provided you don't owe us any money. There is no penalty.
+                </p>
+                <p>
+                    But since plans are based on yearly contract if you want to re-enroll, you'll need to pay back the monthly membership fees for remainder of your last contract period.
                 </p>
             </div>
             <div>
                 <blockquote>
-                    2. What are the criterias for membership?
+                    Is there a contract for the plan?
                 </blockquote>
                 <p>
-                    It's simple - we need proof of employment/paychecks. Users
-                    will apply for membership on our site. Once we verify their
-                    information, we will provide the application approval decison
-                    by the end of the day. In some cases, users may be required
-                    to provide additional information such as bank statements,
-                    proof of identification etc.
+                    The plans are based on yearly contract but if you don't like the service you can cancel anytime. You need to have paid off any outstanding loan in order to cancel the plan. Once you cancel, you'll loose all benefits. In order to join back, you'll need
+                    to pay back any missed monthly membership fee for remainder of the contract period.
                 </p>
             </div>
             <div>
                 <blockquote>
-                    3. When I can get the money?
+                    What are the criterias for membership?
                 </blockquote>
                 <p>
-                    Members can make a request for money. Based on the plan they
-                    subscribe to, we will deposit the money into your bank account
-                    the next day.
+                    It's simple - we need proof of employment/paychecks. Users will apply for membership on our site. Once we verify their information, we will provide the application approval decison by the end of the day. In some cases, users may be required to provide
+                    additional information such as bank statements, proof of identification etc.
+                </p>
+            </div>
+            <div>
+                <blockquote>
+                    When I can get the money?
+                </blockquote>
+                <p>
+                    Members can make a request for money. Based on the plan they subscribe to, we will deposit the money into your bank account the next day.
                 </p>
             </div>
         </section>
 </body>
+
 </html>

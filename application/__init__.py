@@ -14,6 +14,7 @@
 
 import logging
 from flask import current_app, Flask, redirect, url_for
+from home import model
 
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
@@ -56,13 +57,16 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     return app
 
 def get_model():
-    model_backend = current_app.config['DATA_BACKEND']
-    if model_backend == 'cloudsql':
-        from home import model_cloudsql
-        model = model_cloudsql
-    else:
-        raise ValueError(
-            "No appropriate databackend configured. "
-            "Please specify datastore, cloudsql, or mongodb")
-
     return model
+
+# def get_model():
+#     model_backend = current_app.config['DATA_BACKEND']
+#     if model_backend == 'cloudsql':
+#         from home import model_cloudsql
+#         model = model_cloudsql
+#     else:
+#         raise ValueError(
+#             "No appropriate databackend configured. "
+#             "Please specify datastore, cloudsql, or mongodb")
+#
+#     return model

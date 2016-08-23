@@ -30,5 +30,18 @@ DATA_BACKEND = 'cloudsql'
 # SQLAlchemy configuration
 # Replace user, pass, host, and database with the respective values of your
 # Cloud SQL instance.
+#'mysql+pymysql://zroot:11111111@173.194.244.126/zdb'
 SQLALCHEMY_DATABASE_URI = \
-    'mysql+pymysql://zipllydb:Ziplly2@173.194.244.126/zdb'
+    'mysql+pymysql://zroot:11111111@//cloudsql/ziplly-140504:zipllydb/zdb'
+
+########################   PRODUCTION SETTINGS
+DB_HOST = '/cloudsql/ziplly-140504:zipllydb'
+DB_USERNAME = 'zroot'
+DB_PASSWORD = '11111111'
+DB_NAME = 'zdb'
+
+#########################  LOCAL SETTINGS
+# DB_HOST = 'localhost'
+# DB_USERNAME = 'root'
+# DB_PASSWORD = 'admin'
+# DB_NAME = 'zdb'

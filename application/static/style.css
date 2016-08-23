@@ -28,13 +28,18 @@ nav {
     }
 
     #cover-image-section {
-        height: 600px;
+        height: 680px;
         /*background-image: url('smile.jpg');*/
         background-color: #66bb6a;
+        padding: 32px;
         background-repeat: no-repeat;
         background-size: cover;
         background-blend-mode: darken;
         -webkit-clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 80%);
+    }
+
+    #main-heading-section {
+        margin-top: 160px;
     }
 
     .cover-image-section-title {
@@ -45,7 +50,7 @@ nav {
 
     .signup-form {
         position: relative;
-        top: 120px;
+        top: 10px;
     }
 
     .circle {
@@ -66,14 +71,20 @@ nav {
         margin-bottom: 16px;
     }
 
-    /*.active {
-        visibility: visible;
+    #toast-container {
+        width: 250px;
+        right: 44%;
+        top: 20%;
+        text-align: center;
     }
 
-    .inactive {
-        visibility: hidden;
-    }*/
+    #our-story-section p{
+        margin: 32px;
+    }
 
+    #faq-section div {
+        margin: 32px;
+    }
     .sub-section-header {
         margin: 32px;
         font-weight: 300;

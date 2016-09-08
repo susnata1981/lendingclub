@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+ <div class="row margin-top-medium breadcrumb">
+  <div class="col s3">
+   <span class="breadcrumb-inactive">1. Enter personal information</span>
+  </div>
+  <div class="col s3 breadcrumb-active">
+   <span>2. Add bank account</span>
+  </div>
+ </div>
+ <button id='linkButton'>Open Plaid Link</button>
+ <script src="https://cdn.plaid.com/link/stable/link-initialize.js"></script>
+ <script>
+  var linkHandler = Plaid.create({
+   env: 'tartan',
+   clientName: 'Ziplly',
+   key: 'ec0b65435507226851894edaf18afe',
+   product: 'auth',
+   selectAccount: true,
+   onSuccess: function(public_token, metadata) {
+    // Send the public_token and account ID to your app server.
+    console.log('public_token: ' + public_token);
+    console.log('account ID: ' + metadata.account_id);
+    console.log(JSON.stringify(metadata));
+
+    $.post(
+      '{{url_for('onboarding_bp.add_bank')}}',
+      {
+        public_token: public_token,
+        account_id: metadata.account_id,
+        account_name: metadata.account.name,
+        institution: metadata.institution.name,
+        institution_type: metadata.institution.type,
+      },
+      function(data) {
+        if (data.error) {
+          Materialize.toast('Could not add your bank account', 4000);
+        } else {
+          Materialize.toast('Added bank account', 4000);
+          window.location.replace('{{url_for('onboarding_bp.application_complete')}}');
+        }
+      }
+    )
+   },
+  });
+
+  // Trigger the Link UI
+  document.getElementById('linkButton').onclick = function() {
+   linkHandler.open();
+  };
+ </script>
+
+</div>
+{% endblock %}

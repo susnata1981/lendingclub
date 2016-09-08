@@ -1,11 +1,31 @@
 $(function() {
     var Z = (function() {
-        var LANDING_PAGE_SECTION = ['#how-it-works-section',
+        var LANDING_PAGE_SECTION = [
+            '#how-it-works-section',
             '#our-story-section',
             '#plan-overview-section',
             '#misson-statement-section',
+            '#enroll-now-section',
             '#faq-section'
         ];
+
+        function initialize_video_player() {
+           $('.video').parent().click(function () {
+              if ($(this).children(".video").get(0).paused) {
+                $(this).children(".video").get(0).play();
+                $(this).children(".playpause").fadeOut();
+                ga('send', {
+                    'hitType': 'event',
+                    'eventCategory': 'play_video',
+                    'eventAction': 'button_click',
+                    'eventLabel': 'explainer_video'
+                });
+              } else {
+                $(this).children(".video").get(0).pause();
+                $(this).children(".playpause").fadeIn();
+              }
+            });
+        }
 
         function createChartOptions(opt) {
             return {
@@ -109,24 +129,20 @@ $(function() {
             }));
         }
 
-        function registerChartHandler() {
-            drawChart();
-        }
-
-        function register_user() {
+        function register_user(email_id) {
             var emailRegex = /\S+@\S+\.\S+/
-            var email = $("input[name='email']").val();
+            var email = $("input[name='"+email_id+"']").val();
             if (email == undefined || email.length == 0) {
                 Materialize.toast('Must enter email address', 3000);
                 return;
             }
 
             if (!emailRegex.test(email)) {
-                Materialize.toast('Must enter email address', 3000);
+                Materialize.toast('Must be a valid email address', 3000);
                 return;
             }
 
-            var toast_duration = 3000;
+            var toast_duration = 1500;
             $.post(
                 '/register_user_ajax', {
                     'email': email,
@@ -138,34 +154,29 @@ $(function() {
                     } else {
                         Materialize.toast('Thanks for registering', toast_duration);
                     }
-                    $("input[name='email']").val("");
+                    $("input[name='"+email_id+"'").val("");
                 }
             )
         }
 
-        $("#notify-btn").click(function(e) {
-            e.preventDefault();
-            ga('send', {
-                'hitType': 'event',
-                'eventCategory': 'landing_page',
-                'eventAction': 'button_click',
-                'eventaLabel': 'notify_button'
-            });
-            register_user();
-        });
-
-        // $('.carousel.carousel-slider').carousel({
-        //     full_width: true
-        // });
-        //
-        // function slide() {
-        //     $('.carousel').carousel('next');
-        //     setTimeout(slide, 4000);
-        // }
+        function add_notification_button_handler(btnSeletor, emailFieldSelector) {
+          $(btnSeletor).click(function(e) {
+              e.preventDefault();
+              ga('send', {
+                  'hitType': 'event',
+                  'eventCategory': 'landing_page',
+                  'eventAction': 'button_click',
+                  'eventLabel': $(this).attr('class')
+              });
+              register_user(emailFieldSelector);
+          });
+        }
 
         function init() {
-            google.charts.load('current', {'packages': ['corechart']});
-            google.charts.setOnLoadCallback(registerChartHandler);
+            // google.charts.load('current', {'packages': ['corechart']});
+            // google.charts.setOnLoadCallback(drawChart);
+
+            initialize_video_player();
 
             (function(i, s, o, g, r, a, m) {
                 i['GoogleAnalyticsObject'] = r;
@@ -192,13 +203,31 @@ $(function() {
                             'hitType': 'event',
                             'eventCategory': 'scroll',
                             'eventAction': 'view',
-                            'eventaLabel': LANDING_PAGE_SECTION[i].substring(1)
+                            'eventLabel': LANDING_PAGE_SECTION[i].substring(1)
                         });
                         break;
                     }
                 }
             });
+
+            add_notification_button_handler('.notify-btn', 'email');
+            add_notification_button_handler('.notify-btn-2', 'email2');
+
+            $('ul.tabs').tabs();
+            
+            $("#resend_btn").click(function(e) {
+              e.preventDefault()
+              $.post(
+                '/account/resend_verification',
+                function(data) {
+                 if (!data.error) {
+                   Materialize.toast('Verification code resent', 4000)
+                 }
+                }
+              )
+            });
         }
+
         return {
             init: init
         };

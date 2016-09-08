@@ -18,6 +18,8 @@ Update this file with the values for your specific Google Cloud project.
 You can create and manage projects at https://console.developers.google.com
 """
 
+ENABLE_PRODUCTION_MODE = False
+
 # The secret key is used by Flask to encrypt session cookies.
 SECRET_KEY = 'secret'
 
@@ -34,14 +36,29 @@ DATA_BACKEND = 'cloudsql'
 SQLALCHEMY_DATABASE_URI = \
     'mysql+pymysql://zroot:11111111@//cloudsql/ziplly-140504:zipllydb/zdb'
 
+SQLALCHEMY_DB_URL_APP_ENGINE = \
+'mysql+mysqldb://root@/zdb?unix_socket=/cloudsql/ziplly-140504:ziplly-140504:zipllydb'
+
+SQLALCHEMY_DB_URL_LOCAL = 'mysql+mysqldb://root:admin@localhost:3306/zdb'
+
+#PLAID configuration
+CLIENT_ID='57bbc58566710877408d093e'
+CLIENT_SECRET='0f3e8ecc989e5e6ed776b732d76161'
+
 ########################   PRODUCTION SETTINGS
 DB_HOST = '/cloudsql/ziplly-140504:zipllydb'
 DB_USERNAME = 'zroot'
 DB_PASSWORD = '11111111'
 DB_NAME = 'zdb'
 
-#########################  LOCAL SETTINGS
+#########################  LOCAL SETTINGS   ###########################
 # DB_HOST = 'localhost'
 # DB_USERNAME = 'root'
 # DB_PASSWORD = 'admin'
 # DB_NAME = 'zdb'
+
+
+#########################  TWILIO ACCOUNT   ##############################
+TWILIO_ACCOUNT_SID = 'ACab61d4c01beff592fba858a584d0252a'
+TWILIO_ACCOUNT_TOKEN = '5ff531b9471221d69d09c5f15b47e8ba'
+TWILIO_PHONE_NUMBER = '(539) 444-5530'

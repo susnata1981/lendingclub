@@ -1,0 +1,97 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+    <div class="row margin-top-medium breadcrumb">
+        <div class="col s3">
+            <span class="breadcrumb-active">1. Enter personal information</span>
+        </div>
+        <div class="col s3 breadcrumb-inactive">
+            <span>2. Add bank account</span>
+        </div>
+    </div>
+    <div class="row">
+     <div class="col s6 margin-top-medium">
+         {% for message in get_flashed_messages() %}
+         <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.email.errors %}
+         <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.ssn.errors %}
+         <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.street1.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.city.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.state.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.postal_code.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+        </div>
+       </div>
+    <div class="row">
+        <form class="col s6 user-input margin-top-medium"
+        action={{url_for('onboarding_bp.apply_enter_personal_information')}} method="POST">
+          <h4>Membership Application</h4>
+           {{ form.csrf_token }}
+            <div class="row">
+                <div class="input-field col s12">
+                    {{form.email.label}}
+                    {{form.email}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.ssn.label}}
+                 {{form.ssn}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.street1.label}}
+                 {{form.street1}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.street2.label}}
+                 {{form.street2}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.city.label}}
+                 {{form.city}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.state.label}}
+                 {{form.state}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.postal_code.label}}
+                 {{form.postal_code}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s4">
+                    <button class="btn">Next</button>
+                </div>
+            </div>
+    </form>
+</div>
+</div>
+{% endblock %}

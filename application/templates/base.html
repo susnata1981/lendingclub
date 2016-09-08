@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+    <link rel="stylesheet" href={{url_for( 'static', filename='style.css' )}}>
+    <link href="https://fonts.googleapis.com/css?family=Chewy" rel="stylesheet">
+    <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
+    <title>{% block title %} Ziplly {% endblock %}</title>
+    {% block script %} {% endblock %}
+</head>
+
+<body>
+  <nav>
+   <div class="nav-wrapper">
+     <a class="margin-left-medium" href="http://www.ziplly.com">
+       <span class="logo-heading grey-text text-darken-4">Ziplly</span>
+       <span class="grey-text text-darken-4">borrowing made affordable</span>
+     </a>
+     {% if not disable_production_mode %}
+     <ul id="nav-mobile" class="right hide-on-med-and-down">
+       <li><a href={{url_for('home_blueprint.index')}}>Home</a></li>
+       <li><a href={{url_for('onboarding_bp.account')}}>Account</a></li>
+        <li><a href="#">About</a></li>
+       {% if current_user.is_authenticated %}
+       <li>
+         <a href={{url_for('onboarding_bp.logout')}}>Logout</a>
+      </li>
+      {% endif %}
+     </ul>
+     {% endif %}
+   </div>
+ </nav>
+    <section id="content">
+        {% block content %} {% endblock %}
+    </section>
+    <footer class="page-footer">
+         <div class="footer-copyright">
+           <div class="container">
+               <span class="right grey-text text-darken-4">© Ziplly 2016</span>
+           </div>
+         </div>
+    </footer>
+</body>
+</html>

@@ -1,20 +1,45 @@
-# Copyright 2015 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import logging
-from flask import current_app, Flask, redirect, url_for
-from home import model
+from flask import current_app, Flask, redirect, url_for, request, g
+from flask import current_app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from services import phone
+from util import constants
+from flask.ext.login import LoginManager
+from onboarding.model import get_account_by_id
+from onboarding import model
+
+login_manager = LoginManager()
+login_manager.login_view = "onboarding_bp.login"
+
+@login_manager.user_loader
+def load_user(id):
+    return get_account_by_id(id)
+
+def format_datetime(value, format='%d-%m-%Y / %H:%M'):
+    if value is None:
+        return constants.NOT_AVAILABLE
+    return value.strftime(format)
+
+def format_membership_status(value):
+    if value == model.Membership.APPROVED:
+        return 'APPROVED'
+    elif value == model.Membership.PENDING:
+        return 'PENDING'
+    elif value == model.Membership.REJECTED:
+        return 'REJECTED'
+    return 'UNKNOWN'
+
+def format_value(value, default = constants.NOT_AVAILABLE):
+    if value is None:
+        return default
+    return value
+
+def setup_jinja_filter(app):
+    app.jinja_env.filters['format_datetime'] = format_datetime
+    app.jinja_env.filters['format_value'] = format_value
+    app.jinja_env.filters['format_membership_status'] = format_membership_status
 
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
@@ -23,6 +48,8 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     app.debug = debug
     app.testing = testing
 
+    setup_jinja_filter(app)
+
     if config_overrides:
         app.config.update(config_overrides)
 
@@ -30,19 +57,42 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     if not app.testing:
         logging.basicConfig(level=logging.INFO)
 
+    login_manager.init_app(app)
+
     # Setup the data model.
     with app.app_context():
-        model = get_model()
-        model.init_app(app)
+        print 'Initializing model...'
+        model.init_db()
+        phone.init()
+        constants.init()
 
-    # Register the Bookshelf CRUD blueprint.
+    # Register the blueprints
     from home.controller import home_blueprint
     app.register_blueprint(home_blueprint)
+
+    from onboarding.controller import onboarding_bp
+    app.register_blueprint(onboarding_bp);
+
+    # from onboarding.signup_controller import signup_bp
+    # app.register_blueprint(signup_bp)
 
     # Add a default root route.
     @app.route("/")
     def index():
-        return redirect(url_for('home.index'))
+        return redirect(url_for('home_blueprint.index'))
+
+    # @app.before_request
+    # def before_request():
+    #     print 'before request called for ',request
+    #
+    # @app.after_request
+    # def after_request(response):
+    #     print 'after response called...',response
+    #     return response
+
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        current_app.db_session.remove()
 
     # Add an error handler. This is useful for debugging the live application,
     # however, you should disable the output of the exception for production
@@ -56,8 +106,9 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 
     return app
 
-def get_model():
-    return model
+
+# def get_model():
+#     return model
 
 # def get_model():
 #     model_backend = current_app.config['DATA_BACKEND']

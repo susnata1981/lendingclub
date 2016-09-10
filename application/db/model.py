@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import current_app, g
 from sqlalchemy import create_engine
 from sqlalchemy import ForeignKey
@@ -7,30 +8,17 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, Float, String, DateTime, Text
 from sqlalchemy.orm import relationship
-# from bcrypt import hashpw, gensalt
+from application.util import common
 from passlib.hash import sha256_crypt
 
 Base = declarative_base()
-
-def init_db():
-    env = os.getenv('SERVER_SOFTWARE')
-    print 'ENVIRONMENT  = %s' % env
-    if (env and env.startswith('Google App Engine/')):
-        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=True)
-    else:
-        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_LOCAL'], echo=True)
-    current_app.db_session = db_session = scoped_session(sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine))
-    # Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
 
 class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String(255))
+    email = Column(String(255), nullable=False)
+    time_created = Column(DateTime, nullable=False)
 
     def __repr__(self):
         return "User(id = %d, email = %s)" % (self.id, self.email)
@@ -113,8 +101,8 @@ class Fi(Base):
     available_balance = Column(Float, nullable=True)
     current_balance = Column(Float, nullable=True)
     account_type = Column(String(128), nullable=True)
-    access_token = Column(String(512), nullable=False)
-    stripe_bank_account_token = Column(String(512), nullable=True)
+    access_token = Column(String(512), nullable=False, unique=True)
+    stripe_bank_account_token = Column(String(512), nullable=True, unique=True)
     account_number_last_4 = Column(Integer, nullable=True)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
@@ -127,6 +115,19 @@ class Transaction(Base):
     data = Column(Text, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
+
+
+class Plan(Base):
+    __tablename__ = "plan"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(256), nullable=False)
+    max_loan_amount = Column(Integer, nullable=False)
+    loan_frequency = Column(Integer, nullable=False)
+    interest_rate = Column(Float, nullable=False)
+    interest_rate_description = Column(Text, nullable=False)
+    cost = Column(Float, nullable=False)
+    rewards_description = Column(Text, nullable=False)
 
 class Membership(Base):
     __tablename__ = 'membership'
@@ -141,6 +142,8 @@ class Membership(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship('Account', back_populates='memberships')
+    plan_id = Column(Integer, ForeignKey('plan.id'))
+    plan = relationship('Plan', uselist=False)
     status = Column(Integer, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
@@ -154,13 +157,92 @@ class Membership(Base):
     def get_status(self):
         return Membership.STATUS_NAME.get(self.status)
 
+class IAVInstitutions(Base):
+    __tablename__ = "iav_institutions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(256), nullable=False)
+    plaid_id = Column(String(128), nullable=False)
+
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.transaction = relationship('Transaction', back_populates='account')
 Account.address = relationship('Address', uselist = False, back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 
+
+def create_plan():
+    current_app.db_session.add(
+        Plan(
+            name = 'Anytime 150',
+            max_loan_amount = 150,
+            loan_frequency = 3,
+            interest_rate = 15,
+            interest_rate_description = '0% APR for 30 days and then $15 per $100 every month',
+            cost = 10,
+            rewards_description = 'Earn points for paying back in time'))
+    current_app.db_session.add(
+        Plan(
+            name = 'Anytime 300',
+            max_loan_amount = 300,
+            loan_frequency = 3,
+            interest_rate = 15,
+            interest_rate_description = '0% APR for 30 days and then $15 per $100 every month',
+            cost = 18,
+            rewards_description = 'Earn points for paying back in time'))
+    current_app.db_session.add(
+        Plan(
+            name = 'Anytime 500',
+            max_loan_amount = 500,
+            loan_frequency = 3,
+            interest_rate = 15,
+            interest_rate_description = '0% APR for 30 days and then $15 per $100 every month',
+            cost = 35,
+            rewards_description = 'Earn points for paying back in time'))
+    current_app.db_session.commit()
+
+
+def recreate_tables(engine):
+    logging.info('******* recreating tables ********')
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    logging.info('******* done recreating tables ********')
+    create_plan()
+    logging.info('creating lending plans')
+
+def init_db():
+    env = os.getenv('SERVER_SOFTWARE')
+    if common.is_running_on_app_engine():
+        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=True)
+    else:
+        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_LOCAL'], echo=True)
+    current_app.db_session = db_session = scoped_session(sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine))
+    # recreate_tables(engine)
+
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()
 
+
 def get_account_by_phone_number(phone_number):
     return current_app.db_session.query(Account).filter(Account.phone_number == phone_number).one_or_none()
+
+def get_all_plans():
+    return current_app.db_session.query(Plan).all()
+
+def get_plan_by_id(plan_id):
+    return current_app.db_session.query(Plan).filter(Plan.id == plan_id).one()
+
+def get_fi_by_access_token(bank_account_id):
+    return current_app.db_session.query(Fi).filter(Fi.bank_account_id == bank_account_id).one_or_none()
+
+def get_fi_by_stripe_bank_account_token(stripe_bank_account_token):
+    return current_app.db_session.query(Fi).filter(
+    Fi.stripe_bank_account_token == stripe_bank_account_token).one_or_none()
+
+def clear_institutions_table():
+    current_app.db_session.query(IAVInstitutions).delete()
+
+def get_all_supported_institutions():
+    return current_app.db_session.query(IAVInstitutions).all()

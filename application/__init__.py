@@ -7,8 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from services import phone
 from util import constants
 from flask.ext.login import LoginManager
-from onboarding.model import get_account_by_id
-from onboarding import model
+from db.model import *
+import admin
 
 login_manager = LoginManager()
 login_manager.login_view = "onboarding_bp.login"
@@ -23,11 +23,11 @@ def format_datetime(value, format='%d-%m-%Y / %H:%M'):
     return value.strftime(format)
 
 def format_membership_status(value):
-    if value == model.Membership.APPROVED:
+    if value == Membership.APPROVED:
         return 'APPROVED'
-    elif value == model.Membership.PENDING:
+    elif value == Membership.PENDING:
         return 'PENDING'
-    elif value == model.Membership.REJECTED:
+    elif value == Membership.REJECTED:
         return 'REJECTED'
     return 'UNKNOWN'
 
@@ -62,7 +62,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # Setup the data model.
     with app.app_context():
         print 'Initializing model...'
-        model.init_db()
+        init_db()
         phone.init()
         constants.init()
 
@@ -71,7 +71,10 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     app.register_blueprint(home_blueprint)
 
     from onboarding.controller import onboarding_bp
-    app.register_blueprint(onboarding_bp);
+    app.register_blueprint(onboarding_bp)
+
+    from admin.controller import admin_bp
+    app.register_blueprint(admin_bp)
 
     # from onboarding.signup_controller import signup_bp
     # app.register_blueprint(signup_bp)
@@ -80,6 +83,10 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     @app.route("/")
     def index():
         return redirect(url_for('home_blueprint.index'))
+
+    @app.errorhandler(Exception)
+    def log_unhandled_exceptions(error):
+        logging.error('Faild to serve request with error: %s' % error)
 
     # @app.before_request
     # def before_request():

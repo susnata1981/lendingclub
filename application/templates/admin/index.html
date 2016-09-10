@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% block content %}
+<div class="row margin-top-large">
+ <div class="offset-s1 col s10">
+  <h5>Supported Institutions for Instant Bank Account Verification</h5>
+  <table>
+   <thead>
+    <tr>
+     <td>Institution Name</td>
+    </tr>
+   </thead>
+   <tbody>
+    {% for i in institutions %}
+    <tr>
+     <td>
+      {{ i.name }}
+     </td>
+    </tr>
+    {% endfor %}
+   </tbody>
+  </table>
+
+  <form action="{{ url_for('admin_bp.get_institutions_list')}}" method="POST">
+   <button class="btn">Get Institution List</button>
+  </form>
+ </div>
+</div>
+{% endblock %}

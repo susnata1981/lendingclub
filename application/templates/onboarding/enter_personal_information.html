@@ -1,13 +1,16 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container">
-    <div class="row margin-top-medium breadcrumb">
-        <div class="col s3">
-            <span class="breadcrumb-active">1. Enter personal information</span>
-        </div>
-        <div class="col s3 breadcrumb-inactive">
-            <span>2. Add bank account</span>
-        </div>
-    </div>
+  <div class="row margin-top-medium breadcrumb">
+   <div class="col s3">
+    <span class="breadcrumb-active">1. Enter personal information</span>
+   </div>
+   <div class="col s3">
+    <span class="breadcrumb-inactive">2. Select Plan</span>
+   </div>
+   <div class="col s3 breadcrumb-inactive">
+    <span>3. Add bank account</span>
+   </div>
+  </div>
     <div class="row">
      <div class="col s6 margin-top-medium">
          {% for message in get_flashed_messages() %}
@@ -41,7 +44,7 @@
        </div>
     <div class="row">
         <form class="col s6 user-input margin-top-medium"
-        action={{url_for('onboarding_bp.apply_enter_personal_information')}} method="POST">
+        action={{url_for('onboarding_bp.enter_personal_information')}} method="POST">
           <h4>Membership Application</h4>
            {{ form.csrf_token }}
             <div class="row">

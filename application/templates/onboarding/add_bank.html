@@ -6,13 +6,61 @@
   <div class="col s3">
    <span class="breadcrumb-inactive">1. Enter personal information</span>
   </div>
+  <div class="col s3 center">
+   <span class="breadcrumb-inactive">2. Select Plan</span>
+  </div>
   <div class="col s3 breadcrumb-active">
-   <span>2. Add bank account</span>
+   <span>3. Add bank account</span>
   </div>
  </div>
- <button id='linkButton'>Open Plaid Link</button>
+
+ <div class="row">
+  <div class="col s12">
+    {% for message in get_flashed_messages() %}
+    <p class="error">{{ message }}</p>
+    {% endfor %}
+
+    <div class="error">{{ message }}</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="input-field col s8">
+    <labe>Pick you bank</label>
+    <select>
+      <option value="" disabled selected>Choose your option</option>
+      {% for b in institutions %}
+      <option value="{{ b.name }}">{{b.name}}</option>
+      {% endfor %}
+    </select>
+  </div>
+ </div>
+ <div class="row">
+   <div class="input-field col s8">
+        <input type="checkbox" name="other" id="other"  />
+        <label for="other">My bank is not on the list</label>
+    </div>
+  </div>
+ <div id="bank-verification-methods-section" class="row">
+   <div class="col s6">
+     <h5>Random deposit</h5>
+     <button class="btn">Do random deposit</button>
+   </div>
+   <div id="instant-verification-section" class="col s6">
+     <h5>Instant Bank Verification</h5>
+     <button class="btn" id='linkButton'>Add bank account</button>
+   </div>
+  </div>
+
+  <div class="row">
+    <div class="col s10">
+      <a class="link" href={{ url_for('onboarding_bp.select_plan') }}>Back to select plan</a>
+    </div>
+  </div>
+  
  <script src="https://cdn.plaid.com/link/stable/link-initialize.js"></script>
  <script>
+  $('div.error').hide();
   var linkHandler = Plaid.create({
    env: 'tartan',
    clientName: 'Ziplly',
@@ -20,10 +68,8 @@
    product: 'auth',
    selectAccount: true,
    onSuccess: function(public_token, metadata) {
-    // Send the public_token and account ID to your app server.
-    console.log('public_token: ' + public_token);
-    console.log('account ID: ' + metadata.account_id);
-    console.log(JSON.stringify(metadata));
+    $('div.error').text('');
+    $('div.error').hide();
 
     $.post(
       '{{url_for('onboarding_bp.add_bank')}}',
@@ -36,14 +82,30 @@
       },
       function(data) {
         if (data.error) {
-          Materialize.toast('Could not add your bank account', 4000);
+          Materialize.toast('Could not add your bank account: ', 1500);
+          $('div.error').text(data.message);
+          $('div.error').show();
         } else {
-          Materialize.toast('Added bank account', 4000);
+          Materialize.toast('Bank account added', 1500);
           window.location.replace('{{url_for('onboarding_bp.application_complete')}}');
         }
       }
     )
    },
+  });
+
+  $("#bank-verification-methods-section").hide();
+
+  $("input[name='other']").change(function() {
+    if ($(this).is(':checked')) {
+        $("#bank-verification-methods-section").show();
+        $("#instant-verification-section").hide();
+    }
+  });
+
+  $('select').change(function() {
+    $("#bank-verification-methods-section").show();
+    $("#instant-verification-section").show();
   });
 
   // Trigger the Link UI

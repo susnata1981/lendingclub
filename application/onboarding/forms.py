@@ -46,3 +46,9 @@ class PersonalInformationForm(Form):
     city = StringField('city', [Required('Please enter your city')])
     state = StringField('state', [Required('Pleae enter your state')])
     postal_code = IntegerField('postal code', [Required('Please enter your postal code')])
+
+class SelectPlanForm(Form):
+    plan_id = IntegerField('plan_id', [Required()])
+
+class GetBankVerificationMethods(Form):
+    bank_name = StringField('bank_name', [Required('Must enter your bank name')])

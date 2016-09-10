@@ -23,6 +23,7 @@
 # def application_error(e):
 #     """Return a custom 500 error."""
 #     return 'Sorry, unexpected error: {}'.format(e), 500
+
 import application
 import config
 
@@ -30,3 +31,10 @@ app = application.create_app(config)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
+
+
+# from test.a import samplea
+#
+# if __name__ == "__main__":
+#     # b.init()
+#     samplea.hello()

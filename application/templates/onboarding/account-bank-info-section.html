@@ -1,0 +1,27 @@
+<div id="bank-info" class="col s12">
+  <div class="row"> <!-- bank info section -->
+    <div class="col s10">
+      <h5>Bank information</h5>
+      <table>
+        <thead>
+          <tr>
+            <td class="flow-text">Institution Name</td>
+            <td class="flow-text">Account Type</td>
+            <td class="flow-text">Last 4</td>
+            <td class="flow-text">Date created</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fi in current_user.fis %}
+          <tr>
+            <td class="flow-text">{{ fi.institution }}</td>
+            <td class="flow-text">{{ fi.institution_type }}</td>
+            <td class="flow-text">{{ fi.account_number_last_4 }}</td>
+            <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div> <!-- end of bank info section -->
+</div> <!-- end of bank info page -->

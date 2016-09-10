@@ -1,0 +1,46 @@
+<div class="row"> <!-- profile section -->
+  <h4 class="bordered-header">Personal Information</h4>
+  <div class="col s12">
+    <table>
+      <tbody>
+        <tr>
+          <td class="flow-text">Name</p></td>
+          <td class="flow-text">
+            {{current_user.first_name}} {{current_user.last_name}}
+          </td>
+        </tr>
+        <tr>
+          <td class="flow-text">Email</p></td>
+          <td class="flow-text">
+            {{current_user.email}}
+          </td>
+        </tr>
+        <tr>
+          <td class="flow-text">Phone Number</p></td>
+          <td class="flow-text">
+            {{current_user.phone_number}}
+          </td>
+        </tr>
+        <tr>
+          <td class="flow-text">Address</p></td>
+          <td class="flow-text">
+            {% if current_user.address.street1 %}
+            {{current_user.address.street1}} &nbsp; {{current_user.address.city}} &nbsp;
+            {{current_user.address.state}} &nbsp; {{current_user.address.postal_code}}
+            {% endif %}
+
+            {% if not current_user.address.street1 %}
+            <span>None</span>
+            {% endif %}
+
+          </td>
+        </tr>
+        <tr>
+          <td class="flow-text">Joining date</td>
+          <td class="flow-text">
+            {{ current_user.time_created | format_datetime }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div> <!-- end of profile section -->

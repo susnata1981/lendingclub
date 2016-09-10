@@ -45,6 +45,10 @@ SQLALCHEMY_DB_URL_LOCAL = 'mysql+mysqldb://root:admin@localhost:3306/zdb'
 CLIENT_ID='57bbc58566710877408d093e'
 CLIENT_SECRET='0f3e8ecc989e5e6ed776b732d76161'
 
+#STRIPE
+STRIPE_SECRET_KEY = 'sk_test_QZAuacZ9CDJ8tTOobnS7uvv2'
+STRIPE_PUBLISHABLE_KEY = 'pk_test_R6PhLRfSaxQmRES77LvkuPUL'
+
 ########################   PRODUCTION SETTINGS
 DB_HOST = '/cloudsql/ziplly-140504:zipllydb'
 DB_USERNAME = 'zroot'

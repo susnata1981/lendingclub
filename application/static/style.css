@@ -20,8 +20,12 @@ nav a {
     color: #333;
 }
 
+select {
+  display: block;
+}
+
 .notify-label {
-  margin-left: 42px;
+  margin-left: 60px;
 }
 
 h1, h2, h3, h4, h5 {
@@ -86,7 +90,7 @@ figure {
 }
 
 .flow-text {
-  font-size: 1.4em;
+  font-size: 1.3em;
 }
 
 .logo-heading {

@@ -1,9 +1,7 @@
 import logging
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
-# from gcloud import datastore
 from datetime import datetime
-# from application import get_model
-from .. import onboarding
+from application.db.model import User
 
 home_blueprint = Blueprint('home_blueprint', __name__)
 
@@ -22,7 +20,7 @@ def register_user():
     if request.method == 'POST':
         email = request.form['email']
         # user = get_model().create(email)
-        user = onboarding.model.User(email = email)
+        user = User(email = email, time_created = datetime.now())
         current_app.db_session.add(user)
         current_app.db_session.commit()
         return redirect(url_for('.index'))
@@ -34,7 +32,7 @@ def register_user_ajax():
     if request.method == 'POST':
         try:
             email = request.form['email']
-            user = onboarding.model.User(email = email)
+            user = User(email = email, time_created = datetime.now())
             current_app.db_session.add(user)
             current_app.db_session.commit()
             logging.info('Saved user %s' % email)

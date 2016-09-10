@@ -1,17 +1,18 @@
 from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
-from flask import current_app, session
+# from flask import current_app, session
 from plaid import Client
-from forms import SignupForm, LoginForm, PhoneVerificationForm, PersonalInformationForm
-from model import *
-from .. import services
-from .. import util
+from forms import SignupForm, LoginForm, PhoneVerificationForm, PersonalInformationForm, SelectPlanForm
+from application.db.model import *
 import random
 import traceback
 from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
+from application.util import constants
+from application import services
 from pprint import pprint
 import requests
 import json
+import logging
 
 onboarding_bp = Blueprint('onboarding_bp', __name__, url_prefix='/account')
 
@@ -22,17 +23,11 @@ def generate_and_store_new_verification_code(account):
     current_app.db_session.commit()
     return verification_code
 
-@onboarding_bp.route('/start', methods=['GET'])
-def start():
-    session['name'] = 'Joe'
-    return render_template('onboarding/verifybank.html')
-
 @onboarding_bp.route('/verify', methods=['GET', 'POST'])
 def verify_phone_number():
     form = PhoneVerificationForm(request.form)
     if form.validate_on_submit():
         account = get_account_by_id(session['account_id'])
-        # print 'Account = ',account,' Status = ',account.status,' verification code = ',account.phone_verification_code, 'form vc =',form.verification_code.data, ' vc type = ', type(account.phone_verification_code)
         if account.status == int(Account.UNVERIFIED) and \
         form.verification_code.data == account.phone_verification_code:
             account.status = Account.VERIFIED_PHONE
@@ -50,13 +45,13 @@ def resend_verification():
     if session['account_id'] is None:
         return jsonify({
             'error': True,
-            'description': util.constants.MISSING_ACCOUNT
+            'description': constants.MISSING_ACCOUNT
         })
     try:
         account = get_account_by_id(session['account_id'])
         verification_code = generate_and_store_new_verification_code(account)
         target_phone = '+1' + account.phone_number
-        services.phone.send_message(target_phone, util.constants.PHONE_VERIFICATION_MSG.format(verification_code))
+        services.phone.send_message(target_phone, constants.PHONE_VERIFICATION_MSG.format(verification_code))
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -77,7 +72,9 @@ def signup():
            first_name = form.first_name.data,
            last_name = form.last_name.data,
            phone_number = form.phone_number.data,
-           password = form.password.data)
+           password = form.password.data,
+           time_created = datetime.now(),
+           time_updated = datetime.now())
         current_app.db_session.add(account)
         current_app.db_session.commit()
 
@@ -85,7 +82,7 @@ def signup():
         session['account_id'] = account.id
         verification_code = generate_and_store_new_verification_code(account)
         target_phone = '+1' + form.phone_number.data.replace('-','')
-        services.phone.send_message(target_phone, util.constants.PHONE_VERIFICATION_MSG.format(verification_code))
+        services.phone.send_message(target_phone, constants.PHONE_VERIFICATION_MSG.format(verification_code))
         return redirect(url_for('onboarding_bp.verify_phone_number'))
     return render_template('onboarding/signup.html', form=form)
 
@@ -93,18 +90,17 @@ def signup():
 @onboarding_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm(request.form)
-    print 'request type = ',request.method
     if form.validate_on_submit():
         try:
             account = get_account_by_phone_number(form.phone_number.data)
             if account == None:
-                flash(util.constants.INVALID_CREDENTIALS)
+                flash(constants.INVALID_CREDENTIALS)
                 return render_template('onboarding/login.html', form=form)
 
             # print 'Account = ',account,' Status = ',account.status
             if account.status == Account.UNVERIFIED:
                 session['account_id'] = account.id
-                flash(util.constants.ACCOUNT_NOT_VERIFIED)
+                flash(constants.ACCOUNT_NOT_VERIFIED)
                 return redirect(url_for('onboarding_bp.verify_phone_number'))
             elif account.password_match(form.password.data) and account.status == Account.VERIFIED_PHONE:
                 # session['logged_in'] = True
@@ -145,7 +141,6 @@ def account():
     data = {}
     rejected_for_membership_before = True
     for membership in current_user.memberships:
-        # membership['status'] = membership.get_status()
         if membership.is_active():
             rejected_for_membership_before = False
 
@@ -155,11 +150,24 @@ def account():
     data['eligible_for_membership_reapplication'] = rejected_for_membership_before
     return render_template('onboarding/account.html', data=data)
 
-@onboarding_bp.route('/apply-enter-personal-information', methods=['GET', 'POST'])
+@onboarding_bp.route('/apply-for-membership', methods=['GET'])
 @login_required
-def apply_enter_personal_information():
+def apply_for_membership():
+    if len(current_user.memberships) == 0:
+        return redirect(url_for('.enter_personal_information'))
+
+    memberships = sorted(current_user.memberships, key=lambda m: m.time_created, reverse = True)
+    if memberships[0].status == Membership.PENDING:
+        flash('You have already applied for membership.')
+        return redirect(url_for('.account'))
+
+    return redirect(url_for('.enter_personal_information'))
+
+@onboarding_bp.route('/enter-personal-information', methods=['GET', 'POST'])
+@login_required
+def enter_personal_information():
     if has_applied_before(current_user):
-        return redirect(url_for('.add_bank'))
+        return redirect(url_for('.select_plan'))
 
     form = PersonalInformationForm(request.form)
     if form.validate_on_submit():
@@ -177,19 +185,44 @@ def apply_enter_personal_information():
         current_app.db_session.add(current_user)
 
         current_app.db_session.commit()
-        return redirect(url_for('.add_bank'))
+        return redirect(url_for('.select_plan'))
     return render_template('onboarding/enter_personal_information.html', form=form)
 
+@onboarding_bp.route('/select_plan', methods=['GET', 'POST'])
+@login_required
+def select_plan():
+    form = SelectPlanForm(request.form)
+    plans = get_all_plans()
+    if form.validate_on_submit():
+        plan_id = form.plan_id.data
+        try:
+            membership = Membership(
+                account_id = current_user.id,
+                status = Membership.PENDING,
+                plan = get_plan_by_id(plan_id),
+                time_updated = datetime.now(),
+                time_created = datetime.now())
+            current_user.memberships.append(membership)
+            current_app.db_session.commit()
+            return redirect(url_for('.add_bank'))
+        except Exception as e:
+            logging.error('Failed to save membership info %s for user %s, exception %s'
+            % (membership, current_user, e))
+            flash(constants.PLEASE_TRY_AGAIN)
+    return render_template('onboarding/select_plan.html', form=form, plans=plans)
 
 @onboarding_bp.route('/apply_next', methods=['POST', 'POST'])
 def apply_next():
     return redirect(url_for('onboarding_bp.add_bank'))
 
+# AJAX CALL
 @onboarding_bp.route('/add_bank', methods=['GET', 'POST'])
 @login_required
 def add_bank():
     if request.method == 'GET':
-        return render_template('onboarding/add_bank.html')
+        institutions = get_all_supported_institutions()
+        # print 'institutions = ',institutions
+        return render_template('onboarding/add_bank.html', institutions = institutions)
     else:
         try:
             public_token = request.form['public_token']
@@ -198,12 +231,16 @@ def add_bank():
             institution = request.form['institution']
             institution_type = request.form['institution_type']
 
-            print('ADD BANK REQUEST account_id = {0}, account_name = {1}, institution = {2}, institution_type = {3}')\
-            .format(account_id, account_name, institution, institution_type)
-            # metadata = request.form['metadata']
-            # print "METADATA = ",jsonify(metadata)
+            # print('ADD BANK REQUEST account_id = {0}, account_name = {1}, institution = {2}, institution_type = {3}')\
+            # .format(account_id, account_name, institution, institution_type)
 
             response = json.loads(exchange_token(public_token, account_id))
+
+            result = {}
+            if get_fi_by_access_token(response['account_id']) is not None:
+                result['error'] = True
+                result['message'] = constants.BANK_ALREADY_ADDED
+                return jsonify(result)
 
             fi = Fi(
                 account_name = account_name,
@@ -217,21 +254,15 @@ def add_bank():
                 time_created = datetime.now())
             current_user.fis.append(fi)
 
-            current_user.memberships.append(Membership(
-                account_id = current_user.id,
-                status = Membership.PENDING,
-                time_updated = datetime.now(),
-                time_created = datetime.now()))
-
             fetch_financial_information()
 
             current_app.db_session.add(current_user)
             current_app.db_session.commit()
 
             response = {}
-            response['success'] = 'true'
-            return redirect(url_for('.account'))
-            # return jsnoify(response)
+            response['success'] = True
+            return jsonify(response)
+            # return redirect(url_for('.account'))
         except Exception as e:
             print e
             response = {}
@@ -274,7 +305,7 @@ def exchange_token(public_token, account_id):
 
     response = requests.post('https://tartan.plaid.com/exchange_token', data=payload)
 
-    print 'response = ',response.text, 'code = ',response.status_code
+    # print 'response = ',response.text, 'code = ',response.status_code
     if response.status_code == requests.codes.ok:
         return response.text
     else:

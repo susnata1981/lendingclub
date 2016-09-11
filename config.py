@@ -48,6 +48,7 @@ CLIENT_SECRET='0f3e8ecc989e5e6ed776b732d76161'
 #STRIPE
 STRIPE_SECRET_KEY = 'sk_test_QZAuacZ9CDJ8tTOobnS7uvv2'
 STRIPE_PUBLISHABLE_KEY = 'pk_test_R6PhLRfSaxQmRES77LvkuPUL'
+STRIPE_SECRET_KEY_TEST = 'sk_test_QZAuacZ9CDJ8tTOobnS7uvv2'
 
 ########################   PRODUCTION SETTINGS
 DB_HOST = '/cloudsql/ziplly-140504:zipllydb'

@@ -19,3 +19,4 @@ ndg-httpsclient
 passlib
 pyasn1
 gcloud
+stripe

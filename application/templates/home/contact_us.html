@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block stylesheet %}
+<link rel="stylesheet" href={{url_for( 'static', filename='style-experiment-color.css' )}}>
+{% endblock %}
+{% block content %}
+<div class="row margin-top-medium">
+ <div class="col s5 offset-s1">
+  {% for m in form.name.errors %}
+    <div class="error">{{ m }}</div>
+  {% endfor %}
+  {% for message in form.email.errors %}
+    <div class="error">{{ message }}</div>
+  {% endfor %}
+  {% for message in form.subject.errors %}
+    <div class="error">{{ message }}</div>
+  {% endfor %}
+  {% for message in form.message.errors %}
+    <div class="error">{{ message }}</div>
+  {% endfor %}
+ </div>
+</div>
+
+<div class="row margin-top-medium">
+ <div id="contact-us-form-section" class="col s5 offset-s1">
+  <h5>Contact us</h5>
+  <form action={{url_for('home_blueprint.contact_us')}} method="POST">
+    {{ form.csrf_token }}
+   <div class="row">
+    <div class="input-field col s12">
+     {{ form.name.label }} {{ form.name }}
+    </div>
+   </div>
+   <div class="row">
+    <div class="input-field col s12">
+     {{ form.email.label }} {{ form.email }}
+    </div>
+   </div>
+   <div class="row">
+    <div class="input-field col s12">
+     {{ form.subject.label }} {{ form.subject }}
+    </div>
+   </div>
+   <div class="row">
+    <div class="input-field col s12">
+     {{ form.message.label(for = form.message.id) }} {{ form.message(class='materialize-textarea') }}
+    </div>
+   </div>
+   <div class="row">
+    <div class="input-field col s12">
+     <button class="btn left">Send</button>
+    </div>
+   </div>
+  </form>
+ </div>
+</div>
+
+{% endblock %}

@@ -15,8 +15,8 @@ plaid-python
 twilio
 pyopenssl
 ndg-httpsclient
-#py-bcrypt
 passlib
 pyasn1
+sendgrid
 gcloud
 stripe

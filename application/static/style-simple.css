@@ -1,9 +1,8 @@
 body {
-    background-color: #fafafa;
     font-family: 'Roboto', sans-serif;
 }
 nav {
-  background-color: #B9F6CA;
+  background-color: #18ffff;
 }
 
 nav a {
@@ -15,13 +14,18 @@ nav a {
     font-family: monospace;
 }
 .page-footer {
-    background-color: #B9F6CA !important;
+    background-color: #18ffff !important;
     padding-top: 0 !important;
+    margin: 0px !important;
     color: #333;
 }
 
-.bold {
-  font-size: 1.4em;
+.main-info {
+  postion: fixed;
+  top: 60px;
+  padding: 16px;
+  background: #ff8a65;
+  color: #333;
 }
 
 select {
@@ -35,28 +39,17 @@ select {
 h1, h2, h3, h4, h5 {
     color: #555;
 }
-
 p {
     color: #555;
     margin: 0;
 }
-
 figure {
     margin: 0;
     padding: 0;
 }
-
-.main-info {
-  postion: fixed;
-  top: 60px;
-  padding: 16px;
-  background: #bbb;
-  color: #333;
-}
-
 .error {
-  background-color: #FBB0B0;
-  padding: 12px;
+ background-color: #FBB0B0;
+ padding: 12px;
 }
 
 .dark-text {
@@ -115,6 +108,20 @@ figure {
   color: #333;
 }
 
+.bold {
+  font-size: 1.4em;
+}
+
+.small-text {
+  font-family: helvetica,sans-serif;
+  font-size: .55em;
+}
+
+.medium-text {
+  font-family: helvetica,sans-serif;
+  font-size: .9em;
+}
+
 #payday-cartoon {
   position: fixed;
   left: 0;
@@ -122,20 +129,58 @@ figure {
   margin: 8px 0;
 }
 
+#contact-us-form-section {
+  padding: 16px;
+  background: #f9f9f9;
+}
+
 #logo-container {
     margin-left: 24px;
     color: #333;
 }
 
+#signup-form-section {
+  background-color: #006064;
+  margin: 0;
+  padding: 32px 0;
+}
+
+#signup-button-section {
+  background-color: #006064;
+  margin: 0;
+  padding: 32px 0;
+}
+
+#signup-form-section form {
+  margin-top: 24px;
+}
+
+#signup-form-section form div.row {
+  margin-bottom: 0;
+}
+
+#signup-form-section input[type='email'] {
+    border: 0;
+    background: #fff;
+}
+
+#signup-form-section button {
+  height: 45px;
+  width: 12% !important;
+}
+#signup-email-label {
+  margin-left: 50px;
+}
+
 #cover-image-section {
-    height: 600px;
+    height: 340px;
     /*background-image: url('happy-woman3.jpg');*/
-    background-color: #66bb6a;
+    /*background-color: #66bb6a;*/
     padding: 32px;
     background-repeat: no-repeat;
     background-size: cover;
     background-blend-mode: darken;
-    -webkit-clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 80%);
+    /*-webkit-clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 80%);*/
 }
 #main-heading-section {
     margin-top: 24px;
@@ -143,6 +188,25 @@ figure {
 #main-heading-section ul li {
   list-style: disc inside;
   margin: 24px 0;
+}
+
+.modal-content {
+  padding: 4px !important;
+}
+
+.modal-content .row {
+  margin: 0 !important;
+}
+
+.modal-content h5 {
+  margin: 0 20px !important;
+}
+
+.modal-content .input-field {
+    margin: 12px !important;
+}
+.modal-footer {
+  margin: 12px !important;
 }
 
 .tabs {
@@ -156,29 +220,40 @@ figure {
 }
 .signup-form {
     position: relative;
-    top: -8px;
 }
-.circle {
+.circle-fill {
     border-radius: 100px;
     width: 180px;
     height: 180px;
     text-align: center;
     line-height: 180px;
-    background-color: #66bb6a;
+    background-color: #18ffff;
     margin: auto;
 }
 .margin-left-medium {
   margin-left: 24px;
 }
-#contact-us-form-section {
-  padding: 16px;
-  margin: 8px;
-  background: #f9f9f9;
+
+#circular-wait-section {
+    display: none;
+    position: fixed;
+    left: 50%;
+    right: 50%;
+    top: 50%;
 }
+
+#toast-container {
+  right: 40% !important;
+  width: 300px !important;
+}
+
 #how-it-works-section {
     text-align: center;
     padding: 0 24px;
+    padding: 16px 0;
+    /*-webkit-clip-path: polygon(0% 100%, 0% 12%, 100% 0%, 100% 100%);*/
 }
+
 #how-it-works-section p {
     margin-bottom: 16px;
 }
@@ -188,8 +263,25 @@ figure {
     top: 20%;
     text-align: center;
 }
+
+#our-story-section {
+  background-color: #e1f5fe;
+}
+
 #our-story-section p {
-    margin: 32px;
+    margin: 32px 32px 6px 32px;
+}
+
+#our-story-section hr {
+  width: 70%;
+}
+
+#misson-statement-section {
+background-color: #18ffff;
+}
+
+#faq-section {
+  /*background-color: #e1f5fe;*/
 }
 #faq-section div {
     margin: 32px;
@@ -201,8 +293,8 @@ figure {
 .sub-section {
     padding: 24px;
 }
-.plan-overview {
-    background: #fff;
+#plan-overview-section {
+  background-color: #e1f5fe;
 }
 .plan-overview h5, .plan-overview h6 {
     text-align: center;
@@ -254,6 +346,10 @@ figure {
 
 .large-text {
   font-size: 1.5em !important;
+}
+
+.extra-large-text {
+  font-size: 2em !important;
 }
 
 .breadcrumb-active {

@@ -19,3 +19,4 @@ passlib
 pyasn1
 sendgrid
 gcloud
+stripe

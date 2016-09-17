@@ -129,7 +129,7 @@ $(function() {
             }));
         }
 
-        function register_user(email_id) {
+        function register_user(selector, email_id) {
             var emailRegex = /\S+@\S+\.\S+/
             var email = $("input[name='"+email_id+"']").val();
             if (email == undefined || email.length == 0) {
@@ -142,17 +142,21 @@ $(function() {
                 return;
             }
 
+            $(selector).attr('disabled','true');
+            $("#circular-wait-section").show();
             var toast_duration = 1500;
             $.post(
                 '/register_user_ajax', {
                     'email': email,
                 },
                 function(data) {
+                  $("#circular-wait-section").hide();
+                  $(selector).removeAttr('disabled');
                     var content = "<div>";
                     if (data.error) {
                         Materialize.toast('Failed to register user: ' + email, toast_duration);
                     } else {
-                        Materialize.toast('Thanks for registering', toast_duration);
+                        Materialize.toast('Thanks for expressing interest!', toast_duration);
                     }
                     $("input[name='"+email_id+"'").val("");
                 }
@@ -164,11 +168,11 @@ $(function() {
               e.preventDefault();
               ga('send', {
                   'hitType': 'event',
-                  'eventCategory': 'landing_page',
+                  'eventCategory': 'landing_page_signup',
                   'eventAction': 'button_click',
                   'eventLabel': $(this).attr('class')
               });
-              register_user(emailFieldSelector);
+              register_user(this, emailFieldSelector);
           });
         }
 
@@ -211,10 +215,11 @@ $(function() {
             });
 
             add_notification_button_handler('.notify-btn', 'email');
-            add_notification_button_handler('.notify-btn-2', 'email2');
+            // add_notification_button_handler('.notify-btn-2', 'email2');
 
             $('ul.tabs').tabs();
-            
+            $('.modal-trigger').leanModal();
+
             $("#resend_btn").click(function(e) {
               e.preventDefault()
               $.post(
@@ -226,7 +231,15 @@ $(function() {
                 }
               )
             });
+
+            $("#payday-cartoon").fadeOut();
+
+            $("#logo-link").hover(function() {
+              $("#payday-cartoon").fadeIn(500);
+              setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
+            });
         }
+
 
         return {
             init: init

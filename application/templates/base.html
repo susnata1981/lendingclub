@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% block head_content %}
+    {% endblock %}
     <meta charset="utf-8">
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-    <link rel="stylesheet" href={{url_for( 'static', filename='style.css' )}}>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'>
+
+    <!-- <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}> -->
+    <link rel="stylesheet" href={{url_for('static', filename='textanimation.css')}}>
+
+    {% block stylesheet %}
+    <link rel="stylesheet" href={{url_for('static', filename='style.css')}}>
+    {% endblock %}
     <link href="https://fonts.googleapis.com/css?family=Chewy" rel="stylesheet">
     <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
+    <script type="text/javascript" src={{url_for( 'static', filename='main.js' )}}></script>
     <title>{% block title %} Ziplly {% endblock %}</title>
     {% block script %} {% endblock %}
 </head>
@@ -17,12 +28,14 @@
 <body>
   <nav>
    <div class="nav-wrapper">
-     <a class="margin-left-medium" href="http://www.ziplly.com">
+     <a id="logo-link" class="margin-left-medium" href={{url_for('home_blueprint.index')}}>
        <span class="logo-heading grey-text text-darken-4">Ziplly</span>
        <span class="grey-text text-darken-4">borrowing made affordable</span>
      </a>
-     {% if not disable_production_mode %}
      <ul id="nav-mobile" class="right hide-on-med-and-down">
+       <!-- Modal Trigger -->
+       <!-- <li><a href={{ url_for('home_blueprint.contact_us') }}>Contact Us</a></li> -->
+       {% if enable_navigation %}
        <li><a href={{url_for('home_blueprint.index')}}>Home</a></li>
        <li><a href={{url_for('onboarding_bp.account')}}>Account</a></li>
         <li><a href="#">About</a></li>
@@ -31,17 +44,24 @@
          <a href={{url_for('onboarding_bp.logout')}}>Logout</a>
       </li>
       {% endif %}
+      {% endif %}
      </ul>
-     {% endif %}
    </div>
  </nav>
     <section id="content">
+      <div id="payday-cartoon" class="center">
+        <img src={{url_for('static', filename='payday-joke.jpg')}} height="80px" width="auto"></img>
+      </div>
         {% block content %} {% endblock %}
     </section>
     <footer class="page-footer">
          <div class="footer-copyright">
            <div class="container">
-               <span class="right grey-text text-darken-4">© Ziplly 2016</span>
+             <div class="right">
+              <span class="grey-text text-darken-4">email us at admin@ziplly.com</span>
+              &nbsp;&nbsp;
+              <span class="grey-text text-darken-4">© Ziplly 2016</span>
+            </div>
            </div>
          </div>
     </footer>

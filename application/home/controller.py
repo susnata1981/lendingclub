@@ -1,19 +1,21 @@
 import logging
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, flash
 from datetime import datetime
 from application.db.model import User
+from application.util.common import *
+from application.services import mail
+from application.util import constants
+from forms import *
 
 home_blueprint = Blueprint('home_blueprint', __name__)
 
-# @home_blueprint.route('/')
-# def index():
-#     return render_template('home/index.html')
-
 @home_blueprint.route('/', methods=['GET'])
 def index():
-    # model.initialize()
-    return render_template('home/index.html',
-    disable_production_mode = not current_app.config['ENABLE_PRODUCTION_MODE'])
+    return render_template('home/index-simple.html')
+
+@home_blueprint.route('/experiment-color', methods=['GET'])
+def experiment_color():
+    return render_template('home/index.html')
 
 @home_blueprint.route('/register_user', methods=['POST'])
 def register_user():
@@ -36,6 +38,10 @@ def register_user_ajax():
             current_app.db_session.add(user)
             current_app.db_session.commit()
             logging.info('Saved user %s' % email)
+            mail.send(current_app.config['ADMIN_EMAIL'],
+            email,
+            constants.SIGNUP_EMAIL_SUBJECT,
+            constants.SIGNUP_EMAIL_BODY)
             return jsonify(email=email)
         except Exception as e:
             logging.error('failed to save user, error = %s' % str(e))
@@ -47,13 +53,20 @@ def register_user_ajax():
             error='true',
             description='Only support POST request!')
 
-#### TESTING ONLY
-@home_blueprint.route('/_add', methods=["POST"])
-def add():
-    if request.method == 'POST':
-        a = int(request.form['a'])
-        b = int(request.form['b'])
-        print 'a ='+str(a)
-        return str(a+b)
-    else:
-        return str(-1)
+@home_blueprint.route('/contact_us', methods=['GET', 'POST'])
+def contact_us():
+    form = ContactUsForm()
+    if form.validate_on_submit():
+        message = '''Received email from {0}\n
+        Subject: {1}\n
+        Message: {2}'''.format(form.email.data, form.subject.data, form.message.data)
+
+        mail.send(current_app.config['ADMIN_EMAIL'],
+        current_app.config['ADMIN_EMAIL'],
+        form.subject.data,
+        message)
+        flash('Thanks for contact us. We will get back to you as soon as possible.')
+        return redirect(url_for('.index'))
+    disable_production_mode = not current_app.config['ENABLE_PRODUCTION_MODE']
+    return render_template('home/contact_us.html',
+    disable_production_mode = disable_production_mode, form=form)

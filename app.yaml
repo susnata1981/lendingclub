@@ -21,11 +21,6 @@ api_version: 1
 threadsafe: true
 
 handlers:
-
-- url: /favicon.ico
-  static_files: application/static/favicon.ico
-  upload: application/static/favicon.ico
-
 - url: /.*
   script: main.app
 

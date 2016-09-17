@@ -18,6 +18,8 @@ Update this file with the values for your specific Google Cloud project.
 You can create and manage projects at https://console.developers.google.com
 """
 
+ADMIN_EMAIL = 'susnata@gmail.com'
+
 ENABLE_PRODUCTION_MODE = False
 
 # The secret key is used by Flask to encrypt session cookies.
@@ -50,10 +52,10 @@ STRIPE_SECRET_KEY = 'sk_test_QZAuacZ9CDJ8tTOobnS7uvv2'
 STRIPE_PUBLISHABLE_KEY = 'pk_test_R6PhLRfSaxQmRES77LvkuPUL'
 
 ########################   PRODUCTION SETTINGS
-DB_HOST = '/cloudsql/ziplly-140504:zipllydb'
-DB_USERNAME = 'zroot'
-DB_PASSWORD = '11111111'
-DB_NAME = 'zdb'
+# DB_HOST = '/cloudsql/ziplly-140504:zipllydb'
+# DB_USERNAME = 'zroot'
+# DB_PASSWORD = '11111111'
+# DB_NAME = 'zdb'
 
 #########################  LOCAL SETTINGS   ###########################
 # DB_HOST = 'localhost'
@@ -61,6 +63,9 @@ DB_NAME = 'zdb'
 # DB_PASSWORD = 'admin'
 # DB_NAME = 'zdb'
 
+
+############## SENDGRID ################
+SENDGRID_API_KEY = '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'
 
 #########################  TWILIO ACCOUNT   ##############################
 TWILIO_ACCOUNT_SID = 'ACab61d4c01beff592fba858a584d0252a'

@@ -11,7 +11,7 @@
     <span>3. Add bank account</span>
    </div>
   </div>
-    <div class="row">
+  <div class="row">
      <div class="col s6 margin-top-medium">
          {% for message in get_flashed_messages() %}
          <div class="error">{{ message }}</div>
@@ -22,6 +22,14 @@
          {% endfor %}
 
          {% for message in form.ssn.errors %}
+         <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.dob.errors %}
+         <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.driver_license_number.errors %}
          <div class="error">{{ message }}</div>
          {% endfor %}
 
@@ -40,8 +48,8 @@
          {% for message in form.postal_code.errors %}
             <div class="error">{{ message }}</div>
          {% endfor %}
-        </div>
-       </div>
+      </div>
+    </div>
     <div class="row">
         <form class="col s6 user-input margin-top-medium"
         action={{url_for('onboarding_bp.enter_personal_information')}} method="POST">
@@ -57,6 +65,18 @@
                 <div class="input-field col s12">
                  {{form.ssn.label}}
                  {{form.ssn}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.dob.label}}
+                 {{form.dob}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                 {{form.driver_license_number.label}}
+                 {{form.driver_license_number}}
                 </div>
             </div>
             <div class="row">

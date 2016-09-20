@@ -13,6 +13,7 @@ def init_standalone(config):
     else:
         api_key = config['STRIPE_SECRET_KEY_TEST']
 
+    print 'api key = ',api_key
     return StripeClass(api_key)
 
 def append_error(msg, err):
@@ -208,4 +209,3 @@ class StripeClass(object):
             raise ValueError(msg)
         #TODO: Check that the charge belongfs to the customer
         return stripe.Charge.retrieve(charge_id)
-

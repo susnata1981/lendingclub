@@ -36,6 +36,11 @@ class Account(Base):
     last_name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=True)
     ssn = Column(Integer, nullable=True)
+    dob = Column(String(24), nullable=True)
+    driver_license_number = Column(String(128), nullable=True)
+    employer_name = Column(String(256), nullable=True)
+    employer_phone_number = Column(String(128), nullable=True)
+    stripe_customer_id = Column(String(255), nullable=True)
     phone_number = Column(String(50), unique=True, nullable=False)
     _password = Column(String(1024), nullable=False)
     status = Column(Integer, default=UNVERIFIED, nullable=False)
@@ -74,6 +79,7 @@ class Account(Base):
 
 class Address(Base):
     __tablename__ = 'address'
+    INDIVIDUAL, BUSINESS = range(2)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
@@ -83,16 +89,26 @@ class Address(Base):
     city = Column(String(128), nullable=False)
     state = Column(String(128), nullable=False)
     postal_code = Column(Integer, nullable=False)
+    address_type = Column(Integer, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
+    def format_single_line():
+        return "{0} {1} {2} {3} {4}".format(
+        self.street1, self.street2, self.city, self.state, self.postal_code)
+
 class Fi(Base):
     __tablename__ = 'fi'
+
+    INSTANT, RANDOM_DEPOSIT = range(2)
+    UNVERFIED, VERIFIED = range(2)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship('Account', back_populates='fis')
     bank_account_id = Column(String(512), nullable=False)
+    verification_type = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
     subtype = Column(String(128), nullable=True)
     subtype_name = Column(String(256), nullable=True)
     account_name = Column(String(256), nullable=True)
@@ -151,6 +167,9 @@ class Membership(Base):
     def is_active(self):
         return self.status == Membership.APPROVED
 
+    def is_pending(self):
+        return self.status == Membership.PENDING
+
     def is_rejected(self):
         return self.status == Membership.REJECTED
 
@@ -168,6 +187,7 @@ Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.transaction = relationship('Transaction', back_populates='account')
 Account.address = relationship('Address', uselist = False, back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
+Account.employer_address = relationship('Address', uselist = False, back_populates='account')
 
 
 def create_plan():
@@ -244,5 +264,5 @@ def get_fi_by_stripe_bank_account_token(stripe_bank_account_token):
 def clear_institutions_table():
     current_app.db_session.query(IAVInstitutions).delete()
 
-def get_all_supported_institutions():
+def get_all_iav_supported_institutions():
     return current_app.db_session.query(IAVInstitutions).all()

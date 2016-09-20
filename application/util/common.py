@@ -2,6 +2,8 @@ import os
 import sys
 from flask import current_app
 import logging
+import random
+import string
 import traceback
 
 def is_running_on_app_engine():
@@ -14,6 +16,9 @@ def is_running_on_app_engine():
     if (env and env.startswith('Google App Engine/')):
         return True
     return False
+
+def generate_fake_token(n):
+    return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(n))
 
 def send_mail(to, subject, body):
     # import google

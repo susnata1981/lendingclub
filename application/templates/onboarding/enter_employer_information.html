@@ -1,0 +1,70 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <div class="row margin-top-medium breadcrumb">
+   <div class="col s3">
+    <span class="breadcrumb-active">1. Enter personal information</span>
+   </div>
+   <div class="col s3">
+    <span class="breadcrumb-inactive">2. Select Plan</span>
+   </div>
+   <div class="col s3 breadcrumb-inactive">
+    <span>3. Add bank account</span>
+   </div>
+  </div>
+  <div class="row">
+     <div class="col s6 margin-top-medium">
+         <!-- {% for message in form.employer_name.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.employer_phone_number.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.employer_street1.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.employer_city.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.employer_state.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %}
+
+         {% for message in form.employer_postal_code.errors %}
+            <div class="error">{{ message }}</div>
+         {% endfor %} -->
+
+         {% for field in form %}
+           {% for m in field.errors %}
+            <div class="error">{{ m }}</div>
+           {% endfor %}
+         {% endfor %}
+      </div>
+    </div>
+    <div class="row">
+    <form class="user-input margin-top-medium"
+    action={{url_for('onboarding_bp.enter_employer_information')}} method="POST">
+        <h5>Employer information</h5>
+        <hr/>
+        {{ form.csrf_token }}
+
+        {% for field in form %}
+        <div class="row">
+          {% if field.type != 'SubmitField' and field.type != 'CSRFTokenField' %}
+            <div class="input-field col s4">
+              {{ field.label }}
+              {{ field }}
+            </div>
+          {% endif %}
+          {% if field.type == 'SubmitField' %}
+            {{ form.submit(class='btn') }}
+          {% endif %}
+        </div>
+        {% endfor %}
+    </form>
+  </div>
+</div>
+{% endblock %}

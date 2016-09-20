@@ -238,6 +238,8 @@ $(function() {
               $("#payday-cartoon").fadeIn(500);
               setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
             });
+
+            $('.tooltipped').tooltip({delay: 50});
         }
 
 

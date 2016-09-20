@@ -9,6 +9,8 @@ NOT_AVAILABLE = 'Not available'
 BANK_ALREADY_ADDED = 'You have already added this bank account'
 PLEASE_TRY_AGAIN = 'Sorry, there was an error on the server, please try again.'
 
+FI_ID_KEY = 'fi_id'
+
 SIGNUP_EMAIL_SUBJECT = 'Thanks for expressing interest'
 SIGNUP_EMAIL_BODY = '''
 <p>

@@ -4,6 +4,7 @@ from application.services import stripe_client
 from forms import *
 from application.db.model import *
 import traceback
+import random
 from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
 from application.util import constants
@@ -32,8 +33,6 @@ def verify_phone_number():
             account.status = Account.VERIFIED_PHONE
 
             stripe_customer = current_app.stripe_client.create_customer(
-            account.first_name,
-            account.last_name,
             account.phone_number)
 
             account.stripe_customer_id = stripe_customer['id']
@@ -177,6 +176,7 @@ def enter_personal_information():
         return redirect(url_for('.enter_employer_information'))
 
     form = PersonalInformationForm(request.form)
+    print 'errors =',form.dob.errors,' date = ',form.dob.data
     if form.validate_on_submit():
         address = Address(
         street1 = form.street1.data,
@@ -187,18 +187,44 @@ def enter_personal_information():
         postal_code = form.postal_code.data)
         address.account_id = current_user.id
 
-        current_app.db_session.add(address)
+        # current_app.db_session.add(address)
         current_user.email = form.email.data
         current_user.ssn = form.ssn.data.replace('-','')
         current_user.dob = form.dob.data
         current_user.time_updated = datetime.now()
         current_user.driver_license_number = form.driver_license_number.data
+        current_user.addresses.append(address)
 
         current_app.db_session.add(current_user)
         current_app.db_session.commit()
 
         return redirect(url_for('.enter_employer_information'))
-    return render_template('onboarding/enter_personal_information.html', form=form)
+
+    breadcrumItems = get_breadcrum()
+    breadcrumItems[0]['active'] = True
+    return render_template('onboarding/enter_personal_information.html',
+    form=form, breadcrumItems = breadcrumItems)
+
+def get_breadcrum():
+    breadcrumItems = [
+        {
+            'name': 'Enter personal information',
+            'active': False
+        },
+        {
+            'name': 'Enter employer information',
+            'active': False
+        },
+        {
+            'name': 'Select plan',
+            'active': False
+        },
+        {
+            'name': 'Add bank account',
+            'active': False
+        },
+    ]
+    return breadcrumItems
 
 @onboarding_bp.route('/enter_employer_information', methods=['GET', 'POST'])
 @login_required
@@ -207,7 +233,7 @@ def enter_employer_information():
         return redirect(url_for('.select_plan'))
 
     form = EmployerInformationForm(request.form)
-
+    print 'error = ',form.errors
     if form.validate_on_submit():
         try:
             print 'About to save employer information...'
@@ -216,7 +242,7 @@ def enter_employer_information():
             street2 = form.employer_street2.data,
             city = form.employer_city.data,
             state = form.employer_state.data,
-            address_type = Address.BUSINESS,
+            address_type = Address.EMPLOYER,
             postal_code = form.employer_postal_code.data)
             employer_address.account_id = current_user.id
             current_app.db_session.add(employer_address)
@@ -230,12 +256,16 @@ def enter_employer_information():
         except Exception as e:
             logging.info('failed to save employer information %s' % e)
             flash(constants.PLEASE_TRY_AGAIN)
-            return render_template('onboarding/enter_employer_information.html', form=form)
-
+            breadcrumItems = get_breadcrum()
+            breadcrumItems[1]['active'] = True
+            return render_template('onboarding/enter_employer_information.html',
+            form=form, breadcrumItems = breadcrumItems)
         return redirect(url_for('.select_plan'))
     else:
-        print 'errors = ',form.employer_name.errors,' valid = ',form.validate_on_submit()
-        return render_template('onboarding/enter_employer_information.html', form=form)
+        breadcrumItems = get_breadcrum()
+        breadcrumItems[1]['active'] = True
+        return render_template('onboarding/enter_employer_information.html',
+        form=form, breadcrumItems = breadcrumItems)
 
 
 @onboarding_bp.route('/select_plan', methods=['GET', 'POST'])
@@ -259,7 +289,9 @@ def select_plan():
             logging.error('Failed to save membership info %s for user %s, exception %s'
             % (membership, current_user, e))
             flash(constants.PLEASE_TRY_AGAIN)
-    return render_template('onboarding/select_plan.html', form=form, plans=plans)
+    breadcrumItems = get_breadcrum()
+    breadcrumItems[2]['active'] = True
+    return render_template('onboarding/select_plan.html', form=form, plans=plans, breadcrumItems = breadcrumItems)
 
 @onboarding_bp.route('/apply_next', methods=['POST', 'POST'])
 def apply_next():
@@ -273,7 +305,9 @@ def add_bank():
         if len(current_user.memberships) == 0:
             return redirect(url_for('.apply_for_membership'))
         institutions = get_all_iav_supported_institutions()
-        return render_template('onboarding/add_bank.html', institutions = institutions)
+        breadcrumItems = get_breadcrum()
+        breadcrumItems[3]['active'] = True
+        return render_template('onboarding/add_bank.html', institutions = institutions, breadcrumItems = breadcrumItems)
     else:
         try:
             public_token = request.form['public_token']

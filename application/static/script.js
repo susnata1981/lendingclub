@@ -176,6 +176,73 @@ $(function() {
           });
         }
 
+        function phone_number_formatter() {
+            var number = $(this).val().replace(/-/g,'');
+            if (number.length < 3) {
+              return;
+            }
+
+            if (number.length > 10) {
+              number = number.substring(0, 10);
+            }
+
+            var nn = '';
+            for (var i = 0; i < number.length; i++) {
+              if (i == 3 || i == 6 ) {
+                nn += '-';
+                nn += number[i];
+              } else {
+                nn += number[i];
+              }
+            }
+            $(this).val(nn)
+        }
+
+        function dob_formatter() {
+            var number = $(this).val().replace(/\//g,'');
+            if (number.length < 3) {
+              return;
+            }
+
+            if (number.length > 8) {
+              number = number.substring(0, 8);
+            }
+
+            var nn = '';
+            for (var i = 0; i < number.length; i++) {
+              if (i == 2 || i == 4 ) {
+                nn += '/';
+                nn += number[i];
+              } else {
+                nn += number[i];
+              }
+            }
+            $(this).val(nn)
+        }
+
+        function ssn_formatter() {
+            var number = $(this).val().replace(/-/g,'');
+
+            if (number.length < 3) {
+              return;
+            }
+
+            if (number.length > 9) {
+              number = number.substring(0, 9);
+            }
+
+            var nn = '';
+            for (var i = 0; i < number.length; i++) {
+              if (i == 3 || i == 5 ) {
+                nn += '-';
+                nn += number[i];
+              } else {
+                nn += number[i];
+              }
+            }
+            $(this).val(nn)
+        }
+
         function init() {
             // google.charts.load('current', {'packages': ['corechart']});
             // google.charts.setOnLoadCallback(drawChart);
@@ -239,7 +306,16 @@ $(function() {
               setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
             });
 
+            $('.datepicker').pickadate({
+                selectMonths: true, // Creates a dropdown to control month
+                selectYears: 100,
+            });
+
             $('.tooltipped').tooltip({delay: 50});
+
+            $('.phone_number').keyup(phone_number_formatter);
+            $('.ssn').keyup(ssn_formatter);
+            $('.dob').keyup(dob_formatter);
         }
 
 

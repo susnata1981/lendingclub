@@ -47,6 +47,16 @@ figure {
     margin: 0;
     padding: 0;
 }
+
+.error-block {
+ background-color: #FBB0B0;
+ padding: 12px;
+}
+
+.error-item {
+  margin: 12px 6px;
+}
+
 .error {
  background-color: #FBB0B0;
  padding: 12px;
@@ -339,11 +349,6 @@ background-color: #18ffff;
  margin-top: 64px;
 }
 
-.breadcrumb {
-  background-color: #66bb6a;
-  padding: 20px;
-}
-
 .large-text {
   font-size: 1.5em !important;
 }
@@ -352,12 +357,45 @@ background-color: #18ffff;
   font-size: 2em !important;
 }
 
-.breadcrumb-active {
-  color: #ffffff;
+.breadcrumb-row {
+  height: 40px;
+  background-color: #18ffff;
+  font-size: 1em;
 }
 
-.breadcrumb-inactive {
-  color: #e0e0e0;
+.breadcrum-item {
+  display: inline-block;
+  width: auto;
+}
+
+.breadcrum-active {
+  color: #555;
+}
+
+.breadcrum-text {
+    display: inline-block;
+    font-family: verdana;
+    font-size: 1em;
+    height: 40px;
+    line-height: 40px;
+}
+
+.breadcrum-text::after {
+  content: '';
+  display: block;
+  background: url('arrow_right.png') no-repeat;
+  width: 40px;
+  height: 40px;
+  float: right;
+  margin-top: 2px;
+}
+
+div.breadcrum-row .breadcrum-item:last-child .breadcrum-text::after {
+  background: none;
+}
+
+.breadcrum-inactive {
+  color: #aaa;
 }
 
 /* label focus color */
@@ -403,10 +441,11 @@ background-color: #18ffff;
 .login-option {
  line-height: 36px;
 }
+
 form.user-input {
-  padding: 32px;
   background: #EEEEEE;
 }
+
 /*****************************************/
 
 /**************** add-bank *****************/

@@ -1,51 +1,21 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container">
-  <div class="row margin-top-medium breadcrumb">
-   <div class="col s3">
-    <span class="breadcrumb-active">1. Enter personal information</span>
-   </div>
-   <div class="col s3">
-    <span class="breadcrumb-inactive">2. Select Plan</span>
-   </div>
-   <div class="col s3 breadcrumb-inactive">
-    <span>3. Add bank account</span>
-   </div>
-  </div>
+
+  {{ build_breadcrum(breadcrumItems) }}
+
+  {% if form.errors %}
   <div class="row">
-     <div class="col s6 margin-top-medium">
-         <!-- {% for message in form.employer_name.errors %}
-            <div class="error">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.employer_phone_number.errors %}
-            <div class="error">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.employer_street1.errors %}
-            <div class="error">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.employer_city.errors %}
-            <div class="error">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.employer_state.errors %}
-            <div class="error">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.employer_postal_code.errors %}
-            <div class="error">{{ message }}</div>
-         {% endfor %} -->
-
+     <div class="col s6 error-block">
          {% for field in form %}
            {% for m in field.errors %}
-            <div class="error">{{ m }}</div>
+            <div class="error-item">{{ m }}</div>
            {% endfor %}
          {% endfor %}
       </div>
     </div>
+    {% endif %}
     <div class="row">
-    <form class="user-input margin-top-medium"
+    <form class="user-input col s6"
     action={{url_for('onboarding_bp.enter_employer_information')}} method="POST">
         <h5>Employer information</h5>
         <hr/>
@@ -56,7 +26,11 @@
           {% if field.type != 'SubmitField' and field.type != 'CSRFTokenField' %}
             <div class="input-field col s4">
               {{ field.label }}
+              {% if field.name == 'employer_phone_number' %}
+              {{ field(class='phone_number') }}
+              {% else %}
               {{ field }}
+              {% endif %}
             </div>
           {% endif %}
           {% if field.type == 'SubmitField' %}

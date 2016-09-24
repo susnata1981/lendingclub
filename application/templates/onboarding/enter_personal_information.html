@@ -1,52 +1,44 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container">
-  <div class="row margin-top-medium breadcrumb">
-   <div class="col s3">
-    <span class="breadcrumb-active">1. Enter personal information</span>
-   </div>
-   <div class="col s3">
-    <span class="breadcrumb-inactive">2. Select Plan</span>
-   </div>
-   <div class="col s3 breadcrumb-inactive">
-    <span>3. Add bank account</span>
-   </div>
-  </div>
+
+  {{ build_breadcrum(breadcrumItems) }}
+
   <div class="row">
-     <div class="col s6 margin-top-medium">
+     <div class="col s6 error-block">
          {% for message in get_flashed_messages() %}
-         <div class="error">{{ message }}</div>
+         <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.email.errors %}
-         <div class="error">{{ message }}</div>
+         <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.ssn.errors %}
-         <div class="error">{{ message }}</div>
+         <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.dob.errors %}
-         <div class="error">{{ message }}</div>
+         <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.driver_license_number.errors %}
-         <div class="error">{{ message }}</div>
+         <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.street1.errors %}
-            <div class="error">{{ message }}</div>
+            <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.city.errors %}
-            <div class="error">{{ message }}</div>
+            <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.state.errors %}
-            <div class="error">{{ message }}</div>
+            <div class="error-item">{{ message }}</div>
          {% endfor %}
 
          {% for message in form.postal_code.errors %}
-            <div class="error">{{ message }}</div>
+            <div class="error-item">{{ message }}</div>
          {% endfor %}
       </div>
     </div>
@@ -56,59 +48,82 @@
           <h4>Membership Application</h4>
            {{ form.csrf_token }}
             <div class="row">
-                <div class="input-field col s12">
+                <div class="input-field col s5">
                     {{form.email.label}}
                     {{form.email}}
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s12">
-                 {{form.ssn.label}}
-                 {{form.ssn}}
-                </div>
+              <div class="input-field col s5">
+               {{form.dob.label}}
+               {{form.dob(class="dob")}}
+              </div>
             </div>
             <div class="row">
+                <div class="input-field col s5">
+                 {{form.ssn.label}}
+                 {{form.ssn(class='ssn')}}
+                </div>
+                <!-- <div class="input-field col s5">
+                 {{form.driver_license_number.label}}
+                 {{form.driver_license_number}}
+                </div> -->
+            </div>
+            <!-- <div class="row">
                 <div class="input-field col s12">
                  {{form.dob.label}}
-                 {{form.dob}}
+                 {{form.dob(class="dob")}}
                 </div>
-            </div>
+            </div> -->
             <div class="row">
-                <div class="input-field col s12">
+                <div class="input-field col s5">
                  {{form.driver_license_number.label}}
                  {{form.driver_license_number}}
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s12">
+                <div class="input-field col s5">
                  {{form.street1.label}}
                  {{form.street1}}
                 </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s12">
+                <div class="input-field col s5">
                  {{form.street2.label}}
                  {{form.street2}}
                 </div>
             </div>
-            <div class="row">
+            <!-- <div class="row">
                 <div class="input-field col s12">
+                 {{form.street2.label}}
+                 {{form.street2}}
+                </div>
+            </div> -->
+            <div class="row">
+                <div class="input-field col s4">
                  {{form.city.label}}
                  {{form.city}}
                 </div>
+                <div class="input-field col s4">
+                 {{form.state.label}}
+                 {{form.state}}
+                </div>
+                <div class="input-field col s4">
+                 {{form.postal_code.label}}
+                 {{form.postal_code}}
+                </div>
+
             </div>
-            <div class="row">
+            <!-- <div class="row">
                 <div class="input-field col s12">
                  {{form.state.label}}
                  {{form.state}}
                 </div>
-            </div>
-            <div class="row">
+            </div> -->
+            <!-- <div class="row">
                 <div class="input-field col s12">
                  {{form.postal_code.label}}
                  {{form.postal_code}}
                 </div>
-            </div>
+            </div> -->
             <div class="row">
                 <div class="col s4">
                     <button class="btn">Next</button>

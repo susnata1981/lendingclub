@@ -79,11 +79,11 @@ class Account(Base):
 
 class Address(Base):
     __tablename__ = 'address'
-    INDIVIDUAL, BUSINESS = range(2)
+    INDIVIDUAL, EMPLOYER = range(2)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship('Account', back_populates='address')
+    account = relationship('Account', back_populates='addresses')
     street1 = Column(String(512), nullable=False)
     street2 = Column(String(512), nullable=True)
     city = Column(String(128), nullable=False)
@@ -185,7 +185,7 @@ class IAVInstitutions(Base):
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.transaction = relationship('Transaction', back_populates='account')
-Account.address = relationship('Address', uselist = False, back_populates='account')
+Account.addresses = relationship('Address', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 Account.employer_address = relationship('Address', uselist = False, back_populates='account')
 

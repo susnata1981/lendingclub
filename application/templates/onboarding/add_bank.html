@@ -2,17 +2,7 @@
 
 {% block content %}
 <div class="container">
- <div class="row margin-top-medium breadcrumb">
-  <div class="col s3">
-   <span class="breadcrumb-inactive">1. Enter personal information</span>
-  </div>
-  <div class="col s3 center">
-   <span class="breadcrumb-inactive">2. Select Plan</span>
-  </div>
-  <div class="col s3 breadcrumb-active">
-   <span>3. Add bank account</span>
-  </div>
- </div>
+  {{ build_breadcrum(breadcrumItems) }}
 
  <div class="row">
   <div class="col s12">

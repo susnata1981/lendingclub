@@ -1,6 +1,6 @@
 import re
 from flask_wtf import Form
-from wtforms import StringField, IntegerField, DateField, FloatField, PasswordField, SubmitField, SelectField
+from wtforms import StringField, IntegerField, DateField, DateTimeField, FloatField, PasswordField, SubmitField, SelectField
 from wtforms.validators import Required, ValidationError, Email
 
 class PhoneNumberValidator:
@@ -14,7 +14,7 @@ class PhoneNumberValidator:
 
 def SSNValidator():
     message = 'Invalid SSN format (xxx-xxx-xxxx)'
-    ssn_pattern = re.compile('\d{3}-\d{3}-\d{4}')
+    ssn_pattern = re.compile('\d{3}-\d{2}-\d{4}')
 
     def validator(form, field):
         if not ssn_pattern.match(field.data):
@@ -41,7 +41,7 @@ class PhoneVerificationForm(Form):
 class PersonalInformationForm(Form):
     email = StringField('email', [Required('Please enter your email'), Email()])
     ssn = StringField('social security', [Required('Please enter your social security'), SSNValidator()])
-    dob = DateField('date of birth', [Required('Please enter your date of birth')], format="%m/%d/%Y")
+    dob = DateTimeField('date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
     driver_license_number = StringField('driver license number',
     [Required('Please enter your driver license number')])
     street1 = StringField('street1', [Required('Please enter your street address')])

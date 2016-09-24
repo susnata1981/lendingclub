@@ -23,17 +23,20 @@
         </tr>
         <tr>
           <td class="flow-text">Address</p></td>
-          <td class="flow-text">
-            {% if current_user.address.street1 %}
-            {{current_user.address.street1}} &nbsp; {{current_user.address.city}} &nbsp;
-            {{current_user.address.state}} &nbsp; {{current_user.address.postal_code}}
-            {% endif %}
+          {% for addr in current_user.addresses %}
+            {% if addr.type == 0 %}
+            <td class="flow-text">
+              {% if current_user.address.street1 %}
+              {{current_user.address.street1}} &nbsp; {{current_user.address.city}} &nbsp;
+              {{current_user.address.state}} &nbsp; {{current_user.address.postal_code}}
+              {% endif %}
 
-            {% if not current_user.address.street1 %}
-            <span>None</span>
+              {% if not current_user.address.street1 %}
+              <span>None</span>
+              {% endif %}
+            </td>
             {% endif %}
-
-          </td>
+          {% endfor %}
         </tr>
         <tr>
           <td class="flow-text">Joining date</td>

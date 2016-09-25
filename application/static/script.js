@@ -129,17 +129,30 @@ $(function() {
             }));
         }
 
-        function register_user(selector, email_id) {
-            var emailRegex = /\S+@\S+\.\S+/
-            var email = $("input[name='"+email_id+"']").val();
-            if (email == undefined || email.length == 0) {
-                Materialize.toast('Must enter email address', 3000);
-                return;
+        function register_user(selector, email_id, name_id) {
+            var emailRegex = /\S+@\S+\.\S+/;
+            var name = $("input[name='"+name_id+"']").val();
+            var msg = '';
+            var valid = true;
+            if (name == undefined || name.length == 0) {
+                msg = 'Must enter a name<br/>';
+                valid = false;
             }
 
-            if (!emailRegex.test(email)) {
-                Materialize.toast('Must be a valid email address', 3000);
-                return;
+            var email = $("input[name='"+email_id+"']").val();
+            if (email == undefined || email.length == 0) {
+                msg += 'Must enter email address<br/>';
+                valid = false;
+            }
+
+            if (email.length != 0 && !emailRegex.test(email)) {
+                msg += 'Must be a valid email address';
+                valid = false;
+            }
+
+            if (!valid) {
+              Materialize.toast(msg, 3000);
+              return;
             }
 
             $(selector).attr('disabled','true');
@@ -147,6 +160,7 @@ $(function() {
             var toast_duration = 1500;
             $.post(
                 '/register_user_ajax', {
+                    'name': name,
                     'email': email,
                 },
                 function(data) {
@@ -159,11 +173,12 @@ $(function() {
                         Materialize.toast('Thanks for expressing interest!', toast_duration);
                     }
                     $("input[name='"+email_id+"'").val("");
+                    $("input[name='"+name_id+"'").val("");
                 }
             )
         }
 
-        function add_notification_button_handler(btnSeletor, emailFieldSelector) {
+        function add_notification_button_handler(btnSeletor, emailFieldSelector, nameFieldSelector) {
           $(btnSeletor).click(function(e) {
               e.preventDefault();
               ga('send', {
@@ -172,7 +187,7 @@ $(function() {
                   'eventAction': 'button_click',
                   'eventLabel': $(this).attr('class')
               });
-              register_user(this, emailFieldSelector);
+              register_user(this, emailFieldSelector, nameFieldSelector);
           });
         }
 
@@ -281,8 +296,8 @@ $(function() {
                 }
             });
 
-            add_notification_button_handler('.notify-btn', 'email');
-            // add_notification_button_handler('.notify-btn-2', 'email2');
+            add_notification_button_handler('.notify-btn', 'email', 'name');
+            add_notification_button_handler('.notify-btn2', 'email2', 'name2');
 
             $('ul.tabs').tabs();
             $('.modal-trigger').leanModal();

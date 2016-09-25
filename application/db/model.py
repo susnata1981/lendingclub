@@ -17,6 +17,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=True)
     email = Column(String(255), nullable=False)
     time_created = Column(DateTime, nullable=False)
 

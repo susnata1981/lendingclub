@@ -11,7 +11,7 @@ home_blueprint = Blueprint('home_blueprint', __name__)
 
 @home_blueprint.route('/', methods=['GET'])
 def index():
-    return render_template('home/index-simple.html')
+    return render_template('home/index-fiverr.html')
 
 @home_blueprint.route('/experiment-color', methods=['GET'])
 def experiment_color():
@@ -20,9 +20,10 @@ def experiment_color():
 @home_blueprint.route('/register_user', methods=['POST'])
 def register_user():
     if request.method == 'POST':
+        name = request.form['name']
         email = request.form['email']
         # user = get_model().create(email)
-        user = User(email = email, time_created = datetime.now())
+        user = User(name = name, email = email, time_created = datetime.now())
         current_app.db_session.add(user)
         current_app.db_session.commit()
         return redirect(url_for('.index'))
@@ -34,7 +35,8 @@ def register_user_ajax():
     if request.method == 'POST':
         try:
             email = request.form['email']
-            user = User(email = email, time_created = datetime.now())
+            name = request.form['name']
+            user = User(name = name, email = email, time_created = datetime.now())
             current_app.db_session.add(user)
             current_app.db_session.commit()
             logging.info('Saved user %s' % email)

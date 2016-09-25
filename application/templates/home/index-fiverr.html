@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+{% block content %} {% for m in get_flashed_messages() %}
+<p class="main-info flow-text">{{ m }}</p>
+{% endfor %}
+
+{% include 'circular-wait.html' %}
+
+<section id="cover-image-section">
+ <div class="row">
+    <div class="col s12 center" id="main-heading-section">
+      <!-- <h2 class="pink-text">Don’t Miss This Incredible Opportunity!</h2> -->
+      <!-- <h4>Take advantage of Ziplly and get the <span class="pink-text">best short term loan</span> that is right for you.</h4>
+      <h4><span class="pink-text">Free interest</span> for the first
+        <span class="pink-text">30 days guaranteed! <sup>&nbsp;<a class="tiny-text" href="#how-it-works-link">learn more</a></sup></span></h4> -->
+    </div>
+    <h2 class="col s12 pink-text center">Stop Paying High Interest On Loans!</h2>
+    <h4 class="col s12 center">Find out why thousands of people are becoming Ziplly members Today!</h4>
+    <div id="benefits" class="col offset-s4 s6">
+      <ul>
+        <li>
+          <span class="benefit-item">No Hidden Fees</span>
+        </li>
+        <li>
+          <span class="benefit-item">Members Pay No Interest Up To 30 Days</span>
+        </li>
+        <li>
+          <span class="benefit-item">Money Is Transferred within 4 hours</span>
+        </li>
+        <li>
+          <span class="benefit-item">40-50% Cheaper Than PayDay Loans</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="signup-form-section">
+ <a class="signup-form" />
+ <div class="row">
+  <div class="col s12 flow-text center">
+    <h5 class="white-text">Get The 5 Proven Tips For Saving Money On Your Loan.</h5>
+  </div>
+ </div>
+ <div class="row center">
+   <div class="col s4 offset-s4">
+     <form action="{{url_for('home_blueprint.register_user')}}" method="POST">
+       <div class="row">
+         <div class="col s12">
+           <input name="name" type="text" id="name" placeholder="name" required>
+         </div>
+       </div>
+       <div class="row">
+         <div class="col s12">
+           <input name="email" type="email" placeholder="email" required>
+         </div>
+       </div>
+       <div class="row center">
+         <button class="center notify-btn btn pink">Get your free kit</button>
+      </div>
+     </form>
+   </div>
+ </div>
+ <p class="lime-text text-darken-3 margin-top-medium small-text center">
+   Our privacy policy keeps your email safe and secure. We will never sell, rent, give, or divulge your email information to ANYONE.
+ </p>
+</section>
+<section id="our-story-section" class="sub-section">
+ <h3 class="sub-section-header center">Why Ziplly?</h3>
+ <div class="row">
+  <div class="col 12">
+   <ul class="center">
+    <li class="col s4">
+     <p class="flow-text large-text">
+      Interest free for 30 days
+     </p>
+     <hr/>
+     <p class="normal-text">
+      We don't charge you interest for 30 days after borrowing. Only after that do you pay
+      a reasonable interest.
+     </p>
+    </li>
+    <li class="col s4">
+     <p class="flow-text large-text">
+      40%-50% cheaper than Payday loans
+     </p>
+     <hr/>
+     <p class="normal-text">
+      We guarantee free interest if you pay back the loan withon 30 days. And we give
+      you additional time to repay with affordable interest after 30 days.
+     </p>
+    </li>
+    <li class="col s4">
+     <p class="flow-text large-text">
+      Get the money within 24 hours
+     </p>
+     <hr/>
+     <p class="normal-text">
+      Once you're a member, text us when you need to borrow. We will transfer the
+      money to your bank account within 24 hours.
+     </p>
+    </li>
+   </ul>
+  </div>
+ </div>
+</section>
+<section id="how-it-works-section" class="sub-section">
+ <a name="how-it-works-link"></a>
+ <h3 class="sub-section-header center">How it works</h3>
+ <div class="row">
+  <div class="offset-s3 col s6">
+   <div class="video-wrapper">
+    <video class="video" height="auto" controls="true">
+     <source src="https://storage.googleapis.com/ziplly-video/explainer.mp4" type="video/mp4" />
+    </video>
+    <div class="playpause"></div>
+   </div>
+  </div>
+ </div>
+ <div class="row">
+  <ul>
+   <li class="col s4">
+    <p class="how-it-works-item-title circle-fill flow-text large-text">
+     Pick a plan
+    </p>
+    <p class="small-text">
+     Pay a small monthly membership fee.
+    </p>
+   </li>
+   <li class="col s4">
+    <p class="how-it-works-item-title circle-fill flow-text large-text">
+     Borrow money
+    </p>
+    <p class="small-text">
+     Borrow money anytime and pay no interest for the first 30 days.
+    </p>
+   </li>
+   <li class="col s4">
+    <p class="how-it-works-item-title circle-fill flow-text large-text">
+     Earn Rewards
+    </p>
+    <p class="small-text">
+     Earn points for paying off the loan in time. Redeem those points for cash.
+    </p>
+   </li>
+  </ul>
+ </div>
+</section>
+<section id="plan-overview-section" class="sub-section plan-overview">
+ <a name="plan-overview-link" />
+ <h3 class="sub-section-header center">Our plans</h3>
+ <div class="row">
+  <div class="col s10 offset-s1">
+   <table class="centered highlight bordered">
+    <tbody>
+     <tr>
+       <td class="grey lighten-5">
+        <h5 class="brown-text">
+          <a class="tooltipped" data-position="top"
+          data-tooltip="Name of this plan">Plan Name</a>
+        </h5>
+       </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>Anytime $150</p>
+        </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>Anytime $300</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>Anytime $500</p>
+        </div>
+      </td>
+     </tr>
+     <tr>
+       <td class="grey lighten-5">
+        <h5 class="brown-text">
+          <a class="tooltipped" data-position="top"
+          data-tooltip="Maximum amount you can borrow in this plan">Loan amount</a>
+        </h5>
+       </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>$150</p>
+        </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>$300</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>$500</p>
+        </div>
+      </td>
+     </tr>
+     <tr>
+      <td class="grey lighten-5">
+       <h5 class="brown-text">
+         <a class="tooltipped" data-position="top"
+         data-tooltip="Number of times you can borrow the specified amount per year,
+         provided you don't owe anything">Frequency</a>
+       </h5>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>3 times/year</p>
+        </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>3 times/year</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>3 times/year</p>
+        </div>
+      </td>
+     </tr>
+     <tr>
+       <td class="grey lighten-5">
+        <h5 class="brown-text">
+          <a class="tooltipped" data-position="top"
+          data-tooltip="Total time for you to return the loan">Loan amount</a>
+        </h5>
+       </td>
+      <td class="yellow lighten-2">
+       <div class="grey-text text-darken-2">
+         <p>0% APR for 30 days</p>
+         <p>$10 per $100 per 14 days after that.</p>
+       </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>0% APR for 30 days</p>
+          <p>$10 per $100 per 14 days after that.</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>0% APR for 30 days</p>
+          <p>$10 per $100 per 14 days after that.</p>
+        </div>
+      </td>
+     </tr>
+     <tr>
+       <td class="grey lighten-5">
+        <h5 class="brown-text">
+          <a class="tooltipped" data-position="top"
+          data-tooltip="Monthly membership fee">Cost</a>
+        </h5>
+       </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>$10/month</p>
+        </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>$18/month</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>$35/month</p>
+        </div>
+      </td>
+     </tr>
+     <tr>
+       <td class="grey lighten-5">
+        <h5 class="brown-text">
+          <a class="tooltipped" data-position="top"
+          data-tooltip="Any hidden fees">Additional Fees</a>
+        </h5>
+       </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>No</p>
+        </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>No</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>No</p>
+        </div>
+      </td>
+     </tr>
+     <tr>
+       <td class="grey lighten-5">
+        <h5 class="brown-text">
+          <a class="tooltipped" data-position="top"
+          data-tooltip="Rewards associated with this plan">Rewards</a>
+        </h5>
+       </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>Earn points for repaying on time and redeem those points for cash.</p>
+        </div>
+      </td>
+      <td class="yellow accent-1">
+        <div class="grey-text text-darken-2">
+          <p>Earn points for repaying on time and redeem those points for cash.</p>
+        </div>
+      </td>
+      <td class="yellow lighten-2">
+        <div class="grey-text text-darken-2">
+          <p>Earn points for repaying on time and redeem those points for cash.</p>
+        </div>
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
+    <!-- <div class="row">
+        <div class="col s8 offset-s2" id="interest-comparison">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s8 offset-s2" id="principal-comparison">
+        </div>
+    </div> -->
+</section>
+<section id="plan-comparison-section">
+  <div class="row">
+    <h3 class="sub-section-header center">Our plan vs Payday</h3>
+    <div class="col s6">
+      <img width="98%" height="auto" src={{url_for('static', filename='ziplly-interest-cost-comparison.png')}} />
+    </div>
+    <div class="col s6">
+      <img width="98%" height="auto" src={{url_for('static', filename='ziplly-principal-comparison.png')}} />
+    </div>
+  </div>
+</div>
+<section id="misson-statement-section" class="sub-section center">
+    <h3 class="sub-section-header">Our Mission</h3>
+    <h5 class="grey-text text-darken-3">
+        We want to make borrowing money easier, cheaper and transparent.
+    </h5>
+</section>
+<section class="signup-form-section row">
+ <a class="signup-form" />
+ <div class="row">
+  <div class="col s12 flow-text center">
+    <h5 class="white-text">Get The 5 Proven Tips For Saving Money On Your Loan.</h5>
+  </div>
+ </div>
+ <div class="row center">
+   <div class="col s4 offset-s4">
+     <form action="{{url_for('home_blueprint.register_user')}}" method="POST">
+       <div class="row">
+         <div class="col s12">
+           <input name="name2" type="text" id="name" placeholder="name" required>
+         </div>
+       </div>
+       <div class="row">
+         <div class="col s12">
+           <input name="email2" type="email" placeholder="email" required>
+         </div>
+       </div>
+       <div class="row center">
+         <button class="center notify-btn2 btn pink">Get your free kit</button>
+      </div>
+     </form>
+   </div>
+ </div>
+ <p class="lime-text text-darken-3 margin-top-medium small-text center">
+   Our privacy policy keeps your email safe and secure. We will never sell, rent, give, or divulge your email information to ANYONE.
+ </p>
+</section>
+<!-- <section id="enroll-now-section" class="sub-section center">
+    <h3 class="sub-section-header ">Enroll now for early access</h3>
+    <div class="row signup-form">
+        <form class="offset-s4 col s4" action="{{url_for('home_blueprint.register_user')}}" method="POST">
+            <div class="input-field">
+                <input id="email2 red" name="email2" type="email" required>
+                <label class="notify-label" for="email2 red">Email</label>
+                <button class="notify-btn-2 btn red center">Enroll now</button>
+            </div>
+        </form>
+    </div>
+</section> -->
+<section id="faq-section" class="sub-section">
+ <h3 class="sub-section-header">F.A.Q.</h3>
+ <div>
+     <blockquote>
+         Is there any penalty for canceling the service?
+     </blockquote>
+     <p>
+         No there's no penalty. You can cancel anytime you want, provided you don't owe us any money.
+     </p>
+     <p>
+         But since plans are based on yearly contract, if you want to re-enroll, you'll need to pay back the monthly membership fees for remainder of your last contract period.
+     </p>
+ </div>
+ <div>
+  <blockquote>
+   Should I enroll now even if I don't need to borrow now?
+  </blockquote>
+  <p>
+    By enrolling early, you protect yourself against unforseen circumstances. When the
+    time comes to borrow, you don't have to do any paperwork, just a text would get you
+    the money.
+  </p>
+  <p>
+    In any case, if you don't borrow money as a member, part of the membership fees will roll
+    over to the next year.
+  </p>
+ </div>
+ <div>
+  <blockquote>
+   Is there a contract for the plan?
+  </blockquote>
+  <p>
+   The plans are based on yearly contract but if you don't like the service you can cancel anytime. You need to be at 0 balance in order to cancel the plan. Once you cancel, you'll loose all benefits. In order to join back, you'll need to pay back any missed
+   monthly membership fee for remainder of the contract period.
+  </p>
+ </div>
+ <div>
+  <blockquote>
+   What are the criterias for membership?
+  </blockquote>
+  <p>
+   It's simple - we need proof of employment/paychecks. Users will apply for membership on our site. Once we verify their information, we will provide the application approval decison by the end of the day. In some cases, users may be required to provide
+   additional information such as bank statements, proof of identification etc.
+  </p>
+ </div>
+ <div>
+  <blockquote>
+   When can I get the money?
+  </blockquote>
+  <p>
+   Once you make the request, we will transfer the money within 1 business day.
+  </p>
+ </div>
+
+ {% endblock %}

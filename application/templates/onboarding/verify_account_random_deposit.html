@@ -1,21 +1,37 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container margin-top-large">
-  <div class="row">
- <div class="col s12">
-  <h4>Verify your bank account</h4>
-  <div class="col s6 margin-top-large">
-   {% for message in get_flashed_messages() %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.deposit1.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.deposit2.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %}
-  </div>
- </div>
+  {% if get_flashed_messages() | length > 0 %}
+   <div class="row">
+       <div class="col s6 error-block">
+           {% for message in get_flashed_messages() %}
+           <div class="error-item">{{ message }}</div>
+           {% endfor %}
+       </div>
+     </div>
+   {% endif %}
+   {% if form.errors %}
+   <div class="row">
+      <div class="col s6 error-block">
+          {% for field in form %}
+            {% for m in field.errors %}
+             <div class="error-item">{{ m }}</div>
+            {% endfor %}
+          {% endfor %}
+       </div>
+     </div>
+     {% endif %}
+
+
  <div class="row">
+   <div class="row">
+     <div class="col s8">
+       <h5>Verify your bank account</h5>
+       <p>We have made 2 debits/credit to your bank account. Please find those amounts
+         from your bank statement and enter them below</p>
+      </div>
+    </div>
  <form class="col s6 user-input" action={{url_for( 'onboarding_bp.verify_account_random_deposit')}} method="post">
-  <h4>Signup</h4> {{ form.csrf_token }}
+  {{ form.csrf_token }}
   <div class="row">
    <div class="input-field col s5">
     {{ form.deposit1.label }} {{ form.deposit1 }}

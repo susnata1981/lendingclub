@@ -35,7 +35,7 @@ class LoginForm(Form):
     submit = SubmitField('Login')
 
 class PhoneVerificationForm(Form):
-    verification_code = IntegerField('verification code', [Required('Please enter the verification code')])
+    verification_code = IntegerField('enter verification code', [Required('Please enter the verification code')])
     submit = SubmitField('Verify')
 
 class PersonalInformationForm(Form):

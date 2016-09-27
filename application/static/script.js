@@ -331,6 +331,8 @@ $(function() {
             $('.phone_number').keyup(phone_number_formatter);
             $('.ssn').keyup(ssn_formatter);
             $('.dob').keyup(dob_formatter);
+
+            $(".button-collapse").sideNav();
         }
 
 

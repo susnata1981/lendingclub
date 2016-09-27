@@ -1,4 +1,19 @@
 {% extends 'base.html' %} {% block content %}
+{% macro get_value(attr_description, attr) %}
+  <tr>
+    <td class="flow-text">{{attr_description}}</td>
+    {% for p in plans %}
+      {% set value = p[attr] %}
+      {% if loop.index == 1 %}
+      <td class='yellow lighten-2 center'> {{ value }} </td>
+      {% elif loop.index == 2 %}
+      <td class='yellow accent-1 center'> {{ value }} </td>
+      {% elif loop.index == 3 %}
+      <td class='yellow lighten-2 center'> {{ value }} </td>
+      {% endif %}
+    {% endfor %}
+  </tr>
+{% endmacro %}
 
 <section>
     <div class="row">
@@ -6,48 +21,18 @@
           {{ build_breadcrum(breadcrumItems) }}
 
             <h4 class="centered">Select Plan</h4>
-            <table class="bordered">
+            <table class="bordered margin-top-medium">
               <tbody>
-                <tr>
-                  <td class="flow-text">Plan Name</td>
-                  {% for p in plans %}
-                  <td class="flow-text"> {{p.name}} </td>
-                  {% endfor %}
-                </tr>
-                <tr>
-                  <td class="flow-text">Loan Amount</td>
-                  {% for p in plans %}
-                  <td class="flow-text"> {{p.max_loan_amount}} </td>
-                  {% endfor %}
-                </tr>
-                <tr>
-                  <td class="flow-text">Frequency</td>
-                  {% for p in plans %}
-                  <td class="flow-text"> {{p.loan_frequency}} </td>
-                  {% endfor %}
-                </tr>
-                <tr>
-                  <td class="flow-text">Interest Rate</td>
-                  {% for p in plans %}
-                  <td class="flow-text"> {{p.interest_rate_description}} </td>
-                  {% endfor %}
-                </tr>
-                <tr>
-                  <td class="flow-text">Rewards</td>
-                  {% for p in plans %}
-                  <td class="flow-text"> {{p.rewards_description}} </td>
-                  {% endfor %}
-                </tr>
-                <tr>
-                  <td class="flow-text">Cost</td>
-                  {% for p in plans %}
-                  <td class="flow-text"> {{p.cost}} </td>
-                  {% endfor %}
-                </tr>
+                {{ get_value('Plan name', 'name') }}
+                {{ get_value('Loan Amount', 'max_loan_amount') }}
+                {{ get_value('Frequency', 'loan_frequency') }}
+                {{ get_value('Interest Rate', 'interest_rate_description') }}
+                {{ get_value('Rewards', 'rewards_description') }}
+                {{ get_value('Cost', 'cost') }}
                 <tr>
                   <td></td>
                   {% for p in plans %}
-                  <td>
+                  <td class="center">
                     <form action={{url_for('onboarding_bp.select_plan')}} method="POST">
                       {{ form.csrf_token }}
                       <input type="hidden" name="plan_id" value={{p.id}} />

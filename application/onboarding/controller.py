@@ -51,7 +51,6 @@ def account_verified():
 # ajax
 @onboarding_bp.route('/resend_verification', methods=['POST'])
 def resend_verification():
-    print 'account id =',session['account_id']
     if session['account_id'] is None:
         return jsonify({
             'error': True,
@@ -71,13 +70,16 @@ def resend_verification():
 
 @onboarding_bp.route('/', methods=['GET', 'POST'])
 def signup():
-    print 'current user =',current_user
     if current_user.is_authenticated:
-        print 'redirecting to account'
         return redirect(url_for('.account'))
 
     form = SignupForm(request.form)
     if form.validate_on_submit():
+        existing_account = get_account_by_phone_number(form.phone_number.data)
+        if existing_account is not None:
+            flash('Account with this phone number already exists')
+            return render_template('onboarding/signup.html', form=form)
+
         account = Account(
            first_name = form.first_name.data,
            last_name = form.last_name.data,
@@ -122,7 +124,7 @@ def login():
                 # print 'Next page =',next,' is_valid_next =',next_is_valid(next)
                 # if not next_is_valid(next):
                 #     return flask.abort(404)
-                return redirect(next or url_for('onboarding_bp.account'))
+                return redirect(next or url_for('onboarding_bp.dashboard'))
         except Exception as e:
             print 'Exception::',e
             print traceback.format_exc()
@@ -144,19 +146,79 @@ def logout():
     logout_user()
     return redirect(url_for('.login'))
 
+@onboarding_bp.route('/dashboard', methods=['GET'])
+@login_required
+def dashboard():
+    if current_user.status != Account.VERIFIED_PHONE:
+        flash({
+            'content':'Please verify your phone first',
+            'class': 'error'
+        })
+        return redirect(url_for('.verify_phone_number'))
+    valid_tabs = ['account', 'membership', 'transaction', 'bank']
+    tab = request.args.get('tab')
+    if tab not in valid_tabs:
+        tab = 'account'
+        
+    data = {}
+    # eligible_for_membership_reapplication = True
+    # for membership in current_user.memberships:
+    #     if membership.is_active() or membership.is_pending():
+    #         eligible_for_membership_reapplication = False
+    # data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
+
+    if len(current_user.memberships) == 0:
+        data['show_notification'] = True
+        data['notification_class'] = 'error'
+        data['notification_message_description'] = 'You application is incomplete'
+        data['notification_message_title'] = 'Apply Now'
+        data['notification_url'] = 'onboarding_bp.apply_for_membership'
+    elif len(current_user.fis) == 0:
+        data['show_notification'] = True
+        data['notification_class'] = 'error'
+        data['notification_message_description'] = 'You have not added bank account yet'
+        data['notification_message_title'] = 'Add Bank'
+        data['notification_url'] = 'onboarding_bp.add_bank'
+    elif has_unverified_bank_account():
+        data['show_notification'] = True
+        data['notification_class'] = 'error'
+        data['notification_message_description'] = 'You have not verified your bank account'
+        data['notification_message_title'] = 'Verify Account'
+        data['notification_url'] = 'onboarding_bp.verify_account_random_deposit'
+    return render_template('onboarding/dashboard.html', data=data, tab=tab)
+
+def has_unverified_bank_account():
+    for fi in current_user.fis:
+        if fi.status == Fi.UNVERFIED:
+            return True
+    return False
+
 @onboarding_bp.route('/home', methods=['GET'])
 @login_required
 def account():
+    if current_user.status != Account.VERIFIED_PHONE:
+        flash({
+            'content':'Please verify your phone first',
+            'class': 'error'
+        })
+        return redirect(url_for('.verify_phone_number'))
+
     data = {}
     eligible_for_membership_reapplication = True
     for membership in current_user.memberships:
         if membership.is_active() or membership.is_pending():
             eligible_for_membership_reapplication = False
-
     data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
+
+    print '*****************user hasnt applied for membership = ', len(current_user.memberships)
+    if len(current_user.memberships) == 0:
+        data['show_notification'] = True
+        data['notification_message'] = 'You application is incomplete'
+        data['notification_url'] = 'onboarding_bp.apply_for_membership'
+
     return render_template('onboarding/account.html', data=data)
 
-@onboarding_bp.route('/apply-for-membership', methods=['GET'])
+@onboarding_bp.route('/apply_for_membership', methods=['GET'])
 @login_required
 def apply_for_membership():
     if len(current_user.memberships) == 0:
@@ -304,10 +366,12 @@ def add_bank():
     if request.method == 'GET':
         if len(current_user.memberships) == 0:
             return redirect(url_for('.apply_for_membership'))
+
         institutions = get_all_iav_supported_institutions()
         breadcrumItems = get_breadcrum()
         breadcrumItems[3]['active'] = True
-        return render_template('onboarding/add_bank.html', institutions = institutions, breadcrumItems = breadcrumItems)
+        return render_template('onboarding/add_bank.html',
+        institutions = institutions, breadcrumItems = breadcrumItems)
     else:
         try:
             public_token = request.form['public_token']
@@ -316,11 +380,7 @@ def add_bank():
             institution = request.form['institution']
             institution_type = request.form['institution_type']
 
-            # print('ADD BANK REQUEST account_id = {0}, account_name = {1}, institution = {2}, institution_type = {3}')\
-            # .format(account_id, account_name, institution, institution_type)
-
             response = json.loads(exchange_token(public_token, account_id))
-
             result = {}
             if get_fi_by_access_token(response['account_id']) is not None:
                 result['error'] = True
@@ -332,14 +392,21 @@ def add_bank():
                 bank_account_id = account_id,
                 institution = institution,
                 institution_type = institution_type,
-                account_type = '',
+                verification_type = Fi.INSTANT,
+                status = Fi.VERIFIED,
                 access_token = response['access_token'],
                 stripe_bank_account_token = response['stripe_bank_account_token'],
                 time_updated = datetime.now(),
                 time_created = datetime.now())
             current_user.fis.append(fi)
 
+            logging.info('fetching financial information...')
             fetch_financial_information()
+            logging.info('received financial information...')
+
+            # Approving the membership for demo purpose. Will change in future.
+            current_user.memberships.sort(key=lambda x: x.time_created)
+            current_user.memberships[0].status = Membership.APPROVED
 
             current_app.db_session.add(current_user)
             current_app.db_session.commit()
@@ -347,12 +414,11 @@ def add_bank():
             response = {}
             response['success'] = True
             return jsonify(response)
-            # return redirect(url_for('.account'))
         except Exception as e:
-            print e
+            traceback.print_exc()
+            logging.error('add_bank::received exception %s' % e)
             response = {}
             response['error'] = 'true'
-            # response['description'] = e
             return jsonify(response)
 
 @onboarding_bp.route('/add_random_deposit', methods=['GET', 'POST'])
@@ -406,9 +472,7 @@ def verify_account_random_deposit():
 
             bank_account_id = None
             for fi in current_user.fis:
-                print 'fi id = ',fi.id
                 if fi.id == int(session[constants.FI_ID_KEY]):
-                    print 'found match...'
                     bank_account_id = fi.bank_account_id
                     break
 
@@ -427,7 +491,9 @@ def verify_account_random_deposit():
             current_app.db_session.add(fi)
             current_app.db_session.commit()
 
-            flash('Bank account has been verified')
+            flash({
+                'class': 'info',
+                'content':'Bank account has been verified'})
             return redirect(url_for('.account'))
         except Exception as e:
             logging.error('failed to verify_account_random_deposit, exception %s' % e)

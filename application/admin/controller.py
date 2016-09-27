@@ -19,16 +19,22 @@ def get_institutions_list():
     if request.method == 'POST':
         req = requests.get(INSTITUTION_LIST_ENDPOINT)
         res = req.text
-        print 'response = '+res
         institutions = []
+        print 'response = ',res
         for bank_info in json.loads(res):
-            print 'bi =',bank_info['products']
+            print 'bi =',bank_info['type']
             if 'auth' in bank_info['products']:
                 institutions.append(
                     IAVInstitutions(
                         name = bank_info['name'],
+                        institution_type = bank_info['type'],
                         plaid_id = bank_info['id']))
         clear_institutions_table()
+        institutions.append(
+            IAVInstitutions(
+                name = 'Other',
+                institution_type = 'other',
+                plaid_id = -1))
         current_app.db_session.add_all(institutions)
         current_app.db_session.commit()
 

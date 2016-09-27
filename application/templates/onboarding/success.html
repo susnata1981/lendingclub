@@ -2,8 +2,20 @@
 
 {% block content %}
 <div class="row margin-top-large">
- <div class="col s8 offset-s2">
-  <h5>Thanks for applying {{ current_user.first_name }}. We will get back to you within 1 business day</h5>
+ <div class="col s12 center">
+  <h4 class="green-text">
+    Congratulations {{ current_user.first_name }}, your application has been accepted!
+  </h4>
+  <h4>
+    You can start borrowing money by sending us a text message <br/>
+    @<br/>
+    <span class="blue-text">(408)-462-0352</span>
+    </p>
+  </h4>
+ </div>
+ <div class="col s12 center">
+   <a class="btn" href={{url_for('onboarding_bp.account')}}>Request Money</a>
+   <a class="btn grey" href={{url_for('onboarding_bp.account')}}>Cancel</a>
  </div>
 </div>
 {% endblock %}

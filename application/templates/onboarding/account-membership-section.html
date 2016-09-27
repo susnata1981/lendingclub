@@ -9,9 +9,9 @@
   <table class="bordered responsive-table highlight">
    <thead>
     <tr>
-     <td class="flow-text">Plan Name</td>
-     <td class="flow-text">Status</td>
-     <td class="flow-text">Application date</td>
+     <td><h6>Plan Name</h6></td>
+     <td><h6>Status</h6></td>
+     <td><h6>Application date</h6></td>
     </tr>
    </thead>
    <tbody>
@@ -27,20 +27,6 @@
    </tbody>
   </table>
   {% endif %}
-
-  <br/>
-  <form>
-   {% if data.eligible_for_membership_reapplication %}
-
-   <button class="btn" formaction={{url_for( 'onboarding_bp.apply_for_membership')}}>
-    Apply for membership</button>
-   {% endif %} {% if not data.eligible_for_membership_reapplication %}
-
-   <button class="btn" disabled formaction={{url_for( 'onboarding_bp.apply_for_membership')}}>
-    Apply for membership</button>
-   {% endif %}
-
-  </form>
  </div>
 </div>
 <!-- end of membership section -->

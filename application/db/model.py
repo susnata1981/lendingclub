@@ -182,6 +182,7 @@ class IAVInstitutions(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(256), nullable=False)
+    institution_type = Column(String(256), nullable=False)
     plaid_id = Column(String(128), nullable=False)
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')

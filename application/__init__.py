@@ -62,7 +62,6 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 
     # Setup the data model.
     with app.app_context():
-        print 'Initializing model...'
         init_db()
         phone.init()
         constants.init()
@@ -84,7 +83,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # Add a default root route.
     @app.route("/")
     def index():
-        return redirect(url_for('home_blueprint.index'))
+        return redirect(url_for('home_blueprint.dashboard'))
 
     @app.errorhandler(Exception)
     def log_unhandled_exceptions(error):

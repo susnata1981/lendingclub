@@ -1,12 +1,37 @@
 body {
     font-family: 'Roboto', sans-serif;
 }
+
+#content {
+  min-height: 500px;
+}
+
+#demo-tag {
+    position: fixed;
+    background: url('demo.png') no-repeat;
+    width: 64px;
+    height: 64px;
+    top: 0;
+    right: 0;
+}
+
 nav {
   background-color: #006064;
 }
 
 nav a {
   color: #333 !important;
+}
+
+#sidenav-btn {
+  position: fixed;
+  top: 88px;
+  left: 24px;
+  display: inline-block;
+}
+
+#nav-mobile {
+    margin-right: 32px !important;
 }
 
 .header-item {
@@ -48,8 +73,18 @@ figure {
     padding: 0;
 }
 
+.link-btn {
+  display: inline-block;
+  height: 36px;
+  line-height: 36px;
+}
+
 .underline {
     border-bottom: 1px solid #aaa;
+}
+
+.padding-medium {
+  padding: 12px;
 }
 
 .error-block {
@@ -64,6 +99,19 @@ figure {
 .error {
  background-color: #FBB0B0;
  padding: 12px;
+}
+
+.info {
+  background: #dcedc8;
+  display: block;
+  height: 40px;
+  padding: 12px;
+  font-family: arial, sans-serif;
+  font-size: 1em;
+}
+
+form {
+  padding: 8px !important;
 }
 
 .dark-text {
@@ -102,8 +150,8 @@ figure {
     background-position: center;
 }
 
-.nav-wrapper {
-  color: #333 !important;
+div.nav-wrapper li a {
+  color: #fff !important;
 }
 
 .bordered-header {
@@ -148,6 +196,10 @@ figure {
 
 .page-footer > .container {
   padding: 12px;
+}
+
+.bank-not-listed-div {
+  margin-left: -20px !important;
 }
 
 #payday-cartoon {
@@ -255,6 +307,17 @@ figure {
 #main-heading-section ul li {
   list-style: disc inside;
   margin: 24px 0;
+}
+
+#progress-bar {
+  display: none;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  left:50%;
+  z-index: 100;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 .modal-content {
@@ -519,4 +582,29 @@ form.user-input {
 }
 /*****************************************/
 
+/***************** add bank section *******************/
+#bank-verification-methods-section {
+  margin: 0 -0.75rem;
+}
+
+#bank-verification-methods-section p {
+  margin: 10px 0;
+}
+
+#bank-verification-methods-section table td {
+  background: #f9f9f9;
+  padding: 12px;
+  margin-right: 20px;
+}
+
+.verification-method-box {
+  height: 240px;
+  position: relative;
+}
+
+.verification-method-box button {
+  position: absolute;
+  bottom: 10px;
+}
+/***********************************************************************/
 </style>

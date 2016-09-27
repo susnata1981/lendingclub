@@ -1,12 +1,25 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container">
+<div class="container margin-top-large">
+   {% if get_flashed_messages() | length > 0 %}
     <div class="row">
-        <div class="col s6 margin-top-large no-margin-left">
+        <div class="col s6 error-block">
             {% for message in get_flashed_messages() %}
-            <p class="error">{{ message }}</p>
+            <div class="error-item">{{ message }}</div>
             {% endfor %}
         </div>
-    </div>
+      </div>
+    {% endif %}
+    {% if form.errors %}
+    <div class="row">
+       <div class="col s6 error-block">
+           {% for field in form %}
+             {% for m in field.errors %}
+              <div class="error-item">{{ m }}</div>
+             {% endfor %}
+           {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     <div class="row">
         <form id="login_form" class="col s6 user-input" action={{url_for('onboarding_bp.login')}} method="post">
             <h4>Login</h4>
@@ -25,13 +38,14 @@
                 <div class="col s4">
                     <button class="btn">Login</button>
                 </div>
-                <div class="col s8">
-                    <span class="login-option">Forgot your password&nbsp;&nbsp;<a href="#">Reset now</a></span>
-                </div>
-                <div class="col s8">
-                    <span class="login-option">Not a member, Signup&nbsp;&nbsp;<a href={{url_for('onboarding_bp.signup')}}>Signup now</a> </span>
-                </div>
-
+            </div>
+            <div class="row">
+              <div class="col s12">
+                  <span class="login-option">Not a member, Signup&nbsp;&nbsp;<a href={{url_for('onboarding_bp.signup')}}>Signup now</a> </span>
+              </div>
+              <div class="col s6">
+                  <span class="login-option">Forgot your password&nbsp;&nbsp;<a href="#">Reset now</a></span>
+              </div>
             </div>
     </div>
     </form>

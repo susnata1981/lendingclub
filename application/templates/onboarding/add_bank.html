@@ -4,55 +4,75 @@
 <div class="container">
   {{ build_breadcrum(breadcrumItems) }}
 
- <div class="row">
-  <div class="col s12">
-    {% for message in get_flashed_messages() %}
-    <p class="error">{{ message }}</p>
-    {% endfor %}
+  <div class="error-block">
+    <div class="error-item">
+    </div>
+  </div>
+  {% if get_flashed_messages() | length > 0 %}
+    <div class="row">
+      <div class="col s6 error-block">
+        {% for message in get_flashed_messages() %}
+           <div class="error-item">{{ message }}</div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
 
-    <div class="error">{{ message }}</div>
+<div class="row">
+  <div class="col s4">
+    <div class="row">
+      <div class="input-field s12">
+        <p class="flow-text">List of supported banks</p>
+        <select>
+          <option value="" disabled selected>Pick your bank</option>
+          {% for b in institutions %}
+          <option value="{{ b.institution_type }}">{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="row">
-  <div class="input-field col s8">
-    <labe>Pick you bank</label>
-    <select>
-      <option value="" disabled selected>Choose your option</option>
-      {% for b in institutions %}
-      <option value="{{ b.name }}">{{b.name}}</option>
-      {% endfor %}
-    </select>
-  </div>
- </div>
- <div class="row">
-   <div class="input-field col s8">
-        <input type="checkbox" name="other" id="other"  />
-        <label for="other">My bank is not on the list</label>
-    </div>
-  </div>
- <div id="bank-verification-methods-section" class="row">
-   <form action={{url_for('onboarding_bp.add_random_deposit')}} method="get">
-     <div class="col s6">
-       <h5>Random deposit</h5>
-       <button class="btn">Do random deposit</button>
-     </div>
-   </div>
-   <div id="instant-verification-section" class="col s6">
-     <h5>Instant Bank Verification</h5>
-     <button class="btn" id='linkButton'>Add bank account</button>
-   </div>
-  </div>
+<div id="bank-verification-methods-section">
+  <h5>Add your bank</h5>
+  <p>You can choose one of the following methods to add your bank account</p>
+  <table>
+    <tr class="row">
+      <td class="col s3 padding-medium">
+        <div class="verification-method-box" id="random-deposit-section">
+          <form action={{url_for('onboarding_bp.add_random_deposit')}} method="get">
+            <p class="flow-text">Random deposit</p>
+            <hr/>
+            <p>We will debit and credit amounts less than $1 to your bank account. In 3-5 business
+              days they'll appear in your bank statement. You'll have to come back and enter the amoun
+              to verify your account</p>
+            <button class="btn">Initiate random deposit</button>
+          </form>
+        </div>
+      </td>
+      <td class="col s3">
+        <div class="verification-method-box" id="instant-verification-section">
+          <p class="flow-text">Instant Bank Verification</p>
+          <hr/>
+          <p>You will need to login to your bank account using secure connection</p>
+          <button class="btn" id='linkButton'>Add bank account</button>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
 
-  <div class="row">
+
+  <!-- <div class="row">
     <div class="col s10">
       <a class="link" href={{ url_for('onboarding_bp.select_plan') }}>Back to select plan</a>
     </div>
-  </div>
+  </div> -->
 
  <script src="https://cdn.plaid.com/link/stable/link-initialize.js"></script>
  <script>
-  $('div.error').hide();
+  $('div.error-block').hide();
   var linkHandler = Plaid.create({
    env: 'tartan',
    clientName: 'Ziplly',
@@ -60,8 +80,9 @@
    product: 'auth',
    selectAccount: true,
    onSuccess: function(public_token, metadata) {
-    $('div.error').text('');
-    $('div.error').hide();
+    $('div.error-item').html('');
+    $('div.error-block').hide();
+    $("#progress-bar").show();
 
     $.post(
       '{{url_for('onboarding_bp.add_bank')}}',
@@ -73,17 +94,18 @@
         institution_type: metadata.institution.type,
       },
       function(data) {
+        $("#progress-bar").hide();
+        $('btn').removeAttr('disabled');
         if (data.error) {
           Materialize.toast('Could not add your bank account: ', 1500);
-          $('div.error').text(data.message);
-          $('div.error').show();
+          $('div.error-item').html('Could not add your bank account');
+          $('div.error-block').show();
         } else {
           Materialize.toast('Bank account added', 1500);
           window.location.replace('{{url_for('onboarding_bp.application_complete')}}');
         }
       }
-    )
-   },
+    )}
   });
 
   $("#bank-verification-methods-section").hide();
@@ -92,19 +114,48 @@
     if ($(this).is(':checked')) {
         $("#bank-verification-methods-section").show();
         $("#instant-verification-section").hide();
+        $('#random-deposit-section').show();
+    } else {
+      var cs = $('select').val();
+      if (cs === 'Other') {
+        $('#random-deposit-section').hide();
+      }
     }
   });
 
   $('select').change(function() {
+    var cs = $('select').val();
     $("#bank-verification-methods-section").show();
-    $("#instant-verification-section").show();
+    if (cs === 'Other') {
+      $('#random-deposit-section').show();
+      $("#instant-verification-section").hide();
+    } else {
+      $("#instant-verification-section").show();
+      $('#random-deposit-section').show();
+    }
   });
 
   // Trigger the Link UI
   document.getElementById('linkButton').onclick = function() {
-   linkHandler.open();
+    var cs = $('select').val();
+    $('btn').attr('disabled','disabled');
+    linkHandler.open(cs);
   };
  </script>
+
+ <div id="progress-bar">
+   <div class="preloader-wrapper big active">
+     <div class="spinner-layer spinner-blue-only">
+       <div class="circle-clipper left">
+         <div class="circle"></div>
+       </div><div class="gap-patch">
+         <div class="circle"></div>
+       </div><div class="circle-clipper right">
+         <div class="circle"></div>
+       </div>
+     </div>
+   </div>
+ </div>
 
 </div>
 {% endblock %}

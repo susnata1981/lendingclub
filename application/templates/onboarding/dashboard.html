@@ -6,7 +6,9 @@
   <div class="row">
     <div class="col s12">
       <p class={{ data.notification_class }}>{{ data.notification_message_description }}
-        <a href={{url_for(data.notification_url)}}>{{ data.notification_message_title }}</a>
+        {% if data.notification_message_title %}
+          <a href={{url_for(data.notification_url)}}>{{ data.notification_message_title }}</a>
+        {% endif %}
       </p>
     </div>
   </div>
@@ -21,8 +23,7 @@
 
   <div class="row">
     <div class="col s12">
-      <h5>User Dashboard</h5>
-      <p class="flow-text">
+      <p class="flow-text right">
         Welcome back {{current_user.first_name}} {{current_user.last_name}}
       </p>
     </div>
@@ -30,6 +31,8 @@
 
   {% if tab == 'account' %}
   {% include 'onboarding/account-profile-section.html' with context %}
+  {% elif tab == 'request_money' %}
+  {% include 'onboarding/request_money.html' with context %}
   {% elif tab == 'membership' %}
   {% include 'onboarding/account-membership-section.html' with context %}
   {% elif tab == 'bank' %}

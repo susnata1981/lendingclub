@@ -12,6 +12,7 @@ Flask-Login
 PyMySQL==0.7.6
 mysql-python==1.2.5
 plaid-python
+python-dateutil
 twilio
 pyopenssl
 ndg-httpsclient

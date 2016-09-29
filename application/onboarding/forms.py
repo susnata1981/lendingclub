@@ -78,3 +78,6 @@ class RandomDepositForm(Form):
 class RandomDepositVerifyAccountForm(Form):
     deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')])
     deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')])
+
+class RequestMoneyForm(Form):
+    requested_amount = FloatField('requested amount', [Required('Please enter an amount')])

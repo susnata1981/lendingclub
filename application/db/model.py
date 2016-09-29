@@ -124,12 +124,20 @@ class Fi(Base):
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
-class Transaction(Base):
-    __tablename__ = 'transaction'
+class RequestMoneyTransaction(Base):
+    __tablename__ = 'request_money_transaction'
+
+    UNPAID, PARTIALLY_PAID, PAID = range(3)
+    BORROW, INTEREST, PAYMENT = range(3)
+
     id = Column(Integer, primary_key=True, autoincrement=True)
+    parent_id = Column(Integer)
     account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship('Account', back_populates='transaction')
-    data = Column(Text, nullable=False)
+    account = relationship('Account', back_populates='transactions')
+    amount = Column(Float, nullable=False)
+    transaction_type = Column(Integer, nullable=False)
+    interest_charge = Column(Float, nullable=False)
+    status = Column(Integer, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
@@ -177,6 +185,17 @@ class Membership(Base):
     def get_status(self):
         return Membership.STATUS_NAME.get(self.status)
 
+class MembershipPayment(Base):
+    __tablename__ = 'membership_payment'
+    PENDING, COMPLETED, FAILED = range(3)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    membership_id = Column(Integer, ForeignKey('membership.id'))
+    membership = relationship('Membership', back_populates='transactions')
+    status = Column(Integer, nullable=False)
+    time_created = Column(DateTime)
+    time_updated = Column(DateTime)
+
 class IAVInstitutions(Base):
     __tablename__ = "iav_institutions"
 
@@ -186,11 +205,11 @@ class IAVInstitutions(Base):
     plaid_id = Column(String(128), nullable=False)
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
-Account.transaction = relationship('Transaction', back_populates='account')
+Account.transactions = relationship('RequestMoneyTransaction', back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 Account.employer_address = relationship('Address', uselist = False, back_populates='account')
-
+Membership.transactions = relationship('MembershipPayment', back_populates='membership')
 
 def create_plan():
     current_app.db_session.add(

@@ -6,6 +6,7 @@ from application.db.model import *
 import traceback
 import random
 from datetime import datetime
+import dateutil.relativedelta
 from flask.ext.login import current_user, login_required, login_user, logout_user
 from application.util import constants
 from application import services, common
@@ -13,6 +14,7 @@ from pprint import pprint
 import requests
 import json
 import logging
+from dateutil.relativedelta import relativedelta
 
 onboarding_bp = Blueprint('onboarding_bp', __name__, url_prefix='/account')
 
@@ -155,17 +157,13 @@ def dashboard():
             'class': 'error'
         })
         return redirect(url_for('.verify_phone_number'))
-    valid_tabs = ['account', 'membership', 'transaction', 'bank']
+    valid_tabs = ['account', 'request_money', 'membership', 'transaction', 'bank']
     tab = request.args.get('tab')
     if tab not in valid_tabs:
-        tab = 'account'
-        
+        tab = 'request_money'
+
     data = {}
-    # eligible_for_membership_reapplication = True
-    # for membership in current_user.memberships:
-    #     if membership.is_active() or membership.is_pending():
-    #         eligible_for_membership_reapplication = False
-    # data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
+    form = RequestMoneyForm(request.form)
 
     if len(current_user.memberships) == 0:
         data['show_notification'] = True
@@ -185,7 +183,28 @@ def dashboard():
         data['notification_message_description'] = 'You have not verified your bank account'
         data['notification_message_title'] = 'Verify Account'
         data['notification_url'] = 'onboarding_bp.verify_account_random_deposit'
-    return render_template('onboarding/dashboard.html', data=data, tab=tab)
+    elif is_eligible_to_borrow() > 0:
+        data['show_notification'] = True
+        data['notification_class'] = 'info'
+        data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
+
+    session['data'] = data
+    if tab == 'request_money':
+        return redirect(url_for('.request_money'))
+    return render_template('onboarding/dashboard.html', data=data, tab=tab, form=form)
+
+def is_eligible_to_borrow():
+    current_user.memberships.sort(key = lambda x : x.time_created)
+    allowed_borrow_frequency = current_user.memberships[0].plan.loan_frequency
+
+    if not current_user.transactions:
+        return allowed_borrow_frequency
+    for txn in current_user.transactions:
+        if txn.transaction_type == RequestMoneyTransaction.BORROW and txn.status == RequestMoneyTransaction.UNPAID:
+            return 0
+
+    return allowed_borrow_frequency - len(filter(lambda x: x.transaction_type == RequestMoneyTransaction.BORROW, current_user.transactions))
+
 
 def has_unverified_bank_account():
     for fi in current_user.fis:
@@ -210,7 +229,6 @@ def account():
             eligible_for_membership_reapplication = False
     data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
 
-    print '*****************user hasnt applied for membership = ', len(current_user.memberships)
     if len(current_user.memberships) == 0:
         data['show_notification'] = True
         data['notification_message'] = 'You application is incomplete'
@@ -409,10 +427,12 @@ def add_bank():
             current_user.memberships[0].status = Membership.APPROVED
 
             current_app.db_session.add(current_user)
+            create_fake_membership_payments()
             current_app.db_session.commit()
 
             response = {}
             response['success'] = True
+
             return jsonify(response)
         except Exception as e:
             traceback.print_exc()
@@ -489,6 +509,7 @@ def verify_account_random_deposit():
             fi.time_updated = datetime.now()
 
             current_app.db_session.add(fi)
+            create_fake_membership_payments()
             current_app.db_session.commit()
 
             flash({
@@ -506,6 +527,42 @@ def verify_account_random_deposit():
 @login_required
 def application_complete():
     return render_template('onboarding/success.html')
+
+
+@onboarding_bp.route('/request_money', methods=['GET','POST'])
+@login_required
+def request_money():
+    form = RequestMoneyForm(request.form)
+    for t in current_user.transactions:
+        if t.transaction_type == RequestMoneyTransaction.BORROW and t.status == RequestMoneyTransaction.UNPAID:
+            flash({
+                'class':'info',
+                'content':'You currently owe ${0} before {1}'.format(current_user.transactions[0].amount, next_month(t.time_created))
+            })
+            return render_template('onboarding/dashboard.html', data=session['data'] or {}, tab='request_money', form=form)
+
+    if form.validate_on_submit():
+        transaction = RequestMoneyTransaction(
+            account_id = current_user.id,
+            amount = form.requested_amount.data,
+            interest_charge = 0,
+            status = RequestMoneyTransaction.UNPAID,
+            transaction_type = RequestMoneyTransaction.BORROW,
+            time_updated = datetime.now(),
+            time_created = datetime.now())
+
+        current_app.db_session.add(transaction)
+        current_app.db_session.commit()
+
+        flash({
+            'class':'info',
+            'content':'We have received your request to borrow ${0}. This will be transferred to your account in 1 business day'.format(form.requested_amount.data)
+        })
+    return render_template('onboarding/dashboard.html', data=session['data'] or {}, tab='request_money', form=form)
+
+def next_month(date):
+    future_date = date.today()+ relativedelta(months=1)
+    return future_date.strftime('%m/%d/%Y')
 
 
 def exchange_public_token(public_token, account_id):
@@ -584,6 +641,17 @@ def has_entered_employer_information(user):
 
     return False
 
+def create_fake_membership_payments():
+    m = current_user.memberships[0]
+    for i in range(5):
+        mp = MembershipPayment(
+            membership_id = m.id,
+            status = MembershipPayment.COMPLETED,
+            time_updated = datetime.now() - dateutil.relativedelta.relativedelta(month=i),
+            time_created = datetime.now() - dateutil.relativedelta.relativedelta(month=i))
+        m.transactions.append(mp)
+        current_app.db_session.add(m)
+        current_app.db_session.add(mp)
 
 # curl https://tartan.plaid.com/exchange_token \
 #    -d client_id="57bbc58566710877408d093e" \

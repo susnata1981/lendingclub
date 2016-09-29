@@ -314,6 +314,16 @@ $(function() {
               )
             });
 
+            // $("#request-money-btn").click(function(e) {
+            //   console.log('clicked...');
+            //   $(this).parent().find("input[name='requested_amount']").val('');
+            // });
+            //
+            // $("#request-money-form").submit(function(e) {
+            //   console.log('submitting request money form...');
+            //   $(this).find("input[name='requested_amount']").val('');
+            // });
+
             $("#payday-cartoon").fadeOut();
 
             $("#logo-link").hover(function() {

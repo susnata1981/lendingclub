@@ -110,6 +110,18 @@ figure {
   font-size: 1em;
 }
 
+.warning {
+  background: #ffcdd2;
+  display: block;
+  height: 20px;
+  padding: 10px;
+}
+
+.warning p {
+  font-family: arial, sans-serif;
+  font-size: 1.1em;
+}
+
 form {
   padding: 8px !important;
 }

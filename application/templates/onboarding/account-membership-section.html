@@ -1,7 +1,8 @@
 <div class="row">
  <!-- membership section -->
  <div class="col s12">
-  <h4 class="bordered-header">Membership</h4> {% if current_user.memberships|length == 0 %}
+  <h5 class="bordered-header">Membership Status</h5>
+    {% if current_user.memberships|length == 0 %}
   <p class="flow-text">You've not yet applied for membership&nbsp;
    <a href={{url_for( 'onboarding_bp.enter_personal_information')}}>Apply Now</a>
   </p>
@@ -21,6 +22,30 @@
      <td class="flow-text">{{ m.status | format_membership_status }}</td>
      <td class="flow-text">
       {{ m.time_created | format_datetime }}
+     </td>
+    </tr>
+    {% endfor %}
+   </tbody>
+  </table>
+
+  <h5 class="bordered-header margin-top-large">Payment History</h5>
+  <table class="bordered responsive-table highlight">
+   <thead>
+    <tr>
+     <td><h6>Plan Name</h6></td>
+     <td><h6>Status</h6></td>
+     <td><h6>Amount</h6></td>
+     <td><h6>Transaction date</h6></td>
+    </tr>
+   </thead>
+   <tbody>
+    {% for t in current_user.memberships[0].transactions %}
+    <tr>
+     <td class="flow-text"> {{ t.membership.plan.name }} </td>
+     <td class="flow-text">{{ t.status | format_membership_status }}</td>
+     <td class="flow-text">{{ t.membership.plan.cost | format_currency }}</td>
+     <td class="flow-text">
+      {{ t.time_created | format_datetime }}
      </td>
     </tr>
     {% endfor %}

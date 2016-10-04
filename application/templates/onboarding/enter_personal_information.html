@@ -8,40 +8,19 @@
          {% for message in get_flashed_messages() %}
          <div class="error-item">{{ message }}</div>
          {% endfor %}
-
-         {% for message in form.email.errors %}
-         <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.ssn.errors %}
-         <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.dob.errors %}
-         <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.driver_license_number.errors %}
-         <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.street1.errors %}
-            <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.city.errors %}
-            <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.state.errors %}
-            <div class="error-item">{{ message }}</div>
-         {% endfor %}
-
-         {% for message in form.postal_code.errors %}
-            <div class="error-item">{{ message }}</div>
-         {% endfor %}
       </div>
     </div>
+    {% if form.errors %}
+    <div class="row">
+       <div class="col s6 error-block">
+           {% for field in form %}
+             {% for m in field.errors %}
+              <div class="error-item">{{ m }}</div>
+             {% endfor %}
+           {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     <div class="row">
         <form class="col s6 user-input margin-top-medium"
         action={{url_for('onboarding_bp.enter_personal_information')}} method="POST">
@@ -64,17 +43,7 @@
                  {{form.ssn.label}}
                  {{form.ssn(class='ssn')}}
                 </div>
-                <!-- <div class="input-field col s5">
-                 {{form.driver_license_number.label}}
-                 {{form.driver_license_number}}
-                </div> -->
             </div>
-            <!-- <div class="row">
-                <div class="input-field col s12">
-                 {{form.dob.label}}
-                 {{form.dob(class="dob")}}
-                </div>
-            </div> -->
             <div class="row">
                 <div class="input-field col s5">
                  {{form.driver_license_number.label}}
@@ -91,12 +60,6 @@
                  {{form.street2}}
                 </div>
             </div>
-            <!-- <div class="row">
-                <div class="input-field col s12">
-                 {{form.street2.label}}
-                 {{form.street2}}
-                </div>
-            </div> -->
             <div class="row">
                 <div class="input-field col s4">
                  {{form.city.label}}
@@ -112,18 +75,6 @@
                 </div>
 
             </div>
-            <!-- <div class="row">
-                <div class="input-field col s12">
-                 {{form.state.label}}
-                 {{form.state}}
-                </div>
-            </div> -->
-            <!-- <div class="row">
-                <div class="input-field col s12">
-                 {{form.postal_code.label}}
-                 {{form.postal_code}}
-                </div>
-            </div> -->
             <div class="row">
                 <div class="col s3">
                     <button class="btn">Next</button>

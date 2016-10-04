@@ -29,6 +29,7 @@
     </div>
   </div>
 
+  {% block dashboard_content %}
   {% if tab == 'account' %}
   {% include 'onboarding/account-profile-section.html' with context %}
   {% elif tab == 'request_money' %}
@@ -38,5 +39,7 @@
   {% elif tab == 'bank' %}
   {% include 'onboarding/account-bank-info-section.html' with context %}
   {% endif %}
+  {% endblock %}
+  
 </div>
 {% endblock %}

@@ -324,12 +324,13 @@ $(function() {
             //   $(this).find("input[name='requested_amount']").val('');
             // });
 
-            $("#payday-cartoon").fadeOut();
+            // $("#payday-cartoon").fadeOut();
 
-            $("#logo-link").hover(function() {
-              $("#payday-cartoon").fadeIn(500);
-              setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
-            });
+            // Cartoon animation
+            // $("#logo-link").hover(function() {
+            //   $("#payday-cartoon").fadeIn(500);
+            //   setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
+            // });
 
             $('.datepicker').pickadate({
                 selectMonths: true, // Creates a dropdown to control month

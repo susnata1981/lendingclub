@@ -15,6 +15,38 @@
   </tr>
 {% endmacro %}
 
+{% macro get_loan_frequency(attr_description, attr) %}
+  <tr>
+    <td class="flow-text">{{attr_description}}</td>
+    {% for p in plans %}
+      {% set value = p[attr] %}
+      {% if loop.index == 1 %}
+      <td class='yellow lighten-2 center'> {{ value }} times/year </td>
+      {% elif loop.index == 2 %}
+      <td class='yellow accent-1 center'> {{ value }} times/year </td>
+      {% elif loop.index == 3 %}
+      <td class='yellow lighten-2 center'> {{ value }} times/year </td>
+      {% endif %}
+    {% endfor %}
+  </tr>
+{% endmacro %}
+
+{% macro get_amount(attr_description, attr) %}
+  <tr>
+    <td class="flow-text">{{attr_description}}</td>
+    {% for p in plans %}
+      {% set value = p[attr]|format_currency %}
+      {% if loop.index == 1 %}
+      <td class='yellow lighten-2 center'> {{ value }} </td>
+      {% elif loop.index == 2 %}
+      <td class='yellow accent-1 center'> {{ value }} </td>
+      {% elif loop.index == 3 %}
+      <td class='yellow lighten-2 center'> {{ value }} </td>
+      {% endif %}
+    {% endfor %}
+  </tr>
+{% endmacro %}
+
 <section>
     <div class="row">
         <div class="col s8 offset-s2">
@@ -24,11 +56,11 @@
             <table class="bordered margin-top-medium">
               <tbody>
                 {{ get_value('Plan name', 'name') }}
-                {{ get_value('Loan Amount', 'max_loan_amount') }}
-                {{ get_value('Frequency', 'loan_frequency') }}
+                {{ get_amount('Loan Amount', 'max_loan_amount') }}
+                {{ get_loan_frequency('Frequency', 'loan_frequency') }}
                 {{ get_value('Interest Rate', 'interest_rate_description') }}
                 {{ get_value('Rewards', 'rewards_description') }}
-                {{ get_value('Cost', 'cost') }}
+                {{ get_amount('Cost', 'cost') }}
                 <tr>
                   <td></td>
                   {% for p in plans %}

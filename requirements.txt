@@ -21,3 +21,5 @@ pyasn1
 sendgrid
 gcloud
 stripe
+urllib3[secure]
+requests[security]

@@ -1,0 +1,38 @@
+{% extends 'onboarding/dashboard.html' %}
+{% block dashboard_content %}
+  <div class="row">
+    <div class="col s8">
+      <h5 class="margin-top-large">Transaction history</h5>
+      <table class="bordered responsive-table highlight">
+        <thead>
+          <tr>
+            <td>
+              <h6>Amount</h6></td>
+            <td>
+              <h6>Transaction Type</h6></td>
+            <td>
+              <h6>Status</h6></td>
+            <td>
+              <h6>Transaction date</h6></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% if current_user.transactions %} {% for t in current_user.transactions %}
+          <tr>
+            <td class="flow-text"> {{ t.amount | format_currency }} </td>
+            <td class="flow-text"> {{ t.transaction_type | format_transaction_type }} </td>
+            <td class="flow-text">{{ t.status | format_transaction_status }}</td>
+            <td class="flow-text">{{ t.time_created | format_datetime }}</td>
+          </tr>
+          {% endfor %} {% endif %}
+        </tbody>
+      </table>
+      {% if not current_user.transactions %}
+      <p class="flow-text">No transactions</p>
+      {% endif %} {% if current_user.memberships %}
+      <p>You can borrow {{ 3 - current_user.transactions|length}} more times before July 27th 2017</p>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

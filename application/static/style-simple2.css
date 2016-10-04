@@ -24,7 +24,7 @@ nav a {
 }
 
 #sidenav-btn {
-  position: fixed;
+  position: absolute;
   top: 88px;
   left: 24px;
   display: inline-block;
@@ -41,7 +41,7 @@ nav a {
 .page-footer {
     background-color: #e1f5fe !important;
     padding-top: 0 !important;
-    margin: 0px !important;
+    margin: 120px 0 0 0 !important;
     color: #333;
 }
 
@@ -59,6 +59,12 @@ select {
 
 .notify-label {
   margin-left: 60px;
+}
+
+.help-text {
+  color: #a9a9a9;
+  font-size: 15px;
+  font-style: italic;
 }
 
 h1, h2, h3, h4, h5 {
@@ -89,25 +95,24 @@ figure {
 
 .error-block {
  background-color: #FBB0B0;
- padding: 12px;
+ padding: 16px;
 }
 
 .error-item {
   margin: 12px 6px;
+  font-size: 1.1em;
 }
 
 .error {
  background-color: #FBB0B0;
- padding: 12px;
+ padding: 16px;
+ font-size: 1.1em;
 }
 
 .info {
   background: #dcedc8;
-  display: block;
-  height: 40px;
-  padding: 12px;
-  font-family: arial, sans-serif;
-  font-size: 1em;
+  padding: 16px;
+  font-size: 1.1em;
 }
 
 .warning {
@@ -377,11 +382,11 @@ div.nav-wrapper li a {
 }
 
 #circular-wait-section {
-    display: none;
+    display: hidden;
     position: fixed;
     left: 50%;
     right: 50%;
-    top: 50%;
+    top: 30%;
 }
 
 #toast-container {
@@ -610,11 +615,12 @@ form.user-input {
 }
 
 .verification-method-box {
-  height: 240px;
+  height: 280px;
   position: relative;
 }
 
-.verification-method-box button {
+.verification-method-box a {
+  display: inline-block;
   position: absolute;
   bottom: 10px;
 }

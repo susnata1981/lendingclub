@@ -1,21 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row margin-top-large">
+<div id="circular-wait-section" class="preloader-wrapper big active">
+    <div class="spinner-layer spinner-blue-only">
+      <div class="circle-clipper left">
+        <div class="circle"></div>
+      </div><div class="gap-patch">
+        <div class="circle"></div>
+      </div><div class="circle-clipper right">
+        <div class="circle"></div>
+      </div>
+    </div>
+  </div>
+
+<div id="success-div" class="row margin-top-large">
  <div class="col s12 center">
   <h4 class="green-text">
     Congratulations {{ current_user.first_name }}, your application has been accepted!
   </h4>
   <h4>
     You can start borrowing money by sending us a text message <br/>
-    @<br/>
+    <span class="tiny-text">@</span><br/>
     <span class="blue-text">(408)-462-0352</span>
     </p>
   </h4>
  </div>
- <div class="col s12 center">
-   <a class="btn" href={{url_for('onboarding_bp.account')}}>Request Money</a>
-   <a class="btn grey" href={{url_for('onboarding_bp.account')}}>Cancel</a>
+ <div class="margin-top-medium col s12 center">
+   <a class="btn" href={{url_for('onboarding_bp.request_money')}}>Request Money</a>
+   <!-- <a class="btn grey" href={{url_for('onboarding_bp.dashboard')}}>Home</a> -->
  </div>
 </div>
+<script>
+  $("#success-div").hide();
+  $("#circular-wait-section").show();
+  setTimeout(function() {
+    $("#circular-wait-section").hide();
+    $("#success-div").show();
+  }, 2000);
+</script>
 {% endblock %}

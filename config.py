@@ -22,6 +22,8 @@ ADMIN_EMAIL = 'susnata@gmail.com'
 
 ENABLE_PRODUCTION_MODE = False
 
+PHONE_NUMBER = '408-462-0352'
+
 # The secret key is used by Flask to encrypt session cookies.
 SECRET_KEY = 'secret'
 
@@ -35,11 +37,11 @@ DATA_BACKEND = 'cloudsql'
 # Replace user, pass, host, and database with the respective values of your
 # Cloud SQL instance.
 #'mysql+pymysql://zroot:11111111@173.194.244.126/zdb'
-SQLALCHEMY_DATABASE_URI = \
-    'mysql+pymysql://zroot:11111111@//cloudsql/ziplly-140504:zipllydb/zdb'
+# SQLALCHEMY_DATABASE_URI = \
+#     'mysql+pymysql://zroot:11111111@//cloudsql/ziplly-140504:zipllydb/zdb'
 
 SQLALCHEMY_DB_URL_APP_ENGINE = \
-'mysql+mysqldb://root@/zdb?unix_socket=/cloudsql/ziplly-140504:ziplly-140504:zipllydb'
+'mysql+mysqldb://root@/zdbdemo?unix_socket=/cloudsql/ziplly-140504:ziplly-140504:zipllydb'
 
 SQLALCHEMY_DB_URL_LOCAL = 'mysql+mysqldb://root:admin@localhost:3306/zdb'
 

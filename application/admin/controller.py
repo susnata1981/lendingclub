@@ -20,7 +20,7 @@ def get_institutions_list():
         req = requests.get(INSTITUTION_LIST_ENDPOINT)
         res = req.text
         institutions = []
-        print 'response = ',res
+        # print 'response = ',res.encode('utf-8')
         for bank_info in json.loads(res):
             print 'bi =',bank_info['type']
             if 'auth' in bank_info['products']:

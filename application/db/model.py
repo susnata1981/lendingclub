@@ -39,7 +39,7 @@ class Account(Base):
     ssn = Column(Integer, nullable=True)
     dob = Column(String(24), nullable=True)
     driver_license_number = Column(String(128), nullable=True)
-    employer_name = Column(String(256), nullable=True)
+    employer_name = Column(String(255), nullable=True)
     employer_phone_number = Column(String(128), nullable=True)
     stripe_customer_id = Column(String(255), nullable=True)
     phone_number = Column(String(50), unique=True, nullable=False)
@@ -107,19 +107,19 @@ class Fi(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship('Account', back_populates='fis')
-    bank_account_id = Column(String(512), nullable=False)
+    bank_account_id = Column(String(255), nullable=False)
     verification_type = Column(Integer, nullable=False)
     status = Column(Integer, nullable=False)
     subtype = Column(String(128), nullable=True)
-    subtype_name = Column(String(256), nullable=True)
-    account_name = Column(String(256), nullable=True)
-    institution = Column(String(256), nullable=True)
-    institution_type = Column(String(256), nullable=True)
+    subtype_name = Column(String(255), nullable=True)
+    account_name = Column(String(255), nullable=True)
+    institution = Column(String(255), nullable=True)
+    institution_type = Column(String(255), nullable=True)
     available_balance = Column(Float, nullable=True)
     current_balance = Column(Float, nullable=True)
     account_type = Column(String(128), nullable=True)
-    access_token = Column(String(512), nullable=False, unique=True)
-    stripe_bank_account_token = Column(String(512), nullable=True, unique=True)
+    access_token = Column(String(255), nullable=False, unique=True)
+    stripe_bank_account_token = Column(String(255), nullable=True, unique=True)
     account_number_last_4 = Column(Integer, nullable=True)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
@@ -146,7 +146,7 @@ class Plan(Base):
     __tablename__ = "plan"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(256), nullable=False)
+    name = Column(String(255), nullable=False)
     max_loan_amount = Column(Integer, nullable=False)
     loan_frequency = Column(Integer, nullable=False)
     interest_rate = Column(Float, nullable=False)
@@ -200,8 +200,8 @@ class IAVInstitutions(Base):
     __tablename__ = "iav_institutions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(256), nullable=False)
-    institution_type = Column(String(256), nullable=False)
+    name = Column(String(255), nullable=False)
+    institution_type = Column(String(255), nullable=False)
     plaid_id = Column(String(128), nullable=False)
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
@@ -214,7 +214,7 @@ Membership.transactions = relationship('MembershipPayment', back_populates='memb
 def create_plan():
     current_app.db_session.add(
         Plan(
-            name = 'Anytime 150',
+            name = 'Anytime $150',
             max_loan_amount = 150,
             loan_frequency = 3,
             interest_rate = 15,
@@ -223,7 +223,7 @@ def create_plan():
             rewards_description = 'Earn points for paying back in time'))
     current_app.db_session.add(
         Plan(
-            name = 'Anytime 300',
+            name = 'Anytime $300',
             max_loan_amount = 300,
             loan_frequency = 3,
             interest_rate = 15,
@@ -232,7 +232,7 @@ def create_plan():
             rewards_description = 'Earn points for paying back in time'))
     current_app.db_session.add(
         Plan(
-            name = 'Anytime 500',
+            name = 'Anytime $500',
             max_loan_amount = 500,
             loan_frequency = 3,
             interest_rate = 15,

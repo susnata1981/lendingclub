@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <!--Import Google Icon Font-->
-    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" /> -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -61,7 +61,7 @@
        <!-- <li><a href={{ url_for('home_blueprint.contact_us') }}>Contact Us</a></li> -->
        {% if current_user.is_authenticated %}
        <li><a href={{url_for('onboarding_bp.dashboard')}}>Dashboard</a></li>
-       <li><a href={{url_for('onboarding_bp.account')}}>Account</a></li>
+       <!-- <li><a href={{url_for('onboarding_bp.account')}}>Account</a></li> -->
        <li>
          <a href={{url_for('onboarding_bp.logout')}}>Logout</a>
       </li>
@@ -80,9 +80,10 @@
            <a href="#!email"><span class="email">{{current_user.email}}</span></a>
          </div>
         </li>
-         <li><a href="{{url_for('onboarding_bp.dashboard', tab='request_money')}}">Request Money</a></li>
+         <li><a href="{{url_for('onboarding_bp.request_money')}}">Request Money</a></li>
+         <li><a href="{{url_for('onboarding_bp.get_transaction_info')}}">Transactions</a></li>
          <li><div class="divider"></div></li>
-         <li><a href="{{url_for('onboarding_bp.dashboard', tab='membership')}}">Membership</a></li>
+         <li><a href="{{url_for('onboarding_bp.get_membership_info')}}">Membership</a></li>
          <li><div class="divider"></div></li>
          <li><a href={{url_for('onboarding_bp.dashboard', tab='account')}}>Account</a></li>
          <li><div class="divider"></div></li>
@@ -91,11 +92,7 @@
        {% if current_user.is_authenticated %}
        <a href="#" id="sidenav-btn" data-activates="slide-out" class="btn-floating button-collapse"><i class="material-icons">menu</i></a>
        {% endif %}
-
-      <div id="payday-cartoon" class="center">
-        <img src={{url_for('static', filename='payday-joke.jpg')}} height="80px" width="auto"></img>
-      </div>
-        {% block content %} {% endblock %}
+      {% block content %} {% endblock %}
     </section>
     <footer class="page-footer">
       <div class="container">

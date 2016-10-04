@@ -57,6 +57,8 @@
       <span class="flow-text">No banks added to your account yet. <a href={{url_for('onboarding_bp.add_bank')}}>Add Bank Now</a>
         </span>
       </div>
+      {% else %}
+      <a class="btn" href={{url_for('onboarding_bp.add_bank')}}>Add another bank</a>
       {% endif %}
     </div>
   </div> <!-- end of bank info section -->

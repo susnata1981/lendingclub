@@ -51,15 +51,17 @@ class StripeClass(object):
 
     def f(self, func):
         def stripe_call(*args, **kwargs):
-            if current_user:
-                user_id = current_user.id
-
+            user_id = 'NOT_SET'
             try:
+                if current_user:
+                    user_id = current_user.get_id()
+
                 return func(*args, **kwargs)
             except (stripe.error.InvalidRequestError, stripe.error.CardError) as e:
                 stack = inspect.stack()
-                self.LOGGER.exception('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
+                self.LOGGER.error('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
                     stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
+
                 raise error.UserInputError(e.message, e.param)
             except Exception as e:
                 stack = inspect.stack()

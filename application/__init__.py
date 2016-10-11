@@ -8,6 +8,7 @@ from services import phone
 from util import constants
 from flask.ext.login import LoginManager
 from db.model import *
+from services import stripe_client
 import admin
 
 login_manager = LoginManager()
@@ -65,6 +66,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
         init_db()
         phone.init()
         constants.init()
+        stripe_client.init()
 
     # Register the blueprints
     from home.controller import home_blueprint

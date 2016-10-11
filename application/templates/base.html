@@ -5,19 +5,25 @@
     {% endblock %}
     <meta charset="utf-8">
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+
+    <!-- <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" /> -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+    <!-- <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script> -->
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'>
+
 
     <!-- <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}> -->
     <link rel="stylesheet" href={{url_for('static', filename='textanimation.css')}}>
 
     {% block stylesheet %}
-    <link rel="stylesheet" href={{url_for('static', filename='style.css')}}>
+    <link rel="stylesheet" href={{url_for('static', filename='style-simple2.css')}}>
     {% endblock %}
+
     <link href="https://fonts.googleapis.com/css?family=Chewy" rel="stylesheet">
     <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
     <script type="text/javascript" src={{url_for( 'static', filename='main.js' )}}></script>
@@ -26,16 +32,29 @@
 </head>
 
 <body>
+  {% macro build_breadcrum(breadcrumItems) %}
+    <div class="row margin-top-medium breadcrum-row">
+    {% for item in breadcrumItems %}
+      {% if item['active'] %}
+      <div class="breadcrum-item breadcrum-active">
+      {% else %}
+      <div class="breadcrum-item breadcrum-inactive">
+      {% endif %}
+        <span class="breadcrum-text">{{ item.name }}</span>
+      </div>
+    {% endfor %}
+    </div>
+  {% endmacro %}
   <nav>
    <div class="nav-wrapper">
      <a id="logo-link" class="margin-left-medium" href={{url_for('home_blueprint.index')}}>
-       <span class="logo-heading grey-text text-darken-4">Ziplly</span>
-       <span class="grey-text text-darken-4">borrowing made affordable</span>
+       <span class="logo-heading white-text">Ziplly</span>
+       <span class="logo-subtext white-text">borrowing made affordable</span>
      </a>
      <ul id="nav-mobile" class="right hide-on-med-and-down">
        <!-- Modal Trigger -->
        <!-- <li><a href={{ url_for('home_blueprint.contact_us') }}>Contact Us</a></li> -->
-       {% if enable_navigation %}
+       {% if enable_nav %}
        <li><a href={{url_for('home_blueprint.index')}}>Home</a></li>
        <li><a href={{url_for('onboarding_bp.account')}}>Account</a></li>
         <li><a href="#">About</a></li>
@@ -55,6 +74,18 @@
         {% block content %} {% endblock %}
     </section>
     <footer class="page-footer">
+      <div class="container">
+        <div class="row center">
+          <div class="col s12">
+            <p class="flow-text">Connect with us on social media</p>
+            <a href="https://twitter.com/zipllyrocks" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @zipllyrocks</a>
+            <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+            </div>
+            <div class="col s12">
+              <div class="g-follow col s1" data-annotation="none" data-height="24" data-href="//plus.google.com/u/0/109147772784942938986" data-rel="author"></div>
+            </div>
+        </div>
+      </div>
          <div class="footer-copyright">
            <div class="container">
              <div class="right">

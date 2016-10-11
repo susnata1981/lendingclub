@@ -1,0 +1,10 @@
+{% extends 'base.html' %} {% block content %}
+<div class="row margin-top-large">
+ <div class="col s10 offset-s1">
+  <h4>Verification Complete</h4>
+  <p>
+   You can now <a href={{ url_for( 'onboarding_bp.login') }}>Login</a>
+  </p>
+ </div>
+</div>
+{% endblock %}

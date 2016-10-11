@@ -7,21 +7,45 @@
           <tr>
             <td class="flow-text">Institution Name</td>
             <td class="flow-text">Account Type</td>
+            <td class="flow-text">Status</td>
             <td class="flow-text">Last 4</td>
             <td class="flow-text">Date created</td>
+            <td class="flow-text"></td>
           </tr>
         </thead>
         <tbody>
-          {% for fi in current_user.fis %}
-          <tr>
-            <td class="flow-text">{{ fi.institution }}</td>
-            <td class="flow-text">{{ fi.institution_type }}</td>
-            <td class="flow-text">{{ fi.account_number_last_4 }}</td>
-            <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
-          </tr>
-          {% endfor %}
+          {% if current_user.fis | length > 0 %}
+            {% for fi in current_user.fis %}
+            <tr>
+              <td class="flow-text">{{ fi.institution }}</td>
+              <td class="flow-text">{{ fi.institution_type }}</td>
+              <td class="flow-text">
+                {% if fi.status == 0 %}
+                  UNVERFIED
+                {% endif %}
+                {% if fi.status == 1 %}
+                  VERIFIED
+                {% endif %}
+              </td>
+              <td class="flow-text">{{ fi.account_number_last_4 }}</td>
+              <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
+              {% if fi.verification_type == 1 and fi.status == 0 %}
+              <td class="flow-text">
+                <form action="{{url_for('onboarding_bp.start_account_verify_random_deposit')}}" method="post">
+                  <input type="hidden" name="id" value={{ fi.id }} />
+                  <button class="btn">Verify</button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          {% endif %}
         </tbody>
       </table>
+      {% if current_user.fis | length == 0 %}
+      <span class="flow-text">No banks added to the account <a href={{url_for('onboarding_bp.add_bank')}}>Add Bank</a>
+        </span>
+      {% endif %}
     </div>
   </div> <!-- end of bank info section -->
 </div> <!-- end of bank info page -->

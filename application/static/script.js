@@ -129,17 +129,30 @@ $(function() {
             }));
         }
 
-        function register_user(selector, email_id) {
-            var emailRegex = /\S+@\S+\.\S+/
-            var email = $("input[name='"+email_id+"']").val();
-            if (email == undefined || email.length == 0) {
-                Materialize.toast('Must enter email address', 3000);
-                return;
+        function register_user(selector, email_id, name_id) {
+            var emailRegex = /\S+@\S+\.\S+/;
+            var name = $("input[name='"+name_id+"']").val();
+            var msg = '';
+            var valid = true;
+            if (name == undefined || name.length == 0) {
+                msg = 'Must enter a name<br/>';
+                valid = false;
             }
 
-            if (!emailRegex.test(email)) {
-                Materialize.toast('Must be a valid email address', 3000);
-                return;
+            var email = $("input[name='"+email_id+"']").val();
+            if (email == undefined || email.length == 0) {
+                msg += 'Must enter email address<br/>';
+                valid = false;
+            }
+
+            if (email.length != 0 && !emailRegex.test(email)) {
+                msg += 'Must be a valid email address';
+                valid = false;
+            }
+
+            if (!valid) {
+              Materialize.toast(msg, 3000);
+              return;
             }
 
             $(selector).attr('disabled','true');
@@ -147,6 +160,7 @@ $(function() {
             var toast_duration = 1500;
             $.post(
                 '/register_user_ajax', {
+                    'name': name,
                     'email': email,
                 },
                 function(data) {
@@ -159,11 +173,12 @@ $(function() {
                         Materialize.toast('Thanks for expressing interest!', toast_duration);
                     }
                     $("input[name='"+email_id+"'").val("");
+                    $("input[name='"+name_id+"'").val("");
                 }
             )
         }
 
-        function add_notification_button_handler(btnSeletor, emailFieldSelector) {
+        function add_notification_button_handler(btnSeletor, emailFieldSelector, nameFieldSelector) {
           $(btnSeletor).click(function(e) {
               e.preventDefault();
               ga('send', {
@@ -172,8 +187,75 @@ $(function() {
                   'eventAction': 'button_click',
                   'eventLabel': $(this).attr('class')
               });
-              register_user(this, emailFieldSelector);
+              register_user(this, emailFieldSelector, nameFieldSelector);
           });
+        }
+
+        function phone_number_formatter() {
+            var number = $(this).val().replace(/-/g,'');
+            if (number.length < 3) {
+              return;
+            }
+
+            if (number.length > 10) {
+              number = number.substring(0, 10);
+            }
+
+            var nn = '';
+            for (var i = 0; i < number.length; i++) {
+              if (i == 3 || i == 6 ) {
+                nn += '-';
+                nn += number[i];
+              } else {
+                nn += number[i];
+              }
+            }
+            $(this).val(nn)
+        }
+
+        function dob_formatter() {
+            var number = $(this).val().replace(/\//g,'');
+            if (number.length < 3) {
+              return;
+            }
+
+            if (number.length > 8) {
+              number = number.substring(0, 8);
+            }
+
+            var nn = '';
+            for (var i = 0; i < number.length; i++) {
+              if (i == 2 || i == 4 ) {
+                nn += '/';
+                nn += number[i];
+              } else {
+                nn += number[i];
+              }
+            }
+            $(this).val(nn)
+        }
+
+        function ssn_formatter() {
+            var number = $(this).val().replace(/-/g,'');
+
+            if (number.length < 3) {
+              return;
+            }
+
+            if (number.length > 9) {
+              number = number.substring(0, 9);
+            }
+
+            var nn = '';
+            for (var i = 0; i < number.length; i++) {
+              if (i == 3 || i == 5 ) {
+                nn += '-';
+                nn += number[i];
+              } else {
+                nn += number[i];
+              }
+            }
+            $(this).val(nn)
         }
 
         function init() {
@@ -214,8 +296,8 @@ $(function() {
                 }
             });
 
-            add_notification_button_handler('.notify-btn', 'email');
-            // add_notification_button_handler('.notify-btn-2', 'email2');
+            add_notification_button_handler('.notify-btn', 'email', 'name');
+            add_notification_button_handler('.notify-btn2', 'email2', 'name2');
 
             $('ul.tabs').tabs();
             $('.modal-trigger').leanModal();
@@ -238,6 +320,17 @@ $(function() {
               $("#payday-cartoon").fadeIn(500);
               setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
             });
+
+            $('.datepicker').pickadate({
+                selectMonths: true, // Creates a dropdown to control month
+                selectYears: 100,
+            });
+
+            $('.tooltipped').tooltip({delay: 50});
+
+            $('.phone_number').keyup(phone_number_formatter);
+            $('.ssn').keyup(ssn_formatter);
+            $('.dob').keyup(dob_formatter);
         }
 
 

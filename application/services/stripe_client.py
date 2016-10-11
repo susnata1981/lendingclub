@@ -13,6 +13,7 @@ def init_standalone(config):
     else:
         api_key = config['STRIPE_SECRET_KEY_TEST']
 
+    print 'api key = ',api_key
     return StripeClass(api_key)
 
 def append_error(msg, err):
@@ -209,4 +210,3 @@ class StripeClass(object):
         else:
             return stripe.Charge.list(customer=cust_id,created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
                 starting_after=starting_after,include=["total_count"])
-

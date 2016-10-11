@@ -1,19 +1,10 @@
 {% extends 'base.html' %} {% block content %}
 
 <section>
-  <div class="row margin-top-medium breadcrumb">
-   <div class="col s3">
-    <span class="breadcrumb-inactive">1. Enter personal information</span>
-   </div>
-   <div class="col s2">
-    <span class="breadcrumb-active">2. Select Plan</span>
-   </div>
-   <div class="col s3 breadcrumb-inactive">
-    <span>3. Add bank account</span>
-   </div>
-  </div>
     <div class="row">
         <div class="col s8 offset-s2">
+          {{ build_breadcrum(breadcrumItems) }}
+
             <h4 class="centered">Select Plan</h4>
             <table class="bordered">
               <tbody>

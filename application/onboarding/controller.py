@@ -1,14 +1,14 @@
 from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
-# from flask import current_app, session
 from plaid import Client
-from forms import SignupForm, LoginForm, PhoneVerificationForm, PersonalInformationForm, SelectPlanForm
+from application.services import stripe_client
+from forms import *
 from application.db.model import *
-import random
 import traceback
+import random
 from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
 from application.util import constants
-from application import services
+from application import services, common
 from pprint import pprint
 import requests
 import json
@@ -31,12 +31,22 @@ def verify_phone_number():
         if account.status == int(Account.UNVERIFIED) and \
         form.verification_code.data == account.phone_verification_code:
             account.status = Account.VERIFIED_PHONE
+
+            stripe_customer = current_app.stripe_client.create_customer(
+            account.phone_number)
+
+            account.stripe_customer_id = stripe_customer['id']
+            account.time_updated = datetime.now()
             current_app.db_session.add(account)
             current_app.db_session.commit()
-            return redirect(url_for('onboarding_bp.login'))
+            return redirect(url_for('onboarding_bp.account_verified'))
         else:
             flash('Invalid verification code')
     return render_template('onboarding/verify.html', form=form)
+
+@onboarding_bp.route('/account_verified', methods=['GET'])
+def account_verified():
+    return render_template('onboarding/account_verified.html')
 
 # ajax
 @onboarding_bp.route('/resend_verification', methods=['POST'])
@@ -128,7 +138,6 @@ def fetch_financial_information():
         fi.subtype_name = response['subtype_name']
         fi.account_number_last_4 = response['account_number_last_4']
         fi.institution_type = response['institution_type']
-    # current_app.db_session.commit()
 
 @onboarding_bp.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -139,15 +148,12 @@ def logout():
 @login_required
 def account():
     data = {}
-    rejected_for_membership_before = True
+    eligible_for_membership_reapplication = True
     for membership in current_user.memberships:
-        if membership.is_active():
-            rejected_for_membership_before = False
+        if membership.is_active() or membership.is_pending():
+            eligible_for_membership_reapplication = False
 
-    rejected_for_membership_before = False if len(current_user.memberships) == 0 \
-    else rejected_for_membership_before
-
-    data['eligible_for_membership_reapplication'] = rejected_for_membership_before
+    data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
     return render_template('onboarding/account.html', data=data)
 
 @onboarding_bp.route('/apply-for-membership', methods=['GET'])
@@ -166,27 +172,101 @@ def apply_for_membership():
 @onboarding_bp.route('/enter-personal-information', methods=['GET', 'POST'])
 @login_required
 def enter_personal_information():
-    if has_applied_before(current_user):
-        return redirect(url_for('.select_plan'))
+    if has_entered_personal_information(current_user):
+        return redirect(url_for('.enter_employer_information'))
 
     form = PersonalInformationForm(request.form)
+    print 'errors =',form.dob.errors,' date = ',form.dob.data
     if form.validate_on_submit():
         address = Address(
         street1 = form.street1.data,
         street2 = form.street2.data,
         city = form.city.data,
         state = form.state.data,
+        address_type = Address.INDIVIDUAL,
         postal_code = form.postal_code.data)
         address.account_id = current_user.id
 
-        current_app.db_session.add(address)
+        # current_app.db_session.add(address)
         current_user.email = form.email.data
         current_user.ssn = form.ssn.data.replace('-','')
-        current_app.db_session.add(current_user)
+        current_user.dob = form.dob.data
+        current_user.time_updated = datetime.now()
+        current_user.driver_license_number = form.driver_license_number.data
+        current_user.addresses.append(address)
 
+        current_app.db_session.add(current_user)
         current_app.db_session.commit()
+
+        return redirect(url_for('.enter_employer_information'))
+
+    breadcrumItems = get_breadcrum()
+    breadcrumItems[0]['active'] = True
+    return render_template('onboarding/enter_personal_information.html',
+    form=form, breadcrumItems = breadcrumItems)
+
+def get_breadcrum():
+    breadcrumItems = [
+        {
+            'name': 'Enter personal information',
+            'active': False
+        },
+        {
+            'name': 'Enter employer information',
+            'active': False
+        },
+        {
+            'name': 'Select plan',
+            'active': False
+        },
+        {
+            'name': 'Add bank account',
+            'active': False
+        },
+    ]
+    return breadcrumItems
+
+@onboarding_bp.route('/enter_employer_information', methods=['GET', 'POST'])
+@login_required
+def enter_employer_information():
+    if has_entered_employer_information(current_user):
         return redirect(url_for('.select_plan'))
-    return render_template('onboarding/enter_personal_information.html', form=form)
+
+    form = EmployerInformationForm(request.form)
+    print 'error = ',form.errors
+    if form.validate_on_submit():
+        try:
+            print 'About to save employer information...'
+            employer_address = Address(
+            street1 = form.employer_street1.data,
+            street2 = form.employer_street2.data,
+            city = form.employer_city.data,
+            state = form.employer_state.data,
+            address_type = Address.EMPLOYER,
+            postal_code = form.employer_postal_code.data)
+            employer_address.account_id = current_user.id
+            current_app.db_session.add(employer_address)
+
+            current_user.employer_name = form.employer_name.data
+            current_user.employer_phone_number = form.employer_phone_number.data
+            current_user.time_updated = datetime.now()
+
+            current_app.db_session.add(current_user)
+            current_app.db_session.commit()
+        except Exception as e:
+            logging.info('failed to save employer information %s' % e)
+            flash(constants.PLEASE_TRY_AGAIN)
+            breadcrumItems = get_breadcrum()
+            breadcrumItems[1]['active'] = True
+            return render_template('onboarding/enter_employer_information.html',
+            form=form, breadcrumItems = breadcrumItems)
+        return redirect(url_for('.select_plan'))
+    else:
+        breadcrumItems = get_breadcrum()
+        breadcrumItems[1]['active'] = True
+        return render_template('onboarding/enter_employer_information.html',
+        form=form, breadcrumItems = breadcrumItems)
+
 
 @onboarding_bp.route('/select_plan', methods=['GET', 'POST'])
 @login_required
@@ -209,7 +289,9 @@ def select_plan():
             logging.error('Failed to save membership info %s for user %s, exception %s'
             % (membership, current_user, e))
             flash(constants.PLEASE_TRY_AGAIN)
-    return render_template('onboarding/select_plan.html', form=form, plans=plans)
+    breadcrumItems = get_breadcrum()
+    breadcrumItems[2]['active'] = True
+    return render_template('onboarding/select_plan.html', form=form, plans=plans, breadcrumItems = breadcrumItems)
 
 @onboarding_bp.route('/apply_next', methods=['POST', 'POST'])
 def apply_next():
@@ -220,9 +302,12 @@ def apply_next():
 @login_required
 def add_bank():
     if request.method == 'GET':
-        institutions = get_all_supported_institutions()
-        # print 'institutions = ',institutions
-        return render_template('onboarding/add_bank.html', institutions = institutions)
+        if len(current_user.memberships) == 0:
+            return redirect(url_for('.apply_for_membership'))
+        institutions = get_all_iav_supported_institutions()
+        breadcrumItems = get_breadcrum()
+        breadcrumItems[3]['active'] = True
+        return render_template('onboarding/add_bank.html', institutions = institutions, breadcrumItems = breadcrumItems)
     else:
         try:
             public_token = request.form['public_token']
@@ -269,6 +354,87 @@ def add_bank():
             response['error'] = 'true'
             # response['description'] = e
             return jsonify(response)
+
+@onboarding_bp.route('/add_random_deposit', methods=['GET', 'POST'])
+@login_required
+def add_random_deposit():
+    form = RandomDepositForm(request.form)
+    if form.validate_on_submit():
+        response = current_app.stripe_client.add_customer_bank(
+            current_user.stripe_customer_id,
+            account_number = form.account_number.data,
+            routing_number = form.routing_number.data,
+            currency = form.currency.data,
+            country = form.country.data,
+            account_holder_name = form.name.data)
+        logging.info('Added bank account to stripe resposne = {}'.format(response))
+        current_user.fis.append(Fi(
+            institution = response['bank_name'],
+            account_number_last_4 = response['last4'],
+            bank_account_id = response['id'],
+            verification_type = Fi.RANDOM_DEPOSIT,
+            status = Fi.UNVERFIED,
+            time_updated = datetime.now(),
+            time_created = datetime.now(),
+            access_token = common.generate_fake_token(5)))
+        # current_user.fi.verification_type = Fi.RANDOM_DEPOSIT
+
+        current_app.db_session.add(current_user)
+        current_app.db_session.commit()
+        return redirect(url_for('.application_complete'))
+    else:
+        return render_template('onboarding/random_deposit.html', form = form)
+
+@onboarding_bp.route('/start_account_verify_random_deposit', methods=['POST'])
+@login_required
+def start_account_verify_random_deposit():
+    fi_id = request.form['id']
+    print 'called start_account_verify_random_deposit...'
+    logging.info('Starting bank verification of fi id %s ' % fi_id)
+    session[constants.FI_ID_KEY] = fi_id
+    return redirect(url_for('.verify_account_random_deposit'))
+
+@onboarding_bp.route('/verify_account_random_deposit', methods=['GET', 'POST'])
+@login_required
+def verify_account_random_deposit():
+    logging.info('verify_account_random_deposit called with id = %s' % session[constants.FI_ID_KEY])
+    form = RandomDepositVerifyAccountForm(request.form)
+    if form.validate_on_submit():
+        try:
+            if session[constants.FI_ID_KEY] is None:
+                raise Exception('Missing information for bank account verification')
+
+            bank_account_id = None
+            for fi in current_user.fis:
+                print 'fi id = ',fi.id
+                if fi.id == int(session[constants.FI_ID_KEY]):
+                    print 'found match...'
+                    bank_account_id = fi.bank_account_id
+                    break
+
+            logging.info('About to verify bank account %s, customer id %s deposit1 %s deposit2 %s '
+            % (bank_account_id, current_user.stripe_customer_id, form.deposit1.data, form.deposit2.data))
+
+            response = current_app.stripe_client.verify_customer_bank(
+                current_user.stripe_customer_id,
+                bank_account_id,
+                form.deposit1.data,
+                form.deposit2.data)
+            logging.info('Verified bank account, response = ',response)
+            fi.status = Fi.VERIFIED
+            fi.time_updated = datetime.now()
+
+            current_app.db_session.add(fi)
+            current_app.db_session.commit()
+
+            flash('Bank account has been verified')
+            return redirect(url_for('.account'))
+        except Exception as e:
+            logging.error('failed to verify_account_random_deposit, exception %s' % e)
+            flash('Amounts does not match. Please try again')
+            return render_template('onboarding/verify_account_random_deposit.html', form=form)
+    else:
+        return render_template('onboarding/verify_account_random_deposit.html', form=form)
 
 @onboarding_bp.route('/application_complete', methods=['GET'])
 @login_required
@@ -333,8 +499,24 @@ def get_bank_info(bank_account_id):
             ai['institution_type'] = account['institution_type']
             return ai
 
-def has_applied_before(user):
-    return user.ssn != None and user.email != None and user.address != None
+def has_entered_personal_information(user):
+    if user.ssn == None or user.dob == None or user.driver_license_number == None:
+        return False
+
+    for address in user.addresses:
+        if address.type == Address.INDIVIDUAL:
+            return True
+
+    return False
+
+def has_entered_employer_information(user):
+    if user.employer_name == None or user.employer_phone_number == None:
+        return False
+    for address in user.addresses:
+        if address.type == Address.BUSINESS:
+            return True
+
+    return False
 
 
 # curl https://tartan.plaid.com/exchange_token \

@@ -1,47 +1,67 @@
-{% extends "base.html" %} {% block stylesheet %}
-<link rel="stylesheet" href={{url_for( 'static', filename='style-simple.css' )}}> {% endblock %} {% block content %} {% for m in get_flashed_messages() %}
+{% extends "base.html" %}
+{% block content %} {% for m in get_flashed_messages() %}
 <p class="main-info flow-text">{{ m }}</p>
 {% endfor %}
 
 {% include 'circular-wait.html' %}
 
 <section id="cover-image-section">
- <div class="row center">
-  <div class="col s12" id="main-heading-section">
-   <div class="cd-intro">
-    <h1 class="cd-headline letters type">
-        <span class="cd-words-wrapper waiting">
-          <b class="is-visible">Membership based lending program</b>
-          <b>Members pay no interest upto 30 days</b>
-          <b>40%-50% cheaper than Payday loans</b>
-          <b>Money transferred within 24 hours</b>
-          <b>No hidden fees</b>
-        </span>
-      </h1>
-   </div>
-   <div>
-    <a href="https://twitter.com/zipllyrocks" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @zipllyrocks</a>
-    <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
-   </div>
-   <div>
-    <div class="g-follow" data-annotation="none" data-height="24" data-href="//plus.google.com/u/0/109147772784942938986" data-rel="author"></div>
-   </div>
-  </div>
- </div>
-</section>
-<section id="signup-form-section" class="row center">
- <a id="signup-form" />
  <div class="row">
-  <p class="col s8 offset-s2 flow-text white-text">Leave us your email below and you'll be the first to try our service.</p>
+    <div class="col s12 center" id="main-heading-section">
+      <!-- <h2 class="pink-text">Don’t Miss This Incredible Opportunity!</h2> -->
+      <!-- <h4>Take advantage of Ziplly and get the <span class="pink-text">best short term loan</span> that is right for you.</h4>
+      <h4><span class="pink-text">Free interest</span> for the first
+        <span class="pink-text">30 days guaranteed! <sup>&nbsp;<a class="tiny-text" href="#how-it-works-link">learn more</a></sup></span></h4> -->
+    </div>
+    <h2 class="col s12 pink-text center">Stop Paying High Interest On Loans!</h2>
+    <h4 class="col s12 center">Find out why thousands of people are becoming Ziplly members Today!</h4>
+    <div id="benefits" class="col offset-s4 s6">
+      <ul>
+        <li>
+          <span class="benefit-item">No Hidden Fees</span>
+        </li>
+        <li>
+          <span class="benefit-item">Members Pay No Interest Up To 30 Days</span>
+        </li>
+        <li>
+          <span class="benefit-item">Money Is Transferred within 4 hours</span>
+        </li>
+        <li>
+          <span class="benefit-item">40-50% Cheaper Than PayDay Loans</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="signup-form-section">
+ <a class="signup-form" />
+ <div class="row">
+  <div class="col s12 flow-text center">
+    <h5 class="white-text">Get The 5 Proven Tips For Saving Money On Your Loan.</h5>
+  </div>
  </div>
- <form action="{{url_for('home_blueprint.register_user')}}" method="POST">
-  <div class="row">
-   <input class="offset-s4 col s4" name="email" type="email" placeholder="email" required>
-  </div>
-  <div class="row">
-   <button class="center notify-btn btn red">Get notified</button>
-  </div>
- </form>
+ <div class="row center">
+   <div class="col s4 offset-s4">
+     <form action="{{url_for('home_blueprint.register_user')}}" method="POST">
+       <div class="row">
+         <div class="col s12">
+           <input name="name" type="text" id="name" placeholder="name" required>
+         </div>
+       </div>
+       <div class="row">
+         <div class="col s12">
+           <input name="email" type="email" placeholder="email" required>
+         </div>
+       </div>
+       <div class="row center">
+         <button class="center notify-btn btn pink">Get your free kit</button>
+      </div>
+     </form>
+   </div>
+ </div>
+ <p class="lime-text text-darken-3 margin-top-medium small-text center">
+   Our privacy policy keeps your email safe and secure. We will never sell, rent, give, or divulge your email information to ANYONE.
+ </p>
 </section>
 <section id="our-story-section" class="sub-section">
  <h3 class="sub-section-header center">Why Ziplly?</h3>
@@ -49,33 +69,33 @@
   <div class="col 12">
    <ul class="center">
     <li class="col s4">
-     <p class="flow-text extra-large-text">
-      Pay No Interest for 30 days
+     <p class="flow-text large-text">
+      Interest free for 30 days
      </p>
      <hr/>
-     <p class="small-text">
+     <p class="normal-text">
       We don't charge you interest for 30 days after borrowing. Only after that do you pay
       a reasonable interest.
      </p>
     </li>
     <li class="col s4">
-     <p class="flow-text extra-large-text">
+     <p class="flow-text large-text">
       40%-50% cheaper than Payday loans
      </p>
      <hr/>
-     <p class="small-text">
-      If you pay back the loan within 30 days, pay no interest. Otherwise, you pay interest for
-      the additional time you take to repay.
+     <p class="normal-text">
+      We guarantee free interest if you pay back the loan withon 30 days. And we give
+      you additional time to repay with affordable interest after 30 days.
      </p>
     </li>
     <li class="col s4">
-     <p class="flow-text extra-large-text">
+     <p class="flow-text large-text">
       Get the money within 24 hours
      </p>
      <hr/>
-     <p class="small-text">
+     <p class="normal-text">
       Once you're a member, text us when you need to borrow. We will transfer the
-      money to your account within 24 hours.
+      money to your bank account within 24 hours.
      </p>
     </li>
    </ul>
@@ -316,7 +336,7 @@
       <img width="98%" height="auto" src={{url_for('static', filename='ziplly-interest-cost-comparison.png')}} />
     </div>
     <div class="col s6">
-      <img width="98%" height="auto" src={{url_for('static', filename='ziplly-interest-cost-comparison.png')}} />
+      <img width="98%" height="auto" src={{url_for('static', filename='ziplly-principal-comparison.png')}} />
     </div>
   </div>
 </div>
@@ -326,10 +346,35 @@
         We want to make borrowing money easier, cheaper and transparent.
     </h5>
 </section>
-<section id="signup-button-section" class="row center">
- <div class="col s8 offset-s2">
-  <a class="btn red" href="#signup-form">Pre register now</a>
+<section class="signup-form-section row">
+ <a class="signup-form" />
+ <div class="row">
+  <div class="col s12 flow-text center">
+    <h5 class="white-text">Get The 5 Proven Tips For Saving Money On Your Loan.</h5>
+  </div>
  </div>
+ <div class="row center">
+   <div class="col s4 offset-s4">
+     <form action="{{url_for('home_blueprint.register_user')}}" method="POST">
+       <div class="row">
+         <div class="col s12">
+           <input name="name2" type="text" id="name" placeholder="name" required>
+         </div>
+       </div>
+       <div class="row">
+         <div class="col s12">
+           <input name="email2" type="email" placeholder="email" required>
+         </div>
+       </div>
+       <div class="row center">
+         <button class="center notify-btn2 btn pink">Get your free kit</button>
+      </div>
+     </form>
+   </div>
+ </div>
+ <p class="lime-text text-darken-3 margin-top-medium small-text center">
+   Our privacy policy keeps your email safe and secure. We will never sell, rent, give, or divulge your email information to ANYONE.
+ </p>
 </section>
 <!-- <section id="enroll-now-section" class="sub-section center">
     <h3 class="sub-section-header ">Enroll now for early access</h3>

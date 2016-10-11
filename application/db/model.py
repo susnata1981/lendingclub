@@ -124,15 +124,6 @@ class Fi(Base):
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
-class Transaction(Base):
-    __tablename__ = 'transaction'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship('Account', back_populates='transaction')
-    data = Column(Text, nullable=False)
-    time_created = Column(DateTime)
-    time_updated = Column(DateTime)
-
 
 class Plan(Base):
     __tablename__ = "plan"
@@ -177,6 +168,19 @@ class Membership(Base):
     def get_status(self):
         return Membership.STATUS_NAME.get(self.status)
 
+class MembershipPayment(Base):
+    __tablename__ = "membership_payment"
+
+    FAILED, COMPLETED = range(2)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    memberhip_id = Column(Integer, ForeignKey('membership.id'))
+    membership = relationship('Membership', back_populates='payments')
+    status = Column(Integer, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_updated = Column(DateTime)
+    time_created = Column(DateTime)
+
 class IAVInstitutions(Base):
     __tablename__ = "iav_institutions"
 
@@ -184,12 +188,61 @@ class IAVInstitutions(Base):
     name = Column(String(256), nullable=False)
     plaid_id = Column(String(128), nullable=False)
 
+class RequestMoney(Base):
+    __tablename__ = "request_money"
+
+    PENDING, IN_PROGRESS, CANCELED, TRANFERRED, PAYMENT_DUE, PARTIAL_PAYMENT_COMPLETED, PAYMENT_COMPLETED = range(7)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    account_id = Column(Integer, ForeignKey('account.id'))
+    account = relationship('Account', back_populates="request_money_list")
+    amount = Column(Float, nullable=False)
+    status = Column(Integer, nullable=False)
+    payment_date = Column(DateTime, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_updated = Column(DateTime)
+    time_created = Column(DateTime)
+
+class ExtensionRequest(Base):
+    __tablename__ = "extensions"
+
+    PENDING, CANCELED, REJECTED, APPROVED = range(4)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(Integer, ForeignKey('request_money.id'))
+    request = relationship('RequestMoney', back_populates="extensions")
+    status = Column(Integer, nullable=False)
+    payment_date = Column(DateTime, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_updated = Column(DateTime)
+    time_created = Column(DateTime)
+
+class Transaction(Base):
+    __tablename__ = 'transaction'
+
+    PENDING, IN_PROGRESS, CANCELED, FAILED, COMPLETED = range(5)
+    BORROW, PAYMENT, INTEREST_CHARGE = range(3)
+    USER_INITIATED, AUTOMATIC, MANUAL = range(3)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(Integer, ForeignKey('request_money.id'))
+    transaction_type = Column(Integer, nullable=False)
+    stripe_transaction_id = Column(String(256), nullable=True)
+    status = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
+    initiated_by = Column(Integer, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    time_updated = Column(DateTime)
+
+
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
-Account.transaction = relationship('Transaction', back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 Account.employer_address = relationship('Address', uselist = False, back_populates='account')
-
+Account.request_money_list = relationship('RequestMoney', back_populates='account')
+RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request')
+Membership.payments = relationship('MembershipPayment', back_populates='membership')
 
 def create_plan():
     current_app.db_session.add(
@@ -240,7 +293,7 @@ def init_db():
         autocommit=False,
         autoflush=False,
         bind=engine))
-    # recreate_tables(engine)
+    recreate_tables(engine)
 
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()

@@ -1,9 +1,10 @@
 import sys, os, stripe_client, argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
-import config_loader
+import config_loader,logger
 
 CLIENT = None
+LOGGER = logger.getLogger('stripe_wrapper')
 
 def list_customers(args):
     func_args = {}
@@ -64,7 +65,11 @@ def add_customer_bank(args):
     func_args['account_holder_name'] = args.account_holder_name
     if args.token != '-1':
         func_args['token'] = args.token
-    print CLIENT.add_customer_bank(**func_args)
+
+    try:
+        print CLIENT.add_customer_bank(**func_args)
+    except Exception as e:
+        LOGGER.exception(e.message)
 
 def delete_customer_bank(args):
     print CLIENT.delete_customer_bank(args.cust_id, args.bank_id)
@@ -214,3 +219,8 @@ if __name__ == '__main__':
         account_holder_name='testy1 tester',
         set_default=True)
     '''
+
+#python stripe_wrapper.py add-customer-bank cus_9JY2j87VJHVqD5 -1 000111111116 US USD 110000000 'testy1 tester'
+#- Adding same bank to a customer : stripe.error.InvalidRequestError: Request req_9K0HroCGGQxl4O: A bank account with that routing number and account number already exists for this customer.
+#- Invalid routing number (!= 9 digits) : stripe.error.InvalidRequestError: Request req_9K7JETyGSLqbHH: Routing number must have 9 digits
+#- Incorrect routing number : stripe.error.InvalidRequestError: Request req_9K7L7CZ7QHcGOL: Invalid routing number

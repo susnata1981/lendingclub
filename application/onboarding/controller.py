@@ -8,7 +8,7 @@ import random
 from datetime import datetime
 import dateutil.relativedelta
 from flask.ext.login import current_user, login_required, login_user, logout_user
-from application.util import constants
+from application.util import constants, error
 from application import services, common
 from pprint import pprint
 import requests
@@ -454,8 +454,12 @@ def add_random_deposit():
                 currency = form.currency.data,
                 country = form.country.data,
                 account_holder_name = form.name.data)
-        except:
-            flash('This account number {0} has been already added'.format(form.account_number.data))
+        except error.UserInputError as e:
+            flash(e.message)
+            return render_template('onboarding/random_deposit.html', form = form)
+        except Exception as e:
+            logging.error('add_random_deposit::received exception %s' % e)
+            flash(constants.GENERIC_ERROR)
             return render_template('onboarding/random_deposit.html', form = form)
 
         logging.info('Added bank account to stripe resposne = {}'.format(response))
@@ -522,7 +526,7 @@ def verify_account_random_deposit():
             fi.time_updated = datetime.now()
             current_user.memberships.sort(lambda x: x.time_created)
             current_user.memberships[0].status = Membership.APPROVED
-            
+
             current_app.db_session.add(fi)
             current_app.db_session.add(current_user.memberships[0])
             create_fake_membership_payments()
@@ -532,9 +536,12 @@ def verify_account_random_deposit():
                 'class': 'info',
                 'content':'Bank account has been verified'})
             return redirect(url_for('.application_complete'))
+        except error.UserInputError as e:
+            flash(e.message)
+            return render_template('onboarding/verify_account_random_deposit.html', form=form)
         except Exception as e:
             logging.error('failed to verify_account_random_deposit, exception %s' % e)
-            flash('Amounts does not match. Please try again')
+            flash(constants.GENERIC_ERROR)
             return render_template('onboarding/verify_account_random_deposit.html', form=form)
     else:
         return render_template('onboarding/verify_account_random_deposit.html', form=form)

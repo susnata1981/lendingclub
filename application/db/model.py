@@ -87,7 +87,9 @@ class Account(Base):
 
     def get_open_request(self):
         for req in self.request_money_list:
-            if req.status != RequestMoney.CANCELED and req.status != RequestMoney.PAYMENT_COMPLETED:
+            if req.status != RequestMoney.CANCELED and \
+            req.status != RequestMoney.PAYMENT_COMPLETED and \
+            req.status != RequestMoney.REJECTED:
                 return req
         return None
 
@@ -210,7 +212,7 @@ class IAVInstitutions(Base):
 class RequestMoney(Base):
     __tablename__ = "request_money"
 
-    PENDING, IN_PROGRESS, CANCELED, TRANSFERRED, PAYMENT_DUE, PAYMENT_COMPLETED = range(6)
+    PENDING, IN_PROGRESS, CANCELED, REJECTED, TRANSFERRED, PAYMENT_DUE, PAYMENT_COMPLETED = range(7)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
@@ -221,6 +223,13 @@ class RequestMoney(Base):
     memo = Column(Text, nullable=True)
     time_updated = Column(DateTime)
     time_created = Column(DateTime)
+
+    def get_extension_count(self):
+        i = 0
+        for ext in extensions:
+            if ext.status == ExtensionRequest.APPROVED:
+                i++
+        return i
 
 class RequestMoneyHistory(Base):
     __tablename__ = "request_money_history"
@@ -303,12 +312,12 @@ Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 Account.employer_address = relationship('Address', uselist = False, back_populates='account')
-Account.request_money_list = relationship('RequestMoney', back_populates='account')
-RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request')
-RequestMoney.transactions = relationship('Transaction', back_populates='request')
-RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='RequestMoneyHistory.time_created')
-ExtensionRequest.history = relationship('ExtensionRequestHistory', back_populates='extension', order_by='ExtensionRequestHistory.time_created')
-Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='TransactionHistory.time_created')
+Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.id)')
+RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request', order_by='desc(ExtensionRequest.payment_date)')
+RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
+RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='desc(RequestMoneyHistory.time_created)')
+ExtensionRequest.history = relationship('ExtensionRequestHistory', back_populates='extension', order_by='desc(ExtensionRequestHistory.time_created)')
+Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='desc(TransactionHistory.time_created)')
 Membership.payments = relationship('MembershipPayment', back_populates='membership')
 
 def create_plan():

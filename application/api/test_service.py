@@ -25,8 +25,21 @@ if __name__ == '__main__':
     request_service = RequestService(db_session)
     account = db_session.query(model.Account).filter(model.Account.id == 1).one_or_none()
 
-    #req = request_service.create_request(account, 300)
+    req = request_service.create_request(account, 300)
     print 'Request status:{0}'.format(account.request_money_list[0].status)
 
     request_service.approve_request(account.request_money_list[0])
     print 'Request status:{0}'.format(account.request_money_list[0].status)
+
+    request_service.transfered_money(account.request_money_list[0])
+    print 'Request status:{0}'.format(account.request_money_list[0].status)
+
+    request_service.set_payment_due(account.request_money_list[0])
+    print 'Request status:{0}'.format(account.request_money_list[0].status)
+
+    request_service.create_extension(account.request_money_list[0])
+    print 'Request status:{0}'.format(account.request_money_list[0].status)
+
+    request_service.approve_extension(account.request_money_list[0].extensions[0])
+    print 'Request status:{0}'.format(account.request_money_list[0].status)
+

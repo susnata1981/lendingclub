@@ -13,7 +13,7 @@ import admin
 import traceback
 
 login_manager = LoginManager()
-login_manager.login_view = "onboarding_bp.login"
+login_manager.login_view = "account_bp.login"
 
 @login_manager.user_loader
 def load_user(id):
@@ -94,9 +94,19 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     from home.controller import home_blueprint
     app.register_blueprint(home_blueprint)
 
-    from onboarding.controller import onboarding_bp
-    app.register_blueprint(onboarding_bp)
+    # Account
+    from onboarding.account_controller import account_bp
+    app.register_blueprint(account_bp)
 
+    # Membership
+    from onboarding.membership_controller import membership_bp
+    app.register_blueprint(membership_bp)
+
+    # Lending
+    from lending.controller import lending_bp
+    app.register_blueprint(lending_bp)
+
+    # Admin
     from admin.controller import admin_bp
     app.register_blueprint(admin_bp)
 

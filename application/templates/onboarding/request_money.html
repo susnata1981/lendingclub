@@ -11,7 +11,7 @@
 {% endif %}
 
 <div class="row margin-top-large">
-  <form id="request-money-form" class="col s6 user-input" action={{url_for('onboarding_bp.request_money')}} method="post">
+  <form id="request-money-form" class="col s6 user-input" action={{url_for('lending_bp.request_money')}} method="post">
     <h5 class="bordered">Request Money Now</h5>
     <p class="flow-text">You can also text us at {{ config['PHONE_NUMBER'] }} to request money</p>
 

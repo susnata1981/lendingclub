@@ -21,7 +21,7 @@
      </div>
      {% endif %}
  <div class="row">
-  <form id="random_deposit_form" class="col s6 user-input" action={{url_for('onboarding_bp.add_random_deposit')}} method="post">
+  <form id="random_deposit_form" class="col s6 user-input" action={{url_for('membership_bp.add_random_deposit')}} method="post">
    <h4>Add bank through random deposit</h4> {{ form.csrf_token }}
    <div class="row">
     <div class="input-field col s12">
@@ -56,7 +56,7 @@
      <button class="btn">Add Bank</button>
     </div>
     <div class="col s4">
-      <a class="link" href={{ url_for('onboarding_bp.dashboard') }}>Cancel</a>
+      <a class="link" href={{ url_for('lending_bp.dashboard') }}>Cancel</a>
     </div>
    </div>
  </div>

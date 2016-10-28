@@ -24,7 +24,7 @@
         <h5>Verify Your Phone</h5>
         <p class="help-text">(enter 1111)</p>
         <form id="login_form" class="col s6 user-input"
-        action={{url_for('onboarding_bp.verify_phone_number')}} method="post">
+        action={{url_for('account_bp.verify_phone_number')}} method="post">
             {{ form.csrf_token }}
             <div class="row">
                 <div class="input-field col s12">
@@ -39,7 +39,7 @@
                     <span class="login-option">Didn't received verification code&nbsp;&nbsp;<a id="resend_btn" href="#">Resend It</a> </span>
                 </div>
                 <div class="col s8">
-                    <span class="login-option">Already verified&nbsp;&nbsp;<a href={{url_for('onboarding_bp.login')}}>Login now</a> </span>
+                    <span class="login-option">Already verified&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a> </span>
                 </div>
             </div>
     </div>

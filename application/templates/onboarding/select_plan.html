@@ -65,7 +65,7 @@
                   <td></td>
                   {% for p in plans %}
                   <td class="center">
-                    <form action={{url_for('onboarding_bp.select_plan')}} method="POST">
+                    <form action={{url_for('membership_bp.select_plan')}} method="POST">
                       {{ form.csrf_token }}
                       <input type="hidden" name="plan_id" value={{p.id}} />
                       <button class="btn">{{p.name}}</button>

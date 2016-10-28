@@ -23,7 +23,7 @@
       {% endif %}
     <div class="row">
         <form class="col s6 user-input margin-top-medium"
-        action={{url_for('onboarding_bp.enter_personal_information')}} method="POST">
+        action={{url_for('membership_bp.enter_personal_information')}} method="POST">
           <h4>Membership Application</h4>
            {{ form.csrf_token }}
             <div class="row">
@@ -80,7 +80,7 @@
                     <button class="btn">Next</button>
                 </div>
                 <div class="col s4">
-                    <a class="link-btn" href={{url_for('onboarding_bp.account')}}>Cancel Application</a>
+                    <a class="link-btn" href={{url_for('account_bp.account')}}>Cancel Application</a>
                 </div>
             </div>
     </form>

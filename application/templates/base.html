@@ -60,14 +60,14 @@
        <!-- Modal Trigger -->
        <!-- <li><a href={{ url_for('home_blueprint.contact_us') }}>Contact Us</a></li> -->
        {% if current_user.is_authenticated %}
-       <li><a href={{url_for('onboarding_bp.dashboard')}}>Dashboard</a></li>
-       <!-- <li><a href={{url_for('onboarding_bp.account')}}>Account</a></li> -->
+       <li><a href={{url_for('lending_bp.dashboard')}}>Dashboard</a></li>
+       <!-- <li><a href={{url_for('account_bp.account')}}>Account</a></li> -->
        <li>
-         <a href={{url_for('onboarding_bp.logout')}}>Logout</a>
+         <a href={{url_for('account_bp.logout')}}>Logout</a>
       </li>
       {% else %}
       <li><a href={{url_for('home_blueprint.index')}}>Home</a></li>
-      <li><a href={{url_for('onboarding_bp.login')}}>Login</a></li>
+      <li><a href={{url_for('account_bp.login')}}>Login</a></li>
       {% endif %}
       <!-- <li><a href="#">About</a></li> -->
      </ul>
@@ -80,14 +80,14 @@
            <a href="#!email"><span class="email">{{current_user.email}}</span></a>
          </div>
         </li>
-         <li><a href="{{url_for('onboarding_bp.request_money')}}">Request Money</a></li>
-         <li><a href="{{url_for('onboarding_bp.get_transaction_info')}}">Transactions</a></li>
+         <li><a href="{{url_for('lending_bp.request_money')}}">Request Money</a></li>
+         <li><a href="{{url_for('lending_bp.get_transaction_info')}}">Transactions</a></li>
          <li><div class="divider"></div></li>
-         <li><a href="{{url_for('onboarding_bp.get_membership_info')}}">Membership</a></li>
+         <li><a href="{{url_for('lending_bp.get_membership_info')}}">Membership</a></li>
          <li><div class="divider"></div></li>
-         <li><a href={{url_for('onboarding_bp.dashboard', tab='account')}}>Account</a></li>
+         <li><a href={{url_for('lending_bp.dashboard', tab='account')}}>Account</a></li>
          <li><div class="divider"></div></li>
-         <li><a href={{url_for('onboarding_bp.dashboard', tab='bank')}}>Bank Info</a></li>
+         <li><a href={{url_for('lending_bp.dashboard', tab='bank')}}>Bank Info</a></li>
        </ul>
        {% if current_user.is_authenticated %}
        <a href="#" id="sidenav-btn" data-activates="slide-out" class="btn-floating button-collapse"><i class="material-icons">menu</i></a>

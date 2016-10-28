@@ -33,7 +33,7 @@
         <div class="col s8 offset-s2">
             <h3>Verify Bank Account</h3>
             <button id="linkButton" class="btn">Verify Bank Account</button>
-            <form id="add-bank" method="POST" action={{url_for( 'onboarding_bp.save_user_info')}}></form>
+            <form id="add-bank" method="POST" action={{url_for( 'membership_bp.start_account_verify_random_deposit')}}></form>
             <script src="https://cdn.plaid.com/link/stable/link-initialize.js" data-client-name="Client Name" data-form-id="add-bank" data-key="test_key" data-product="auth" data-env="tartan">
             </script>
         </div>

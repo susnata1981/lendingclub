@@ -6,7 +6,7 @@
   <h5 class="bordered-header">Membership Status</h5>
     {% if current_user.memberships|length == 0 %}
   <p class="flow-text">You've not yet applied for membership&nbsp;
-   <a href={{url_for( 'onboarding_bp.enter_personal_information')}}>Apply Now</a>
+   <a href={{url_for( 'membership_bp.enter_personal_information')}}>Apply Now</a>
   </p>
   {% endif %} {% if current_user.memberships|length > 0 %}
   <table class="bordered responsive-table highlight">

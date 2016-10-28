@@ -21,7 +21,7 @@
        </div>
        {% endif %}
 <div class="row">
-    <form id="signup_form" class="col s6 user-input" action={{url_for('onboarding_bp.signup')}} method="post">
+    <form id="signup_form" class="col s6 user-input" action={{url_for('account_bp.signup')}} method="post">
         <h4>Signup</h4>
            {{ form.csrf_token }}
            <div class="row">
@@ -51,7 +51,7 @@
                     <button class="btn">Signup</button>
                 </div>
                 <div class="col s8">
-                    <span class="login-option">Already a member&nbsp;&nbsp;<a href={{url_for('onboarding_bp.login')}}>Login now</a> </span>
+                    <span class="login-option">Already a member&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a> </span>
                 </div>
             </div>
 </div>

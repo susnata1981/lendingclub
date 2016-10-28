@@ -145,23 +145,6 @@ class Fi(Base):
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
-class RequestMoney(Base):
-    __tablename__ = 'request_money_transaction'
-
-    UNPAID, PARTIALLY_PAID, PAID = range(3)
-    BORROW, INTEREST, PAYMENT = range(3)
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    parent_id = Column(Integer)
-    account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship('Account', back_populates='request_money_list')
-    amount = Column(Float, nullable=False)
-    transaction_type = Column(Integer, nullable=False)
-    interest_charge = Column(Float, nullable=False)
-    status = Column(Integer, nullable=False)
-    time_created = Column(DateTime)
-    time_updated = Column(DateTime)
-
 class Plan(Base):
     __tablename__ = "plan"
 
@@ -387,7 +370,7 @@ def init_db():
         autoflush=False,
         bind=engine))
     # recreate_tables(engine)
-    create_plan()
+    # create_plan()
 
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()

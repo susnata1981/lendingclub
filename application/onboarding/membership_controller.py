@@ -16,229 +16,9 @@ import logging
 import dateutil
 from dateutil.relativedelta import relativedelta
 
-onboarding_bp = Blueprint('onboarding_bp', __name__, url_prefix='/account')
+membership_bp = Blueprint('membership_bp', __name__, url_prefix='/membership')
 
-def generate_and_store_new_verification_code(account):
-    # verification_code = random.randint(1000, 9999)
-    verification_code = 1111
-    account.phone_verification_code = verification_code
-    current_app.db_session.add(account)
-    current_app.db_session.commit()
-    return verification_code
-
-@onboarding_bp.route('/verify', methods=['GET', 'POST'])
-def verify_phone_number():
-    form = PhoneVerificationForm(request.form)
-    if form.validate_on_submit():
-        account = get_account_by_id(session['account_id'])
-        if account.status == int(Account.UNVERIFIED) and \
-        form.verification_code.data == account.phone_verification_code:
-            account.status = Account.VERIFIED_PHONE
-
-            stripe_customer = current_app.stripe_client.create_customer(
-            account.phone_number)
-
-            account.stripe_customer_id = stripe_customer['id']
-            account.time_updated = datetime.now()
-            current_app.db_session.add(account)
-            current_app.db_session.commit()
-            return redirect(url_for('onboarding_bp.account_verified'))
-        else:
-            flash('Invalid verification code')
-    return render_template('onboarding/verify.html', form=form)
-
-@onboarding_bp.route('/account_verified', methods=['GET'])
-def account_verified():
-    return render_template('onboarding/account_verified.html')
-
-# ajax
-@onboarding_bp.route('/resend_verification', methods=['POST'])
-def resend_verification():
-    if session['account_id'] is None:
-        return jsonify({
-            'error': True,
-            'description': constants.MISSING_ACCOUNT
-        })
-    try:
-        account = get_account_by_id(session['account_id'])
-        verification_code = generate_and_store_new_verification_code(account)
-        target_phone = '+1' + account.phone_number
-        # services.phone.send_message(target_phone, constants.PHONE_VERIFICATION_MSG.format(verification_code))
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-            'error': True,
-            'description': traceback.print_exc()
-        })
-
-@onboarding_bp.route('/', methods=['GET', 'POST'])
-def signup():
-    if current_user.is_authenticated:
-        return redirect(url_for('.account'))
-
-    form = SignupForm(request.form)
-    if form.validate_on_submit():
-        existing_account = get_account_by_phone_number(form.phone_number.data)
-        if existing_account is not None:
-            flash('Account with this phone number already exists')
-            return render_template('onboarding/signup.html', form=form)
-
-        account = Account(
-           first_name = form.first_name.data,
-           last_name = form.last_name.data,
-           phone_number = form.phone_number.data,
-           password = form.password.data,
-           time_created = datetime.now(),
-           time_updated = datetime.now())
-        current_app.db_session.add(account)
-        current_app.db_session.commit()
-
-        # verify phone
-        session['account_id'] = account.id
-        verification_code = generate_and_store_new_verification_code(account)
-        target_phone = '+1' + form.phone_number.data.replace('-','')
-        # services.phone.send_message(target_phone, constants.PHONE_VERIFICATION_MSG.format(verification_code))
-        return redirect(url_for('onboarding_bp.verify_phone_number'))
-    return render_template('onboarding/signup.html', form=form)
-
-
-@onboarding_bp.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm(request.form)
-    if form.validate_on_submit():
-        try:
-            account = get_account_by_phone_number(form.phone_number.data)
-            if account == None:
-                flash(constants.INVALID_CREDENTIALS)
-                return render_template('onboarding/login.html', form=form)
-
-            # print 'Account = ',account,' Status = ',account.status
-            if account.status == Account.UNVERIFIED:
-                session['account_id'] = account.id
-                flash(constants.ACCOUNT_NOT_VERIFIED)
-                return redirect(url_for('onboarding_bp.verify_phone_number'))
-            elif account.password_match(form.password.data) and account.status == Account.VERIFIED_PHONE:
-                # session['logged_in'] = True
-                # session['account_id'] = account.id
-                login_user(account)
-                next = request.args.get('next')
-                # next_is_valid should check if the user has valid
-                # permission to access the `next` url
-                # print 'Next page =',next,' is_valid_next =',next_is_valid(next)
-                # if not next_is_valid(next):
-                #     return flask.abort(404)
-                return redirect(next or url_for('onboarding_bp.dashboard'))
-        except Exception as e:
-            print 'Exception::',e
-            print traceback.format_exc()
-            return render_template('404.html')
-    return render_template('onboarding/login.html', form=form)
-
-def fetch_financial_information():
-    for fi in current_user.fis:
-        response = get_bank_info(fi.bank_account_id)
-        fi.available_balance = response['available_balance']
-        fi.current_balance = response['current_balance']
-        fi.subtype = response['subtype']
-        fi.subtype_name = response['subtype_name']
-        fi.account_number_last_4 = response['account_number_last_4']
-        fi.institution_type = response['institution_type']
-
-@onboarding_bp.route('/logout', methods=['GET', 'POST'])
-def logout():
-    logout_user()
-    return redirect(url_for('.login'))
-
-@onboarding_bp.route('/dashboard', methods=['GET'])
-@login_required
-def dashboard():
-    if current_user.status != Account.VERIFIED_PHONE:
-        flash({
-            'content':'Please verify your phone first',
-            'class': 'error'
-        })
-        return redirect(url_for('.verify_phone_number'))
-    valid_tabs = ['account', 'request_money', 'membership', 'transaction', 'bank']
-    tab = request.args.get('tab')
-    if tab not in valid_tabs:
-        return redirect(url_for('.request_money'))
-
-    data = {}
-    form = RequestMoneyForm(request.form)
-
-    if len(current_user.memberships) == 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You application is incomplete'
-        data['notification_message_title'] = 'Apply Now'
-        data['notification_url'] = 'onboarding_bp.apply_for_membership'
-    elif len(current_user.fis) == 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You have not added bank account yet'
-        data['notification_message_title'] = 'Add Bank'
-        data['notification_url'] = 'onboarding_bp.add_bank'
-    elif has_unverified_bank_account():
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You have not verified your bank account'
-        data['notification_message_title'] = 'Verify Account'
-        data['notification_url'] = 'onboarding_bp.verify_account_random_deposit'
-    elif is_eligible_to_borrow() > 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'info'
-        data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
-
-    session['data'] = data
-    if tab == 'request_money':
-        return redirect(url_for('.request_money'))
-    return render_template('onboarding/dashboard.html', data=data, tab=tab, form=form)
-
-def is_eligible_to_borrow():
-    current_user.memberships.sort(key = lambda x : x.time_created)
-    allowed_borrow_frequency = current_user.memberships[0].plan.loan_frequency
-
-    if not current_user.request_money_list:
-        return allowed_borrow_frequency
-    for txn in current_user.request_money_list:
-        if txn.transaction_type == RequestMoney.BORROW and txn.status == RequestMoney.UNPAID:
-            return 0
-
-    return allowed_borrow_frequency - len(filter(lambda x: x.transaction_type == RequestMoney.BORROW, current_user.transactions))
-
-
-def has_unverified_bank_account():
-    for fi in current_user.fis:
-        if fi.status == Fi.UNVERFIED:
-            session[constants.FI_ID_KEY] = fi.id
-            return True
-    return False
-
-@onboarding_bp.route('/home', methods=['GET'])
-@login_required
-def account():
-    if current_user.status != Account.VERIFIED_PHONE:
-        flash({
-            'content':'Please verify your phone first',
-            'class': 'error'
-        })
-        return redirect(url_for('.verify_phone_number'))
-
-    data = {}
-    eligible_for_membership_reapplication = True
-    for membership in current_user.memberships:
-        if membership.is_active() or membership.is_pending():
-            eligible_for_membership_reapplication = False
-    data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
-
-    if len(current_user.memberships) == 0:
-        data['show_notification'] = True
-        data['notification_message'] = 'You application is incomplete'
-        data['notification_url'] = 'onboarding_bp.apply_for_membership'
-
-    return render_template('onboarding/account.html', data=data)
-
-@onboarding_bp.route('/apply_for_membership', methods=['GET'])
+@membership_bp.route('/apply_for_membership', methods=['GET'])
 @login_required
 def apply_for_membership():
     if len(current_user.memberships) == 0:
@@ -251,7 +31,7 @@ def apply_for_membership():
 
     return redirect(url_for('.enter_personal_information'))
 
-@onboarding_bp.route('/enter-personal-information', methods=['GET', 'POST'])
+@membership_bp.route('/enter-personal-information', methods=['GET', 'POST'])
 @login_required
 def enter_personal_information():
     if has_entered_personal_information(current_user):
@@ -308,7 +88,7 @@ def get_breadcrum():
     ]
     return breadcrumItems
 
-@onboarding_bp.route('/enter_employer_information', methods=['GET', 'POST'])
+@membership_bp.route('/enter_employer_information', methods=['GET', 'POST'])
 @login_required
 def enter_employer_information():
     if has_entered_employer_information(current_user):
@@ -348,7 +128,7 @@ def enter_employer_information():
         form=form, breadcrumItems = breadcrumItems)
 
 
-@onboarding_bp.route('/select_plan', methods=['GET', 'POST'])
+@membership_bp.route('/select_plan', methods=['GET', 'POST'])
 @login_required
 def select_plan():
     form = SelectPlanForm(request.form)
@@ -373,12 +153,12 @@ def select_plan():
     breadcrumItems[2]['active'] = True
     return render_template('onboarding/select_plan.html', form=form, plans=plans, breadcrumItems = breadcrumItems)
 
-@onboarding_bp.route('/apply_next', methods=['POST', 'POST'])
+@membership_bp.route('/apply_next', methods=['POST', 'POST'])
 def apply_next():
     return redirect(url_for('onboarding_bp.add_bank'))
 
 # AJAX CALL
-@onboarding_bp.route('/add_bank', methods=['GET', 'POST'])
+@membership_bp.route('/add_bank', methods=['GET', 'POST'])
 @login_required
 def add_bank():
     if request.method == 'GET':
@@ -441,7 +221,7 @@ def add_bank():
             response['error'] = 'true'
             return jsonify(response)
 
-@onboarding_bp.route('/add_random_deposit', methods=['GET', 'POST'])
+@membership_bp.route('/add_random_deposit', methods=['GET', 'POST'])
 @login_required
 def add_random_deposit():
     form = RandomDepositForm(request.form)
@@ -483,7 +263,7 @@ def add_random_deposit():
     else:
         return render_template('onboarding/random_deposit.html', form = form)
 
-@onboarding_bp.route('/start_account_verify_random_deposit', methods=['POST'])
+@membership_bp.route('/start_account_verify_random_deposit', methods=['POST'])
 @login_required
 def start_account_verify_random_deposit():
     fi_id = request.form['id']
@@ -492,7 +272,7 @@ def start_account_verify_random_deposit():
     session[constants.FI_ID_KEY] = fi_id
     return redirect(url_for('.verify_account_random_deposit'))
 
-@onboarding_bp.route('/verify_account_random_deposit', methods=['GET', 'POST'])
+@membership_bp.route('/verify_account_random_deposit', methods=['GET', 'POST'])
 @login_required
 def verify_account_random_deposit():
     form = RandomDepositVerifyAccountForm(request.form)
@@ -562,19 +342,19 @@ def mark_bank_as_verified(bank_account_id):
             create_fake_membership_payments()
             current_app.db_session.commit()
 
-@onboarding_bp.route('/application_complete', methods=['GET'])
+@membership_bp.route('/application_complete', methods=['GET'])
 @login_required
 def application_complete():
     return render_template('onboarding/success.html')
 
 
-@onboarding_bp.route('/add_bank_random_deposit_success', methods=['GET'])
+@membership_bp.route('/add_bank_random_deposit_success', methods=['GET'])
 @login_required
 def add_bank_random_deposit_success():
     return render_template('onboarding/add_bank_random_deposit_success.html')
 
 
-@onboarding_bp.route('/memberships', methods=['GET'])
+@membership_bp.route('/memberships', methods=['GET'])
 @login_required
 def get_membership_info():
     data = create_notifications()
@@ -587,73 +367,6 @@ def get_membership_info():
                 request_money_enabled = False
 
     return render_template('onboarding/account-membership-section.html', data=data)
-
-@onboarding_bp.route('/request_money', methods=['GET','POST'])
-@login_required
-def request_money():
-    form = RequestMoneyForm(request.form)
-    data = create_notifications()
-    request_money_enabled = False
-    if current_user.memberships:
-        current_user.memberships.sort(lambda x: x.time_created)
-        request_money_enabled = current_user.memberships[0].status == Membership.APPROVED
-
-    print 'checking past transactions...'
-    for t in current_user.request_money_list:
-        if t.transaction_type == RequestMoney.BORROW and t.status == RequestMoney.UNPAID:
-            data['show_notification'] = True
-            data['notification_class'] = 'info' if request.method == 'GET' else 'error'
-            data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(current_user.transactions[0].amount, next_month(t.time_created))
-            request_money_enabled = False
-            return render_template('onboarding/request_money.html', data=data,
-            request_money_enabled = request_money_enabled, form=form)
-
-    if form.validate_on_submit():
-        if form.requested_amount.data > current_user.memberships[0].plan.max_loan_amount:
-            data = {}
-            data['show_notification'] = True
-            data['notification_class'] = 'error'
-            data['notification_message_description'] = 'As per your membership plan, the maximum you can borrow is {}'.format(current_user.memberships[0].plan.max_loan_amount)
-            return render_template('onboarding/request_money.html',
-            data=data, request_money_enabled = request_money_enabled, form=form)
-        try:
-            print 'saving transaction...'
-            transaction = RequestMoney(
-                account_id = current_user.id,
-                amount = form.requested_amount.data,
-                interest_charge = 0,
-                status = RequestMoney.UNPAID,
-                transaction_type = RequestMoney.BORROW,
-                time_updated = datetime.now(),
-                time_created = datetime.now())
-
-            current_user.transactions.append(transaction)
-            current_app.db_session.add(current_user)
-            current_app.db_session.add(transaction)
-            current_app.db_session.commit()
-
-            data = {}
-            data['show_notification'] = True
-            data['notification_class'] = 'info'
-            data['notification_message_description'] = 'We have received your request to borrow ${0}. This will be transferred to your account in 1 business day'.format(form.requested_amount.data)
-        except Exception as e:
-            traceback.print_exc
-            logging.error('request money failed with exception ',e)
-    return render_template('onboarding/request_money.html',
-    data=data, request_money_enabled = request_money_enabled, form=form)
-
-@onboarding_bp.route('/transactions', methods=['GET'])
-@login_required
-def get_transaction_info():
-    data = create_notifications()
-    for t in current_user.request_money_list:
-        if t.transaction_type == RequestMoney.BORROW and t.status == RequestMoney.UNPAID:
-            data['show_notification'] = True
-            data['notification_class'] = 'info'
-            data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(current_user.transactions[0].amount, next_month(t.time_created))
-
-    return render_template('onboarding/transactions.html', data=data)
-
 
 def next_month(date):
     future_date = date.today()+ relativedelta(months=1)
@@ -782,8 +495,67 @@ def create_fake_membership_payments():
         current_app.db_session.add(m)
         current_app.db_session.add(mp)
 
-# curl https://tartan.plaid.com/exchange_token \
-#    -d client_id="57bbc58566710877408d093e" \
-#    -d secret="0f3e8ecc989e5e6ed776b732d76161" \
-#    -d public_token="304cb58348ae917b3afe2b430a45b87744ffd1884a9fae31ba87869fe1222983cd626d9c27a92ef92b64393fdccfadb41eec4abce649d0d974e70314964e04cf" \
-#    -d account_id="nban4wnPKEtnmEpaKzbYFYQvA7D7pnCaeDBMy"
+def exchange_public_token(public_token, account_id):
+    Client.config({
+        'url': 'https://tartan.plaid.com'
+    })
+    client = Client(
+    client_id=current_app.config['CLIENT_ID'],
+    secret=current_app.config['CLIENT_SECRET'])
+
+    #exchange token
+    response = client.exchange_token(public_token)
+    print 'token exhcnage response = %s' % client.access_token
+    pprint(client)
+
+    return {
+        'access_token': client.access_token,
+        'stripe_bank_account_token': client.stripe_bank_account_token
+    }
+
+def exchange_token(public_token, account_id):
+    payload = {
+        'client_id':current_app.config['CLIENT_ID'],
+        'secret':current_app.config['CLIENT_SECRET'],
+        'public_token':public_token,
+        'account_id':account_id
+    }
+    print 'payload ',json.dumps(payload)
+
+    response = requests.post('https://tartan.plaid.com/exchange_token', data=payload)
+
+    # print 'response = ',response.text, 'code = ',response.status_code
+    if response.status_code == requests.codes.ok:
+        return response.text
+    else:
+        raise Exception('Failed to exchange token')
+
+def get_bank_info(bank_account_id):
+    if len(current_user.fis) == 0:
+        return
+    print 'getting bank info...'
+    Client.config({
+        'url': 'https://tartan.plaid.com',
+        'suppress_http_errors': True
+    })
+    client = Client(
+    client_id=current_app.config['CLIENT_ID'],
+    secret=current_app.config['CLIENT_SECRET'],
+    access_token=current_user.fis[0].access_token)
+
+    # print 'response = ',client.auth_get()
+    print '***************************** get-bank-info ='
+    pprint(client.auth_get())
+    response = client.auth_get().json()
+    print 'get_bank_info response = ',response
+
+    ai = {}
+    for account in response['accounts']:
+        if account['_id'] == bank_account_id:
+            ai['available_balance'] = account['balance']['available']
+            ai['current_balance'] = account['balance']['current']
+            ai['subtype'] = account['subtype']
+            ai['subtype_name'] = account['meta']['name']
+            ai['account_number_last_4'] = account['meta']['number']
+            ai['institution_type'] = account['institution_type']
+            return ai

@@ -46,7 +46,7 @@
             <p>We will debit and credit amounts less than $1 to your bank account. In 3-5 business
               days they'll appear in your bank statement. You'll have to come back and enter the amoun
               to verify your account</p>
-            <a class="btn" href={{url_for('onboarding_bp.add_random_deposit')}}>Initiate random deposit</a>
+            <a class="btn" href={{url_for('membership_bp.add_random_deposit')}}>Initiate random deposit</a>
         </div>
       </td>
       <td class="col s5 padding-medium">
@@ -65,7 +65,7 @@
 
   <!-- <div class="row">
     <div class="col s10">
-      <a class="link" href={{ url_for('onboarding_bp.select_plan') }}>Back to select plan</a>
+      <a class="link" href={{ url_for('membership_bp.select_plan') }}>Back to select plan</a>
     </div>
   </div> -->
 
@@ -84,7 +84,7 @@
     $("#progress-bar").show();
 
     $.post(
-      '{{url_for('onboarding_bp.add_bank')}}',
+      '{{url_for('membership_bp.add_bank')}}',
       {
         public_token: public_token,
         account_id: metadata.account_id,
@@ -101,7 +101,7 @@
           $('div.error-block').show();
         } else {
           Materialize.toast('Bank account added', 1500);
-          window.location.replace('{{url_for('onboarding_bp.application_complete')}}');
+          window.location.replace('{{url_for('membership_bp.application_complete')}}');
         }
       }
     )}

@@ -20,3 +20,5 @@ pyasn1
 sendgrid
 gcloud
 stripe
+mailjet
+mailjet-rest

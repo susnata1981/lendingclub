@@ -13,6 +13,10 @@ home_blueprint = Blueprint('home_blueprint', __name__)
 def index():
     return render_template('home/index-fiverr.html')
 
+@home_blueprint.route('/623a6d00bc6b0c4e7c07136217ab2a8c.txt', methods=['GET'])
+def email_verification():
+    return ""
+
 @home_blueprint.route('/experiment-color', methods=['GET'])
 def experiment_color():
     return render_template('home/index.html')
@@ -34,17 +38,21 @@ def register_user():
 def register_user_ajax():
     if request.method == 'POST':
         try:
-            email = request.form['email']
+            to_email = request.form['email']
             name = request.form['name']
-            user = User(name = name, email = email, time_created = datetime.now())
+            user = User(name = name, email = to_email, time_created = datetime.now())
             current_app.db_session.add(user)
             current_app.db_session.commit()
-            logging.info('Saved user %s' % email)
+            logging.info('Saved user %s' % to_email)
             mail.send(current_app.config['ADMIN_EMAIL'],
-            email,
+            to_email,
             constants.SIGNUP_EMAIL_SUBJECT,
             constants.SIGNUP_EMAIL_BODY)
-            return jsonify(email=email)
+            # send_mail(
+            # to_email,
+            # constants.SIGNUP_EMAIL_SUBJECT,
+            # constants.SIGNUP_EMAIL_BODY)
+            return jsonify(email=to_email)
         except Exception as e:
             logging.error('failed to save user, error = %s' % str(e))
             return jsonify(

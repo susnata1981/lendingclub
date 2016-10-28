@@ -1,27 +1,49 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container">
-    <div class="row margin-top-large">
-      {% for message in get_flashed_messages() %}
-      <p class="error">{{ message }}</p>
-      {% endfor %}
-
+<div class="container margin-top-large">
+   {% if get_flashed_messages() | length > 0 %}
+    <div class="row">
+        <div class="col s6 error-block">
+            {% for message in get_flashed_messages() %}
+            <div class="error-item">{{ message }}</div>
+            {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    {% if form.errors %}
+    <div class="row">
+       <div class="col s6 error-block">
+           {% for field in form %}
+             {% for m in field.errors %}
+              <div class="error-item">{{ m }}</div>
+             {% endfor %}
+           {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <div class="row">
+        <h5>Verify Your Phone</h5>
+        <p class="help-text">(enter 1111)</p>
         <form id="login_form" class="col s6 user-input"
-        action={{url_for( 'onboarding_bp.verify_phone_number')}} method="post">
-            <h4 class="center">Verify Phone</h4> {{ form.csrf_token }}
+        action={{url_for('onboarding_bp.verify_phone_number')}} method="post">
+            {{ form.csrf_token }}
             <div class="row">
                 <div class="input-field col s12">
                     {{form.verification_code.label}} {{form.verification_code}}
                 </div>
             </div>
             <div class="row">
-                <div class="col s4">
+                <div class="col s12">
                     <button class="btn">Verify</button>
                 </div>
-                <div class="col s4">
-                    <button id="resend_btn" class="btn">Resend</button>
+                <div class="col s12 margin-top-medium">
+                    <span class="login-option">Didn't received verification code&nbsp;&nbsp;<a id="resend_btn" href="#">Resend It</a> </span>
+                </div>
+                <div class="col s8">
+                    <span class="login-option">Already verified&nbsp;&nbsp;<a href={{url_for('onboarding_bp.login')}}>Login now</a> </span>
                 </div>
             </div>
     </div>
     </form>
+  </div>
 </div>
 {% endblock %}

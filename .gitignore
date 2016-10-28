@@ -4,3 +4,4 @@ env/*
 !lib/README.md
 lib/*
 .DS_Store
+venv/*

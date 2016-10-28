@@ -1,22 +1,25 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container">
- <div class="row">
-  <div class="col s6 margin-top-large">
-   {% for message in get_flashed_messages() %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.name.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.country.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.currency.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.routing_number.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %} {% for message in form.account_number.errors %}
-   <div class="error">{{ message }}</div>
-   {% endfor %}
-  </div>
- </div>
+<div class="container margin-top-large">
+  {% if get_flashed_messages() | length > 0 %}
+   <div class="row">
+       <div class="col s6 error-block">
+           {% for message in get_flashed_messages() %}
+           <div class="error-item">{{ message }}</div>
+           {% endfor %}
+       </div>
+     </div>
+   {% endif %}
+   {% if form.errors %}
+   <div class="row">
+      <div class="col s6 error-block">
+          {% for field in form %}
+            {% for m in field.errors %}
+             <div class="error-item">{{ m }}</div>
+            {% endfor %}
+          {% endfor %}
+       </div>
+     </div>
+     {% endif %}
  <div class="row">
   <form id="random_deposit_form" class="col s6 user-input" action={{url_for('onboarding_bp.add_random_deposit')}} method="post">
    <h4>Add bank through random deposit</h4> {{ form.csrf_token }}
@@ -37,7 +40,7 @@
    </div>
    <div class="row">
     <div class="input-field col s12">
-     {{ form.currency }} 
+     {{ form.currency }}
     </div>
    </div>
    <div class="row">
@@ -52,15 +55,13 @@
     <div class="col s4">
      <button class="btn">Add Bank</button>
     </div>
+    <div class="col s4">
+      <a class="link" href={{ url_for('onboarding_bp.dashboard') }}>Cancel</a>
+    </div>
    </div>
  </div>
  </form>
 </div>
 </div>
 
-<div class="row">
-  <div class="col s10">
-    <a class="link" href={{ url_for('onboarding_bp.add_bank') }}>Back to add bank</a>
-  </div>
-</div>
 {% endblock %}

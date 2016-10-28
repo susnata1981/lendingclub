@@ -1,5 +1,5 @@
 <div class="row"> <!-- profile section -->
-  <h4 class="bordered-header">Personal Information</h4>
+  <h5 class="bordered-header">Personal Information</h5>
   <div class="col s12">
     <table>
       <tbody>
@@ -23,20 +23,20 @@
         </tr>
         <tr>
           <td class="flow-text">Address</p></td>
-          {% for addr in current_user.addresses %}
-            {% if addr.type == 0 %}
-            <td class="flow-text">
-              {% if current_user.address.street1 %}
-              {{current_user.address.street1}} &nbsp; {{current_user.address.city}} &nbsp;
-              {{current_user.address.state}} &nbsp; {{current_user.address.postal_code}}
+          {% if current_user.addresses | length > 0 %}
+            {% for addr in current_user.addresses %}
+              {% if addr.address_type == 0 %}
+                <td class="flow-text">
+                  {% if addr.street1 %}
+                  {{addr.street1}} &nbsp; {{addr.city}} &nbsp;
+                  {{addr.state}} &nbsp; {{addr.postal_code}}
+                  {% endif %}
+                </td>
               {% endif %}
-
-              {% if not current_user.address.street1 %}
-              <span>None</span>
-              {% endif %}
-            </td>
-            {% endif %}
-          {% endfor %}
+            {% endfor %}
+          {% else %}
+            <td class="flow-text">No Membership</td>
+          {% endif %}
         </tr>
         <tr>
           <td class="flow-text">Joining date</td>

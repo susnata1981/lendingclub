@@ -5,12 +5,22 @@
       <table>
         <thead>
           <tr>
-            <td class="flow-text">Institution Name</td>
-            <td class="flow-text">Account Type</td>
-            <td class="flow-text">Status</td>
-            <td class="flow-text">Last 4</td>
-            <td class="flow-text">Date created</td>
-            <td class="flow-text"></td>
+            <td>
+              <h6>Institution Name</h6>
+            </td>
+            <td>
+              <h6>Account Type</h6>
+            </td>
+            <td>
+              <h6>Status</h6>
+            </td>
+            <td>
+              <h6>Last 4</h6>
+            </td>
+            <td>
+              <h6>Date created</h6>
+            </td>
+            <td></td>
           </tr>
         </thead>
         <tbody>
@@ -27,7 +37,7 @@
                   VERIFIED
                 {% endif %}
               </td>
-              <td class="flow-text">{{ fi.account_number_last_4 }}</td>
+              <td class="flow-text">xxxx-xxxx-xxxx-{{ fi.account_number_last_4 }}</td>
               <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
               {% if fi.verification_type == 1 and fi.status == 0 %}
               <td class="flow-text">
@@ -43,8 +53,12 @@
         </tbody>
       </table>
       {% if current_user.fis | length == 0 %}
-      <span class="flow-text">No banks added to the account <a href={{url_for('onboarding_bp.add_bank')}}>Add Bank</a>
+      <div class="margin-top-medium">
+      <span class="flow-text">No banks added to your account yet. <a href={{url_for('onboarding_bp.add_bank')}}>Add Bank Now</a>
         </span>
+      </div>
+      {% else %}
+      <a class="btn" href={{url_for('onboarding_bp.add_bank')}}>Add another bank</a>
       {% endif %}
     </div>
   </div> <!-- end of bank info section -->

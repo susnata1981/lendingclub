@@ -13,4 +13,3 @@ class SystemError(Exception):
     def __init__(self, display_message=None, actual_message=None):
         super(UserInputError, self).__init__(display_message)
         self.my_message = actual_message
-

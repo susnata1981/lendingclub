@@ -1,12 +1,37 @@
 body {
     font-family: 'Roboto', sans-serif;
 }
+
+#content {
+  min-height: 500px;
+}
+
+#demo-tag {
+    position: fixed;
+    background: url('demo.png') no-repeat;
+    width: 64px;
+    height: 64px;
+    top: 0;
+    right: 0;
+}
+
 nav {
   background-color: #006064;
 }
 
 nav a {
   color: #333 !important;
+}
+
+#sidenav-btn {
+  position: absolute;
+  top: 88px;
+  left: 24px;
+  display: inline-block;
+}
+
+#nav-mobile {
+    margin-right: 32px !important;
 }
 
 .header-item {
@@ -16,7 +41,7 @@ nav a {
 .page-footer {
     background-color: #e1f5fe !important;
     padding-top: 0 !important;
-    margin: 0px !important;
+    margin: 120px 0 0 0 !important;
     color: #333;
 }
 
@@ -36,6 +61,12 @@ select {
   margin-left: 60px;
 }
 
+.help-text {
+  color: #a9a9a9;
+  font-size: 15px;
+  font-style: italic;
+}
+
 h1, h2, h3, h4, h5 {
     color: #555;
 }
@@ -48,22 +79,56 @@ figure {
     padding: 0;
 }
 
+.link-btn {
+  display: inline-block;
+  height: 36px;
+  line-height: 36px;
+}
+
 .underline {
     border-bottom: 1px solid #aaa;
 }
 
+.padding-medium {
+  padding: 12px;
+}
+
 .error-block {
  background-color: #FBB0B0;
- padding: 12px;
+ padding: 16px;
 }
 
 .error-item {
   margin: 12px 6px;
+  font-size: 1.1em;
 }
 
 .error {
  background-color: #FBB0B0;
- padding: 12px;
+ padding: 16px;
+ font-size: 1.1em;
+}
+
+.info {
+  background: #dcedc8;
+  padding: 16px;
+  font-size: 1.1em;
+}
+
+.warning {
+  background: #ffcdd2;
+  display: block;
+  height: 20px;
+  padding: 10px;
+}
+
+.warning p {
+  font-family: arial, sans-serif;
+  font-size: 1.1em;
+}
+
+form {
+  padding: 8px !important;
 }
 
 .dark-text {
@@ -102,8 +167,8 @@ figure {
     background-position: center;
 }
 
-.nav-wrapper {
-  color: #333 !important;
+div.nav-wrapper li a {
+  color: #fff !important;
 }
 
 .bordered-header {
@@ -148,6 +213,10 @@ figure {
 
 .page-footer > .container {
   padding: 12px;
+}
+
+.bank-not-listed-div {
+  margin-left: -20px !important;
 }
 
 #payday-cartoon {
@@ -257,6 +326,17 @@ figure {
   margin: 24px 0;
 }
 
+#progress-bar {
+  display: none;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  left:50%;
+  z-index: 100;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
 .modal-content {
   padding: 4px !important;
 }
@@ -302,11 +382,11 @@ figure {
 }
 
 #circular-wait-section {
-    display: none;
+    display: hidden;
     position: fixed;
     left: 50%;
     right: 50%;
-    top: 50%;
+    top: 30%;
 }
 
 #toast-container {
@@ -519,4 +599,30 @@ form.user-input {
 }
 /*****************************************/
 
+/***************** add bank section *******************/
+#bank-verification-methods-section {
+  margin: 0 -0.75rem;
+}
+
+#bank-verification-methods-section p {
+  margin: 10px 0;
+}
+
+#bank-verification-methods-section table td {
+  background: #f9f9f9;
+  padding: 12px;
+  margin-right: 20px;
+}
+
+.verification-method-box {
+  height: 280px;
+  position: relative;
+}
+
+.verification-method-box a {
+  display: inline-block;
+  position: absolute;
+  bottom: 10px;
+}
+/***********************************************************************/
 </style>

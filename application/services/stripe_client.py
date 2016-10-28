@@ -1,19 +1,30 @@
-import stripe
+import stripe, time, inspect, distutils, sys
 from datetime import datetime, timedelta, date
-import time
 from flask import current_app
+from flask.ext.login import current_user
+
+try:
+    from application.util import error, logger, constants
+except ImportError:
+    import sys, os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
+    import error, logger, constants
 
 def init():
     current_app.stripe_client = init_standalone(current_app.config)
 
 def init_standalone(config):
     api_key = 'test key'
-    if config['ENABLE_PRODUCTION_MODE']:
+    production_mode = config['ENABLE_PRODUCTION_MODE']
+    if type(production_mode) != type(True):
+        production_mode = distutils.util.strtobool(production_mode)
+
+    if production_mode:
         api_key = config['STRIPE_SECRET_KEY']
     else:
         api_key = config['STRIPE_SECRET_KEY_TEST']
 
-    print 'api key = ',api_key
+    #print 'api key = ',api_key
     return StripeClass(api_key)
 
 def append_error(msg, err):
@@ -33,14 +44,37 @@ def get_created_after(no_of_days_ago):
     return created_after
 
 class StripeClass(object):
+
     def __init__(self, api_key):
         stripe.api_key = api_key
+        self.LOGGER = logger.getLogger(__name__)
+
+    def f(self, func):
+        def stripe_call(*args, **kwargs):
+            user_id = 'NOT_SET'
+            try:
+                if current_user:
+                    user_id = current_user.get_id()
+
+                return func(*args, **kwargs)
+            except (stripe.error.InvalidRequestError, stripe.error.CardError) as e:
+                stack = inspect.stack()
+                self.LOGGER.error('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
+                    stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
+
+                raise error.UserInputError(e.message, e.param)
+            except Exception as e:
+                stack = inspect.stack()
+                self.LOGGER.exception('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
+                    stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
+                raise error.SystemError(constants.GENERIC_ERROR,e.message)
+        return stripe_call
 
     def list_customers(self, created_in_last_days = 30, limit = 25, ending_before = None, starting_after = None):
         '''
             If we want to get all cutomers, i.e not default to 30 days back then set created_in_last_days = None during the call.
         '''
-        return stripe.Customer.list(created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
+        return self.f(stripe.Customer.list)(created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
                 starting_after=starting_after,include=["total_count"])
 
     def create_customer(self, ph_no):
@@ -53,8 +87,7 @@ class StripeClass(object):
             There is no API in Stripe to check if a customer already exists.
             The stripe cust_id has to be stored in local DB
         """
-        cu = stripe.Customer.create(metadata={'phone':ph_no})
-        return cu
+        return self.f(stripe.Customer.create)(metadata={'phone':ph_no})
 
     def get_customer(self, cust_id):
         msg = ''
@@ -62,8 +95,7 @@ class StripeClass(object):
             msg = append_error(msg, 'cust_id is required')
         if msg:
             raise ValueError(msg)
-
-        return stripe.Customer.retrieve(cust_id)
+        return self.f(stripe.Customer.retrieve)(cust_id)
 
     def delete_customer(self, cust_id):
         msg = ''
@@ -71,7 +103,8 @@ class StripeClass(object):
             msg = append_error(msg, 'cust_id is required')
         if msg:
             raise ValueError(msg)
-        stripe.Customer.retrieve(cust_id).delete()
+        cu = self.f(stripe.Customer.retrieve)(cust_id)
+        self.f(cu.delete)
         return True
 
     def list_customer_banks(self, cust_id, limit = 25, ending_before = None, starting_after = None):
@@ -80,7 +113,8 @@ class StripeClass(object):
             msg = append_error(msg, 'cust_id is required')
         if msg:
             raise ValueError(msg)
-        return stripe.Customer.retrieve(cust_id).sources.all(object="bank_account", limit=limit, \
+        sources = self.f(stripe.Customer.retrieve)(cust_id).sources
+        return self.f(sources.all)(object="bank_account", limit=limit,
             ending_before=ending_before, starting_after=starting_after)
 
     def get_customer_bank(self, cust_id, bank_id):
@@ -91,7 +125,8 @@ class StripeClass(object):
             msg = append_error(msg, 'bank_id is required')
         if msg:
             raise ValueError(msg)
-        return stripe.Customer.retrieve(cust_id).sources.retrieve(bank_id)
+        sources = self.f(stripe.Customer.retrieve)(cust_id).sources
+        return self.f(sources.retrieve)(bank_id)
 
     def add_customer_bank(self, cust_id, token = None, account_number = None, country = None, \
             currency = None, routing_number = None, account_holder_name = None):
@@ -125,14 +160,14 @@ class StripeClass(object):
         #else:
         #    set_default = False
 
-        cu = stripe.Customer.retrieve(cust_id)
+        cu = self.f(stripe.Customer.retrieve)(cust_id)
         '''
-            There is no API in stripe check if the bank account is same before creating the bank account.
+            There is no API in stripe to check if the bank account is same before creating the bank account.
             Trying to add same bank account again gives a generic stripe.error.InvalidRequestError
         '''
 
         if not token:
-            source = cu.sources.create(source={'object':'bank_account',
+            source = self.f(cu.sources.create)(source={'object':'bank_account',
                 'account_holder_type':'individual',
                 'account_number':account_number,
                 'country':country,
@@ -141,7 +176,8 @@ class StripeClass(object):
                 'routing_number':routing_number})
                 #,default_for_currency=set_default)
         else:
-            source = cu.sources.create(source=token)
+            source = self.f(cu.sources.create)(source=token)
+
         return source
 
     def verify_customer_bank(self, cust_id, bank_id, f_amount, s_amount):
@@ -156,7 +192,9 @@ class StripeClass(object):
             msg = append_error(msg, 's_amount is required')
         if msg:
             raise ValueError(msg)
-        return stripe.Customer.retrieve(cust_id).sources.retrieve(bank_id).verify(amounts = [f_amount, s_amount])
+        cu = self.f(stripe.Customer.retrieve)(cust_id)
+        bank = self.f(cu.sources.retrieve)(bank_id)
+        return self.f(bank.verify)(amounts = [f_amount, s_amount])
 
     def delete_customer_bank(self, cust_id, bank_id):
         msg = ''
@@ -166,7 +204,9 @@ class StripeClass(object):
             msg = append_error(msg, 'bank_id is required')
         if msg:
             raise ValueError(msg)
-        return stripe.Customer.retrieve(cust_id).sources.retrieve(bank_id).delete()
+        cu = self.f(stripe.Customer.retrieve)(cust_id)
+        bank = self.f(cu.sources.retrieve)(bank_id)
+        return self.f(bank.delete)()
 
     def create_customer_charge(self, cust_id, bank_id, amount, currency, description = None):
         msg = ''
@@ -197,7 +237,7 @@ class StripeClass(object):
             msg = append_error(msg, 'charge_id cannot be empty')
         if msg:
             raise ValueError(msg)
-        return stripe.Charge.retrieve(charge_id)
+        return self.f(stripe.Charge.retrieve)(charge_id)
 
     def list_charges(self, cust_id=None, created_in_last_days = 30, limit = 25, ending_before = None, starting_after = None):
         '''
@@ -205,8 +245,8 @@ class StripeClass(object):
             If cust_id present, it will return charges for the specified customer.
         '''
         if not cust_id:
-            return stripe.Charge.list(created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
+            return self.f(stripe.Charge.list)(created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
                 starting_after=starting_after,include=["total_count"])
         else:
-            return stripe.Charge.list(customer=cust_id,created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
+            return self.f(stripe.Charge.list)(customer=cust_id,created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
                 starting_after=starting_after,include=["total_count"])

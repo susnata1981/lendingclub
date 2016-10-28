@@ -19,7 +19,7 @@
     action={{url_for('onboarding_bp.enter_employer_information')}} method="POST">
         <h5>Employer information</h5>
         <hr/>
-        {{ form.csrf_token }}
+        <!-- {{ form.csrf_token }}
 
         {% for field in form %}
         <div class="row">
@@ -34,10 +34,59 @@
             </div>
           {% endif %}
           {% if field.type == 'SubmitField' %}
+          <div class="col s4">
             {{ form.submit(class='btn') }}
+          </div>
           {% endif %}
         </div>
-        {% endfor %}
+        {% endfor %} -->
+
+        {{ form.csrf_token }}
+         <div class="row">
+             <div class="input-field col s5">
+                 {{form.employer_name.label}}
+                 {{form.employer_name}}
+             </div>
+         </div>
+         <div class="row">
+           <div class="input-field col s5">
+            {{form.employer_phone_number.label}}
+            {{form.employer_phone_number(class="phone_number")}}
+           </div>
+         </div>
+         <div class="row">
+             <div class="input-field col s5">
+              {{form.street1.label}}
+              {{form.street1}}
+             </div>
+             <div class="input-field col s5">
+              {{form.street2.label}}
+              {{form.street2}}
+             </div>
+         </div>
+         <div class="row">
+             <div class="input-field col s4">
+              {{form.city.label}}
+              {{form.city}}
+             </div>
+             <div class="input-field col s4">
+              {{form.state.label}}
+              {{form.state}}
+             </div>
+             <div class="input-field col s4">
+              {{form.postal_code.label}}
+              {{form.postal_code}}
+             </div>
+
+         </div>
+         <div class="row">
+             <div class="col s3">
+                 <button class="btn">Next</button>
+             </div>
+             <div class="col s4">
+                 <a class="link-btn" href={{url_for('onboarding_bp.account')}}>Cancel Application</a>
+             </div>
+         </div>
     </form>
   </div>
 </div>

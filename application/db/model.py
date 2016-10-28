@@ -46,7 +46,7 @@ class Account(Base):
     ssn = Column(Integer, nullable=True)
     dob = Column(String(24), nullable=True)
     driver_license_number = Column(String(128), nullable=True)
-    employer_name = Column(String(256), nullable=True)
+    employer_name = Column(String(255), nullable=True)
     employer_phone_number = Column(String(128), nullable=True)
     stripe_customer_id = Column(String(255), nullable=True)
     phone_number = Column(String(50), unique=True, nullable=False)
@@ -128,29 +128,45 @@ class Fi(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship('Account', back_populates='fis')
-    bank_account_id = Column(String(512), nullable=False)
+    bank_account_id = Column(String(255), nullable=False)
     verification_type = Column(Integer, nullable=False)
     status = Column(Integer, nullable=False)
     subtype = Column(String(128), nullable=True)
-    subtype_name = Column(String(256), nullable=True)
-    account_name = Column(String(256), nullable=True)
-    institution = Column(String(256), nullable=True)
-    institution_type = Column(String(256), nullable=True)
+    subtype_name = Column(String(255), nullable=True)
+    account_name = Column(String(255), nullable=True)
+    institution = Column(String(255), nullable=True)
+    institution_type = Column(String(255), nullable=True)
     available_balance = Column(Float, nullable=True)
     current_balance = Column(Float, nullable=True)
     account_type = Column(String(128), nullable=True)
-    access_token = Column(String(512), nullable=False, unique=True)
-    stripe_bank_account_token = Column(String(512), nullable=True, unique=True)
+    access_token = Column(String(255), nullable=False, unique=True)
+    stripe_bank_account_token = Column(String(255), nullable=True, unique=True)
     account_number_last_4 = Column(Integer, nullable=True)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
+class RequestMoney(Base):
+    __tablename__ = 'request_money_transaction'
+
+    UNPAID, PARTIALLY_PAID, PAID = range(3)
+    BORROW, INTEREST, PAYMENT = range(3)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    parent_id = Column(Integer)
+    account_id = Column(Integer, ForeignKey('account.id'))
+    account = relationship('Account', back_populates='request_money_list')
+    amount = Column(Float, nullable=False)
+    transaction_type = Column(Integer, nullable=False)
+    interest_charge = Column(Float, nullable=False)
+    status = Column(Integer, nullable=False)
+    time_created = Column(DateTime)
+    time_updated = Column(DateTime)
 
 class Plan(Base):
     __tablename__ = "plan"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(256), nullable=False)
+    name = Column(String(255), nullable=False)
     max_loan_amount = Column(Integer, nullable=False)
     loan_frequency = Column(Integer, nullable=False)
     interest_rate = Column(Float, nullable=False)
@@ -173,6 +189,7 @@ class Membership(Base):
     account = relationship('Account', back_populates='memberships')
     plan_id = Column(Integer, ForeignKey('plan.id'))
     plan = relationship('Plan', uselist=False)
+    transactions = relationship('MembershipPayment', back_populates='membership')
     status = Column(Integer, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
@@ -190,23 +207,22 @@ class Membership(Base):
         return Membership.STATUS_NAME.get(self.status)
 
 class MembershipPayment(Base):
-    __tablename__ = "membership_payment"
-
-    FAILED, COMPLETED = range(2)
+    __tablename__ = 'membership_payment'
+    PENDING, COMPLETED, FAILED = range(3)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    memberhip_id = Column(Integer, ForeignKey('membership.id'))
-    membership = relationship('Membership', back_populates='payments')
+    membership_id = Column(Integer, ForeignKey('membership.id'))
+    membership = relationship('Membership', back_populates='transactions')
     status = Column(Integer, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_updated = Column(DateTime)
     time_created = Column(DateTime)
+    time_updated = Column(DateTime)
 
 class IAVInstitutions(Base):
     __tablename__ = "iav_institutions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(256), nullable=False)
+    name = Column(String(255), nullable=False)
+    institution_type = Column(String(255), nullable=False)
     plaid_id = Column(String(128), nullable=False)
 
 class RequestMoney(Base):
@@ -228,7 +244,7 @@ class RequestMoney(Base):
         i = 0
         for ext in extensions:
             if ext.status == ExtensionRequest.APPROVED:
-                i++
+                i+=1
         return i
 
 class RequestMoneyHistory(Base):
@@ -320,10 +336,11 @@ ExtensionRequest.history = relationship('ExtensionRequestHistory', back_populate
 Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='desc(TransactionHistory.time_created)')
 Membership.payments = relationship('MembershipPayment', back_populates='membership')
 
+
 def create_plan():
     current_app.db_session.add(
         Plan(
-            name = 'Anytime 150',
+            name = 'Anytime $150',
             max_loan_amount = 150,
             loan_frequency = 3,
             interest_rate = 15,
@@ -332,7 +349,7 @@ def create_plan():
             rewards_description = 'Earn points for paying back in time'))
     current_app.db_session.add(
         Plan(
-            name = 'Anytime 300',
+            name = 'Anytime $300',
             max_loan_amount = 300,
             loan_frequency = 3,
             interest_rate = 15,
@@ -341,7 +358,7 @@ def create_plan():
             rewards_description = 'Earn points for paying back in time'))
     current_app.db_session.add(
         Plan(
-            name = 'Anytime 500',
+            name = 'Anytime $500',
             max_loan_amount = 500,
             loan_frequency = 3,
             interest_rate = 15,
@@ -356,7 +373,7 @@ def recreate_tables(engine):
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     logging.info('******* done recreating tables ********')
-    create_plan()
+    # create_plan()
     logging.info('creating lending plans')
 
 def init_db():
@@ -369,7 +386,8 @@ def init_db():
         autocommit=False,
         autoflush=False,
         bind=engine))
-    recreate_tables(engine)
+    # recreate_tables(engine)
+    create_plan()
 
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()

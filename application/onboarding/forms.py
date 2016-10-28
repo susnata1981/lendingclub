@@ -13,7 +13,7 @@ class PhoneNumberValidator:
             raise ValidationError(PhoneNumberValidator.message)
 
 def SSNValidator():
-    message = 'Invalid SSN format (xxx-xxx-xxxx)'
+    message = 'Invalid SSN format (xxx-xx-xxxx)'
     ssn_pattern = re.compile('\d{3}-\d{2}-\d{4}')
 
     def validator(form, field):
@@ -35,30 +35,30 @@ class LoginForm(Form):
     submit = SubmitField('Login')
 
 class PhoneVerificationForm(Form):
-    verification_code = IntegerField('verification code', [Required('Please enter the verification code')])
+    verification_code = IntegerField('enter verification code', [Required('Please enter the verification code')], default = 1111)
     submit = SubmitField('Verify')
 
 class PersonalInformationForm(Form):
-    email = StringField('email', [Required('Please enter your email'), Email()])
-    ssn = StringField('social security', [Required('Please enter your social security'), SSNValidator()])
-    dob = DateTimeField('date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
-    driver_license_number = StringField('driver license number',
+    email = StringField('* email', [Required('Please enter your email'), Email()])
+    ssn = StringField('* social security', [Required('Please enter your social security'), SSNValidator()])
+    dob = DateTimeField('* date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
+    driver_license_number = StringField('* driver license number',
     [Required('Please enter your driver license number')])
-    street1 = StringField('street1', [Required('Please enter your street address')])
+    street1 = StringField('* street1', [Required('Please enter your street address')])
     street2 = StringField('street2')
-    city = StringField('city', [Required('Please enter your city')])
-    state = StringField('state', [Required('Pleae enter your state')])
-    postal_code = IntegerField('postal code', [Required('Please enter your postal code')])
+    city = StringField('* city', [Required('Please enter your city')])
+    state = StringField('* state', [Required('Pleae enter your state')])
+    postal_code = IntegerField('* postal code', [Required('Please enter your postal code')])
 
 
 class EmployerInformationForm(Form):
     employer_name = StringField('* employer name', [Required('Please enter your employer name')])
     employer_phone_number = StringField('* employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
-    employer_street1 = StringField('* street1', [Required('Please enter your street address')])
-    employer_street2 = StringField('street2')
-    employer_city = StringField('* city', [Required('Please enter your city')])
-    employer_state = StringField('* state', [Required('Pleae enter your state')])
-    employer_postal_code = IntegerField('* postal code', [Required('Please enter your postal code')])
+    street1 = StringField('* street1', [Required('Please enter your street address')])
+    street2 = StringField('street2')
+    city = StringField('* city', [Required('Please enter your city')])
+    state = StringField('* state', [Required('Pleae enter your state')])
+    postal_code = IntegerField('* postal code', [Required('Please enter your postal code')])
     submit = SubmitField('next')
 
 
@@ -72,9 +72,12 @@ class RandomDepositForm(Form):
     name = StringField('account holder name', [Required('Please enter account holder name')])
     country = SelectField('country', choices = [('US', 'United States')], validators = [Required('Please enter the country your bank is located')])
     currency = SelectField('currency', choices = [('usd', 'usd')], validators = [Required('Please enter the currency')])
-    routing_number = StringField('routing number', [Required('Please enter your bank routing number')])
-    account_number = StringField('account number', [Required('Please enter your account number')])
+    routing_number = StringField('routing number', [Required('Please enter your bank routing number')], default = '110000000')
+    account_number = StringField('account number', [Required('Please enter your account number')], default = '000123456789')
 
 class RandomDepositVerifyAccountForm(Form):
-    deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')])
-    deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')])
+    deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')], default="32")
+    deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')], default="45")
+
+class RequestMoneyForm(Form):
+    requested_amount = FloatField('requested amount', [Required('Please enter an amount')])

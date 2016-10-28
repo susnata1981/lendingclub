@@ -1,28 +1,25 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container">
- <div class="row">
-  <div class="col s6 margin-top-large">
-      {% for message in get_flashed_messages() %}
-      <div class="error">{{ message }}</div>
-      {% endfor %}
-
-      {% for message in form.first_name.errors %}
-      <div class="error">{{ message }}</div>
-      {% endfor %}
-
-      {% for message in form.last_name.errors %}
-      <div class="error">{{ message }}</div>
-      {% endfor %}
-
-      {% for message in form.phone_number.errors %}
-         <div class="error">{{ message }}</div>
-      {% endfor %}
-
-      {% for message in form.password.errors %}
-         <div class="error">{{ message }}</div>
-      {% endfor %}
-     </div>
-    </div>
+<div class="container margin-top-large">
+    {% if get_flashed_messages() | length > 0 %}
+     <div class="row">
+         <div class="col s6 error-block">
+             {% for message in get_flashed_messages() %}
+             <div class="error-item">{{ message }}</div>
+             {% endfor %}
+         </div>
+       </div>
+     {% endif %}
+     {% if form.errors %}
+     <div class="row">
+        <div class="col s6 error-block">
+            {% for field in form %}
+              {% for m in field.errors %}
+               <div class="error-item">{{ m }}</div>
+              {% endfor %}
+            {% endfor %}
+         </div>
+       </div>
+       {% endif %}
 <div class="row">
     <form id="signup_form" class="col s6 user-input" action={{url_for('onboarding_bp.signup')}} method="post">
         <h4>Signup</h4>

@@ -314,12 +314,23 @@ $(function() {
               )
             });
 
-            $("#payday-cartoon").fadeOut();
+            // $("#request-money-btn").click(function(e) {
+            //   console.log('clicked...');
+            //   $(this).parent().find("input[name='requested_amount']").val('');
+            // });
+            //
+            // $("#request-money-form").submit(function(e) {
+            //   console.log('submitting request money form...');
+            //   $(this).find("input[name='requested_amount']").val('');
+            // });
 
-            $("#logo-link").hover(function() {
-              $("#payday-cartoon").fadeIn(500);
-              setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
-            });
+            // $("#payday-cartoon").fadeOut();
+
+            // Cartoon animation
+            // $("#logo-link").hover(function() {
+            //   $("#payday-cartoon").fadeIn(500);
+            //   setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
+            // });
 
             $('.datepicker').pickadate({
                 selectMonths: true, // Creates a dropdown to control month
@@ -331,6 +342,8 @@ $(function() {
             $('.phone_number').keyup(phone_number_formatter);
             $('.ssn').keyup(ssn_formatter);
             $('.dob').keyup(dob_formatter);
+
+            $(".button-collapse").sideNav();
         }
 
 

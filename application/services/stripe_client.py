@@ -168,7 +168,7 @@ class StripeClass(object):
             raise ValueError(msg)
         return stripe.Customer.retrieve(cust_id).sources.retrieve(bank_id).delete()
 
-    def create_customer_charge(self, cust_id, bank_id, amount, currency):
+    def create_customer_charge(self, cust_id, bank_id, amount, currency, description = None):
         msg = ''
         if not cust_id:
             msg = append_error(msg, 'cust_id is required')
@@ -181,7 +181,15 @@ class StripeClass(object):
         if msg:
             raise ValueError(msg)
 
-        return stripe.Charge.create(amount=amount, currency=currency, customer=cust_id, source=bank_id)
+        func_args = {}
+        func_args['customer'] = cust_id
+        func_args['amount'] = amount
+        func_args['currency'] = currency
+        func_args['source'] = bank_id
+        if not notes:
+            funct_arg['description'] = description
+
+        return stripe.Charge.create(**func_args)
 
     def get_charge(self, charge_id):
         msg = ''

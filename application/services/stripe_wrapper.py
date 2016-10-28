@@ -1,7 +1,7 @@
-import sys, os, stripe_client, argparse
-
+import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
-import config_loader
+
+import config_loader, stripe_client, argparse
 
 CLIENT = None
 
@@ -73,7 +73,7 @@ def verify_customer_bank(args):
     print CLIENT.verify_customer_bank(args.cust_id, args.bank_id, args.f_amount, args.s_amount)
 
 def create_customer_charge(args):
-    print CLIENT.create_customer_charge(args.cust_id, args.bank_id, args.amount, args.currency)
+    print CLIENT.create_customer_charge(args.cust_id, args.bank_id, args.amount, args.currency, args.description)
 
 def get_charge(args):
     print CLIENT.get_charge(args.charge_id)
@@ -170,6 +170,7 @@ if __name__ == '__main__':
     parser_ccb.add_argument('bank_id', help='Stripe customer bank id.')
     parser_ccb.add_argument('amount', help='charge amount (no decimals, i.e 1 dollar = 100)')
     parser_ccb.add_argument('currency', help='3 letter currency code eg: USD')
+    parser_ccb.add_argument('description', default = None, help='Charge description -- like Membership or Interest')
     parser_ccb.set_defaults(func=create_customer_charge)
 
     parser_gcharge = subparsers.add_parser('get-charge', help='Get Stripe charge details')

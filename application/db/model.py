@@ -2,14 +2,21 @@ import os
 import logging
 from flask import current_app, g
 from sqlalchemy import create_engine
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, Float, String, DateTime, Text
 from sqlalchemy.orm import relationship
-from application.util import common
 from passlib.hash import sha256_crypt
+
+try:
+    from application.util import common
+except ImportError:
+    import sys, os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
+    import common
+
 
 Base = declarative_base()
 
@@ -70,13 +77,27 @@ class Account(Base):
         return True
 
     def is_active(self):
-        return status != UNVERIFIED
+        return self.status != Account.UNVERIFIED
 
     def is_anonymous(self):
         return False
 
     def get_id(self):
         return unicode(self.id)
+
+    def get_open_request(self):
+        for req in self.request_money_list:
+            if req.status != RequestMoney.CANCELED and \
+            req.status != RequestMoney.PAYMENT_COMPLETED and \
+            req.status != RequestMoney.REJECTED:
+                return req
+        return None
+
+    def get_active_plan(self):
+        for mem in self.memberships:
+            if mem.is_active():
+                return mem.plan
+        return None
 
 class Address(Base):
     __tablename__ = 'address'
@@ -191,7 +212,7 @@ class IAVInstitutions(Base):
 class RequestMoney(Base):
     __tablename__ = "request_money"
 
-    PENDING, IN_PROGRESS, CANCELED, TRANFERRED, PAYMENT_DUE, PARTIAL_PAYMENT_COMPLETED, PAYMENT_COMPLETED = range(7)
+    PENDING, IN_PROGRESS, CANCELED, REJECTED, TRANSFERRED, PAYMENT_DUE, PAYMENT_COMPLETED = range(7)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
@@ -202,6 +223,28 @@ class RequestMoney(Base):
     memo = Column(Text, nullable=True)
     time_updated = Column(DateTime)
     time_created = Column(DateTime)
+
+    def get_extension_count(self):
+        i = 0
+        for ext in extensions:
+            if ext.status == ExtensionRequest.APPROVED:
+                i++
+        return i
+
+class RequestMoneyHistory(Base):
+    __tablename__ = "request_money_history"
+
+    id = Column(Integer, ForeignKey('request_money.id'))
+    request = relationship('RequestMoney', uselist=False, back_populates="history")
+    amount = Column(Float, nullable=False)
+    status = Column(Integer, nullable=False)
+    payment_date = Column(DateTime, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'time_created'),
+        {},
+    )
 
 class ExtensionRequest(Base):
     __tablename__ = "extensions"
@@ -217,6 +260,20 @@ class ExtensionRequest(Base):
     time_updated = Column(DateTime)
     time_created = Column(DateTime)
 
+class ExtensionRequestHistory(Base):
+    __tablename__ = "extensions_history"
+
+    id = Column(Integer, ForeignKey('extensions.id'))
+    extension = relationship('ExtensionRequest', uselist=False, back_populates="history")
+    status = Column(Integer, nullable=False)
+    payment_date = Column(DateTime, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'time_created'),
+        {},
+    )
+
 class Transaction(Base):
     __tablename__ = 'transaction'
 
@@ -225,7 +282,9 @@ class Transaction(Base):
     USER_INITIATED, AUTOMATIC, MANUAL = range(3)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    parent_id = Column(Integer, nullable=True)
     request_id = Column(Integer, ForeignKey('request_money.id'))
+    request = relationship('RequestMoney', back_populates="transactions")
     transaction_type = Column(Integer, nullable=False)
     stripe_transaction_id = Column(String(256), nullable=True)
     status = Column(Integer, nullable=False)
@@ -235,13 +294,30 @@ class Transaction(Base):
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
+class TransactionHistory(Base):
+    __tablename__ = 'transaction_history'
+
+    id = Column(Integer, ForeignKey('transaction.id'))
+    transaction = relationship('Transaction', uselist=False, back_populates="history")
+    status = Column(Integer, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'time_created'),
+        {},
+    )
+
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 Account.employer_address = relationship('Address', uselist = False, back_populates='account')
-Account.request_money_list = relationship('RequestMoney', back_populates='account')
-RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request')
+Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.id)')
+RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request', order_by='desc(ExtensionRequest.payment_date)')
+RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
+RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='desc(RequestMoneyHistory.time_created)')
+ExtensionRequest.history = relationship('ExtensionRequestHistory', back_populates='extension', order_by='desc(ExtensionRequestHistory.time_created)')
+Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='desc(TransactionHistory.time_created)')
 Membership.payments = relationship('MembershipPayment', back_populates='membership')
 
 def create_plan():

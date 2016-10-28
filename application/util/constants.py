@@ -24,5 +24,13 @@ Ziplly Admin
 Ziplly (http://www.ziplly.com) short term borrowing made affordable.
 '''
 
+DAYS_FOR_DUE_DATE = 30
+EXTENSION_DUE_DATE = 30
+MAX_EXTENSIONS_ALLOWED = 3
+YOU_OWE_MESSAGE = 'You currently owe ${0} before {1}'
+MAX_BORROW_MESSAGE = 'As per your membership plan, the maximum you can borrow is ${0}'
+ACCOUNT_ACTIVE_FOR_REQUEST_MONEY_MESSAGE = 'Your account needs to be active to request money.'
+ACTIVE_PLAN_REQUIRED_MESSAGE = 'You should be enrolled in a plan to be able to request money.'
+
 def init():
     pass

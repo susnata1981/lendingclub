@@ -14,14 +14,15 @@ FI_ID_KEY = 'fi_id'
 SIGNUP_EMAIL_SUBJECT = 'Thanks for expressing interest'
 SIGNUP_EMAIL_BODY = '''
 <p>
-Thanks for expressing interest in Ziplly. We are working on a newer version
-of the ebook "5 Proven Tips For Saving Money On Your Loan".
-We will be emailing it to you shortly. Sorry for the delay.
+Thanks for expressing interest in Ziplly. We are working on creating the first
+membership based lending program that is also affordable. We will contact you as soon
+as we are ready to launch.
 </p>
 <p>
-Ziplly Admin
+Thanks,<br/>
+Admin
 </p>
-Ziplly (http://www.ziplly.com) short term borrowing made affordable.
+Ziplly (http://www.ziplly.com) making short term borrowing affordable.
 '''
 
 def init():

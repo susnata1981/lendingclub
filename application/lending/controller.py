@@ -17,6 +17,7 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
+PREVIOUS_STATE = 'prev_state'
 
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
@@ -35,29 +36,29 @@ def dashboard():
     data = {}
     form = RequestMoneyForm(request.form)
 
-    if len(current_user.memberships) == 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You application is incomplete'
-        data['notification_message_title'] = 'Apply Now'
-        data['notification_url'] = 'membership_bp.apply_for_membership'
-    elif len(current_user.fis) == 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You have not added bank account yet'
-        data['notification_message_title'] = 'Add Bank'
-        data['notification_url'] = 'membership_bp.add_bank'
-    elif has_unverified_bank_account():
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You have not verified your bank account'
-        data['notification_message_title'] = 'Verify Account'
-        data['notification_url'] = 'membership_bp.verify_account_random_deposit'
-    elif is_eligible_to_borrow() > 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'info'
-        data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
-
+    # if len(current_user.memberships) == 0:
+    #     data['show_notification'] = True
+    #     data['notification_class'] = 'error'
+    #     data['notification_message_description'] = 'You application is incomplete'
+    #     data['notification_message_title'] = 'Apply Now'
+    #     data['notification_url'] = 'membership_bp.apply_for_membership'
+    # elif len(current_user.fis) == 0:
+    #     data['show_notification'] = True
+    #     data['notification_class'] = 'error'
+    #     data['notification_message_description'] = 'You have not added bank account yet'
+    #     data['notification_message_title'] = 'Add Bank'
+    #     data['notification_url'] = 'membership_bp.add_bank'
+    # elif has_unverified_bank_account():
+    #     data['show_notification'] = True
+    #     data['notification_class'] = 'error'
+    #     data['notification_message_description'] = 'You have not verified your bank account'
+    #     data['notification_message_title'] = 'Verify Account'
+    #     data['notification_url'] = 'membership_bp.verify_account_random_deposit'
+    # elif is_eligible_to_borrow() > 0:
+    #     data['show_notification'] = True
+    #     data['notification_class'] = 'info'
+    #     data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
+    data = create_notifications()
     session['data'] = data
     if tab == 'request_money':
         return redirect(url_for('.request_money'))
@@ -77,6 +78,58 @@ def get_membership_info():
 
     return render_template('onboarding/account-membership-section.html', data=data)
 
+@lending_bp.route('/make_payment', methods=['GET', 'POST'])
+@login_required
+def make_payment():
+    owes_money = False
+    data = {}
+    for request_money in current_user.request_money_list:
+        if request_money.status == RequestMoney.PAYMENT_DUE:
+            owes_money = True
+            data['request_money'] = request_money
+
+    if not owes_money:
+        flash('Currently you do not owe any money.')
+        return render_template('lending/make_payment.html', data=data)
+
+    form = MakePaymentForm(request.form)
+    if form.validate_on_submit():
+        # do something
+        session['payment_amount'] = form.payment_amount.data
+        session['payment_date'] = datetime.now()
+        session[PREVIOUS_STATE] = 'make_payment'
+        return redirect(url_for('.confirm_payment'))
+
+    return render_template('lending/make_payment.html', form=form, data=data);
+
+@lending_bp.route('/confirm_payment', methods=['GET', 'POST'])
+@login_required
+def confirm_payment():
+    print 'confirm_payment previous payment_amount = '
+    if session[PREVIOUS_STATE] != 'make_payment':
+        flash('Currently you do not owe any money.')
+        return redirect(url_for('.dashboard'))
+
+    data = {}
+    data['payment_amount'] = session['payment_amount']
+    if request.method.upper() == 'POST':
+        session[PREVIOUS_STATE] = 'confirm_payment'
+        return redirect(url_for('.payment_success'))
+    elif request.method == 'GET':
+        return render_template('lending/confirm_payment.html', data=data)
+
+@lending_bp.route('/payment_success', methods=['GET', 'POST'])
+@login_required
+def payment_success():
+    print 'payment_success previous payment_amount = '
+    if session[PREVIOUS_STATE] != 'confirm_payment':
+        return redirect(url_for('.dashboard'))
+
+    data = {}
+    data['payment_amount'] = session['payment_amount']
+    data['payment_date'] = session['payment_date']
+    return render_template('lending/payment_success.html', data=data)
+
 @lending_bp.route('/request_money', methods=['GET','POST'])
 @login_required
 def request_money():
@@ -87,7 +140,6 @@ def request_money():
         current_user.memberships.sort(lambda x: x.time_created)
         request_money_enabled = current_user.memberships[0].status == Membership.APPROVED
 
-    print 'checking past transactions...'
     for t in current_user.request_money_list:
         if t.status != RequestMoney.PAYMENT_COMPLETED:
             data['show_notification'] = True
@@ -218,7 +270,7 @@ def get_bank_info(bank_account_id):
 
 def create_notifications():
     data = {}
-    if len(current_user.memberships) == 0:
+    if not current_user.memberships:
         data['show_notification'] = True
         data['notification_class'] = 'error'
         data['notification_message_description'] = 'You application is incomplete'

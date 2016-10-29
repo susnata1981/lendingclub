@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="success-div" class="row margin-top-large">
+ <div class="col s12 center">
+  <h4 class="green-text">
+   {{ current_user.first_name }} you have made a payment of {{ data['payment_amount'] | format_currency}}
+   on {{ data['payment_date'] | format_datetime }}
+  </h4>
+</div>
+</div>
+{% endblock %}

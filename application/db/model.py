@@ -362,9 +362,9 @@ def recreate_tables(engine):
 def init_db():
     env = os.getenv('SERVER_SOFTWARE')
     if common.is_running_on_app_engine():
-        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=True)
+        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=False)
     else:
-        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_LOCAL'], echo=True)
+        engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_LOCAL'], echo=False)
     current_app.db_session = db_session = scoped_session(sessionmaker(
         autocommit=False,
         autoflush=False,

@@ -5,3 +5,6 @@ from wtforms.validators import Required, ValidationError, Email
 
 class RequestMoneyForm(Form):
     requested_amount = FloatField('requested amount', [Required('Please enter an amount')])
+
+class MakePaymentForm(Form):
+    payment_amount = FloatField('payment amount', [Required('Please enter an amount')])

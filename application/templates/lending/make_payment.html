@@ -1,0 +1,31 @@
+{% extends 'onboarding/dashboard.html' %}
+{% block dashboard_content %}
+{% if form.errors %}
+<div class="row">
+  <div class="col s6 error-block">
+    {% for field in form %} {% for m in field.errors %}
+    <div class="error-item">{{ m }}</div>
+    {% endfor %} {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="row">
+  <div class="col s12">
+    <h4>Make a payment</h4> {% if data['request_money'] %}
+    <h5>You currently owe {{data['request_money'].payment_amount}}
+        before {{data['request_money'].payment_date | format_datetime}}</h5> {% endif %}
+
+    <form action={{url_for( 'lending_bp.make_payment')}} method="post">
+      {{ form.csrf_token }}
+      <div class="row">
+        <div class="input-field col s4">
+          <input placeholder="0" id="payment_amount" name="payment_amount" type="text" class="validate">
+          <label for="payment_amount">Payment amount</label>
+        </div>
+      </div>
+      <button class="btn">Make Payment</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

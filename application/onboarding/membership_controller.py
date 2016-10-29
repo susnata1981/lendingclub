@@ -469,7 +469,7 @@ def has_entered_personal_information(user):
         return False
 
     for address in user.addresses:
-        if address.type == Address.INDIVIDUAL:
+        if address.address_type == Address.INDIVIDUAL:
             return True
 
     return False
@@ -478,7 +478,7 @@ def has_entered_employer_information(user):
     if user.employer_name == None or user.employer_phone_number == None:
         return False
     for address in user.addresses:
-        if address.type == Address.BUSINESS:
+        if address.address_type == Address.EMPLOYER:
             return True
 
     return False

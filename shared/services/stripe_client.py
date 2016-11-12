@@ -67,7 +67,7 @@ class StripeClass(object):
                 stack = inspect.stack()
                 self.LOGGER.exception('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
                     stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
-                raise error.SystemError(constants.GENERIC_ERROR,e.message)
+                raise error.StripeError(constants.GENERIC_ERROR,e)
         return stripe_call
 
     def list_customers(self, created_in_last_days = 30, limit = 25, ending_before = None, starting_after = None):

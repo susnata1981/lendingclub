@@ -9,6 +9,7 @@ from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
 from shared.util import constants, error
 from shared import services
+from shared.bli import account as accountBLI
 from pprint import pprint
 import requests
 import json
@@ -78,20 +79,28 @@ def signup():
 
     form = SignupForm(request.form)
     if form.validate_on_submit():
-        existing_account = get_account_by_phone_number(form.phone_number.data)
-        if existing_account is not None:
-            flash('Account with this phone number already exists')
-            return render_template('onboarding/signup.html', form=form)
+        try:
+            account = Account(
+               first_name = form.first_name.data,
+               last_name = form.last_name.data,
+               phone_number = form.phone_number.data,
+               email = form.email.data,
+               password = form.password.data,
+               time_created = datetime.now(),
+               time_updated = datetime.now())
 
-        account = Account(
-           first_name = form.first_name.data,
-           last_name = form.last_name.data,
-           phone_number = form.phone_number.data,
-           password = form.password.data,
-           time_created = datetime.now(),
-           time_updated = datetime.now())
-        current_app.db_session.add(account)
-        current_app.db_session.commit()
+            accountBLI.signup(account)
+        except error.AccountExistsError:
+            flash(constants.ACCOUNT_WITH_EMAIL_ALREADT_EXISTS)
+            return render_template('onboarding/signup.html', form=form)
+        except error.DatabaseError as de:
+            print 'ERROR: Database Exception: %s' % (de.message)
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/signup.html', form=form)
+        except Exception as e:
+            print 'ERROR: General Exception: %s' % (e.message)
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/signup.html', form=form)
 
         # verify phone
         session['account_id'] = account.id

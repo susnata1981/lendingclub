@@ -22,11 +22,12 @@ def SSNValidator():
     return validator
 
 class SignupForm(Form):
-    first_name = StringField('firstname', [Required('Please enter your firstname')])
-    last_name = StringField('lastname', [Required('Please enter your lastname')])
-    phone_number = StringField('phone number',
+    first_name = StringField('* firstname', [Required('Please enter your firstname')])
+    last_name = StringField('* lastname', [Required('Please enter your lastname')])
+    phone_number = StringField('* phone number',
         [Required('Please enter your phone number'), PhoneNumberValidator()])
-    password = PasswordField('password', validators=[Required('Please enter a password')])
+    email = StringField('* email', [Required('Please enter your email'), Email()])
+    password = PasswordField('* password', validators=[Required('Please enter a password')])
     submit = SubmitField('Signup')
 
 class LoginForm(Form):

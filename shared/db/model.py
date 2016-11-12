@@ -42,7 +42,7 @@ class Account(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=True)
+    email = Column(String(255), unique=True, nullable=True)
     ssn = Column(Integer, nullable=True)
     dob = Column(String(24), nullable=True)
     driver_license_number = Column(String(128), nullable=True)
@@ -378,6 +378,9 @@ def get_account_by_id(account_id):
 
 def get_account_by_phone_number(phone_number):
     return current_app.db_session.query(Account).filter(Account.phone_number == phone_number).one_or_none()
+
+def get_account_by_email(email):
+    return current_app.db_session.query(Account).filter(Account.email == email).one_or_none()
 
 def get_all_plans():
     return current_app.db_session.query(Plan).all()

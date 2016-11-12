@@ -4,7 +4,7 @@ from flask import current_app
 from flask.ext.login import current_user
 
 try:
-    from application.util import error, logger, constants
+    from shared.util import error, logger, constants
 except ImportError:
     import sys, os
     sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))

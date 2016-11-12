@@ -1,10 +1,9 @@
 import logging
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, flash
 from datetime import datetime
-from application.db.model import User
-from application.util.common import *
-from application.services import mail
-from application.util import constants
+from shared.db.model import User
+from shared.services import mail
+from shared.util import constants
 from forms import *
 
 home_blueprint = Blueprint('home_blueprint', __name__)

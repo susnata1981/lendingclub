@@ -11,11 +11,11 @@ from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
 
 try:
-    from application.util import common
+    from shared.util import util
 except ImportError:
     import sys, os
     sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
-    import common
+    import util
 
 
 Base = declarative_base()
@@ -361,7 +361,7 @@ def recreate_tables(engine):
 
 def init_db():
     env = os.getenv('SERVER_SOFTWARE')
-    if common.is_running_on_app_engine():
+    if util.is_running_on_app_engine():
         engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=False)
     else:
         engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_LOCAL'], echo=False)
@@ -369,8 +369,8 @@ def init_db():
         autocommit=False,
         autoflush=False,
         bind=engine))
-    # recreate_tables(engine)
-    # create_plan()
+    recreate_tables(engine)
+    create_plan()
 
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()

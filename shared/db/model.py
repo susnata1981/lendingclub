@@ -369,8 +369,8 @@ def init_db():
         autocommit=False,
         autoflush=False,
         bind=engine))
-    recreate_tables(engine)
-    create_plan()
+    # recreate_tables(engine)
+    # create_plan()
 
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()

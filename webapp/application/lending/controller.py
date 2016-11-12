@@ -1,14 +1,14 @@
 from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
 from plaid import Client
-from application.services import stripe_client
+from shared.services import stripe_client
 from forms import *
-from application.db.model import *
+from shared.db.model import *
 import traceback
 import random
 from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
-from application.util import constants, error
-from application import services, common
+from shared.util import constants, error
+from shared import services
 from pprint import pprint
 import requests
 import json

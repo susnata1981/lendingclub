@@ -4,11 +4,11 @@ from flask import current_app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from services import phone
-from util import constants
+from shared.services import phone
+from shared.util import constants
 from flask.ext.login import LoginManager
-from db.model import *
-from services import stripe_client
+from shared.db.model import *
+from shared.services import stripe_client
 import admin
 import traceback
 

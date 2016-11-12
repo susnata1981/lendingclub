@@ -7,8 +7,8 @@ from sqlalchemy import Column, Integer, Float, String, DateTime, Text
 from sqlalchemy.orm import relationship
 
 import sys, os, logging
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'db'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../shared', 'util'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../shared', 'db'))
 import model
 from request_service import RequestService
 import config_loader, logger
@@ -42,4 +42,3 @@ if __name__ == '__main__':
 
     request_service.approve_extension(account.request_money_list[0].extensions[0])
     print 'Request status:{0}'.format(account.request_money_list[0].status)
-

@@ -1,8 +1,7 @@
-from application.db.model import *
 import logging
 import requests
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
-from application.db.model import *
+from shared.db.model import *
 from application.admin import INSTITUTION_LIST_ENDPOINT
 import json
 

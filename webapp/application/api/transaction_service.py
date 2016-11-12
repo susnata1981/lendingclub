@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 import traceback
 
 try:
-    from application.util import error, logger, constants
-    from application.db import model
+    from shared.util import error, logger, constants
+    from shared.db import model
 except ImportError:
     import sys, os
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'db'))
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../../../shared', 'util'))
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../../../shared', 'db'))
     import error, logger, constants, model
 from model import RequestMoney, RequestMoneyHistory, Transaction, TransactionHistory
 
@@ -47,4 +47,3 @@ class TransactionService(object):
         #2) If it is after the second due date, check if the interest has been charged, of not charge interest + balance
         #3) If not 1 or 2 then charge just balance
         pass
-

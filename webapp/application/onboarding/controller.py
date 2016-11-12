@@ -1,14 +1,15 @@
 from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
 from plaid import Client
-from application.services import stripe_client
+from shared.services import stripe_client
 from forms import *
-from application.db.model import *
+from shared.db.model import *
 import traceback
 import random
 from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
-from application.util import constants, error
-from application import services, common
+from shared.util import constants, error
+from shared import services
+from shared.util import util
 from pprint import pprint
 import requests
 import json
@@ -471,7 +472,7 @@ def add_random_deposit():
             status = Fi.UNVERFIED,
             time_updated = datetime.now(),
             time_created = datetime.now(),
-            access_token = common.generate_fake_token(5)))
+            access_token = util.generate_fake_token(5)))
 
         # current_user.memberships.sort(key=lambda x: x.time_created)
         # current_user.memberships[0].status = Membership.APPROVED

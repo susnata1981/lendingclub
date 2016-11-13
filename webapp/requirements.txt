@@ -24,3 +24,4 @@ stripe
 urllib3[secure]
 requests[security]
 python-dateutil
+mailjet-rest

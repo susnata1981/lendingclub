@@ -77,17 +77,17 @@ class StripeClass(object):
         return self.f(stripe.Customer.list)(created=get_created_after(created_in_last_days),limit=limit,ending_before=ending_before, \
                 starting_after=starting_after,include=["total_count"])
 
-    def create_customer(self, ph_no):
+    def create_customer(self, email):
         msg = ''
-        if not ph_no:
-            msg = append_error(msg, 'ph_no (phone number) is required')
+        if not email:
+            msg = append_error(msg, 'email is required')
         if msg:
             raise ValueError(msg)
         """
             There is no API in Stripe to check if a customer already exists.
             The stripe cust_id has to be stored in local DB
         """
-        return self.f(stripe.Customer.create)(metadata={'phone':ph_no})
+        return self.f(stripe.Customer.create)(metadata={'email':email})
 
     def get_customer(self, cust_id):
         msg = ''

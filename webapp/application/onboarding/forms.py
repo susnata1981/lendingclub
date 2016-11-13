@@ -39,6 +39,10 @@ class PhoneVerificationForm(Form):
     verification_code = IntegerField('enter verification code', [Required('Please enter the verification code')], default = 1111)
     submit = SubmitField('Verify')
 
+class ResendEmailVerificationForm(Form):
+    email = StringField('*email',[Required('Please enter your email address to recieve the verification email.'), Email()])
+    submit = SubmitField('Resend')
+
 class PersonalInformationForm(Form):
     email = StringField('* email', [Required('Please enter your email'), Email()])
     ssn = StringField('* social security', [Required('Please enter your social security'), SSNValidator()])

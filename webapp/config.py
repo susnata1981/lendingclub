@@ -18,7 +18,8 @@ Update this file with the values for your specific Google Cloud project.
 You can create and manage projects at https://console.developers.google.com
 """
 
-ADMIN_EMAIL = 'susnata@gmail.com'
+ADMIN_EMAIL = 'admin@ziplly.com'
+ADMIN_NAME = 'Admin Ziplly.com'
 
 ENABLE_PRODUCTION_MODE = False
 
@@ -69,6 +70,10 @@ STRIPE_SECRET_KEY_TEST = 'sk_test_QZAuacZ9CDJ8tTOobnS7uvv2'
 
 ############## SENDGRID ################
 SENDGRID_API_KEY = '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'
+
+############# MAILJET #################
+MJ_APIKEY_PUBLIC = '7af99c3bd6d3f78b40107a3b6367d697'
+MJ_APIKEY_PRIVATE = '9258b1433501015269e23c9e95784c00'
 
 #########################  TWILIO ACCOUNT   ##############################
 TWILIO_ACCOUNT_SID = "<ACCOUNT>"

@@ -1,67 +1,125 @@
-{% extends 'base.html' %} {% block content %}
-<div class="container margin-top-large">
-    {% if get_flashed_messages() | length > 0 %}
-     <div class="row">
-         <div class="col s6 error-block">
-             {% for message in get_flashed_messages() %}
-             <div class="error-item">{{ message }}</div>
-             {% endfor %}
-         </div>
-       </div>
-     {% endif %}
-     {% if form.errors %}
-     <div class="row">
-        <div class="col s6 error-block">
-            {% for field in form %}
-              {% for m in field.errors %}
-               <div class="error-item">{{ m }}</div>
-              {% endfor %}
-            {% endfor %}
-         </div>
-       </div>
-       {% endif %}
-<div class="row">
-    <form id="signup_form" class="col s6 user-input" action={{url_for('account_bp.signup')}} method="post">
-        <h4>Signup</h4>
-           {{ form.csrf_token }}
-           <div class="row">
-               <div class="input-field col s5">
-                   {{ form.first_name.label }}
-                   {{ form.first_name }}
-               </div>
-               <div class="input-field col s5">
-                   {{ form.last_name.label }}
-                   {{ form.last_name }}
-               </div>
-           </div>
-           <div class="row">
-               <div class="input-field col s12">
-                   {{ form.email.label }}
-                   {{ form.email }}
-               </div>
-           </div>
-            <div class="row">
-                <div class="input-field col s12">
-                    {{ form.phone_number.label }}
-                    {{ form.phone_number(class='phone_number') }}
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s12">
-                    {{ form.password.label }}
-                    {{ form.password }}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s4">
-                    <button class="btn">Signup</button>
-                </div>
-                <div class="col s8">
-                    <span class="login-option">Already a member&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a> </span>
-                </div>
-            </div>
+{% extends 'base.html' %} {% block pagetitle %} Signup Form {% endblock %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-10">
+      {% if get_flashed_messages() | length > 0 %}
+      <div class="row margin-top-medium">
+        <div class="col-md-12">
+          {% for message in get_flashed_messages() %}
+          <div class="alert alert-danger" role="alert">{{ message }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %} {% if form.errors %}
+      <div class="row">
+        <div class="col-md-12">
+          {% for field in form %} {% for m in field.errors %}
+          <div class="alert alert-danger" role="alert">{{ m }}</div>
+          {% endfor %} {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+    <form id="signup-form" class="col-md-10" action={{url_for( 'account_bp.signup')}} method="post">
+      {{ form.csrf_token }}
+
+      <div class="form-group row">
+        <label for="name" class="col-xs-2 col-form-label align-right">Name</label>
+        <div class="col-xs-4">
+          {{form.first_name(class="form-control")}}
+        </div>
+        <div class="col-xs-4">
+          {{form.last_name(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        {{form.street1.label(class='col-xs-2 col-form-label align-right')}}
+        <div class="col-md-8">
+          {{form.street1(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        {{form.street2.label(class='col-xs-2 col-form-label align-right')}}
+        <div class="col-xs-8">
+          {{form.street2(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="location" class="col-xs-2 col-form-label align-right">Location</label>
+        <div class="col-md-3">
+          {{form.city(class="form-control", placeholder="city")}}
+        </div>
+        <div class="col-md-2">
+          {{form.state(class="form-control")}}
+        </div>
+        <div class="col-md-3">
+          {{form.postal_code(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        {{form.dob.label(class="col-xs-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{form.dob(class="form-control dob")}}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{form.ssn.label(class="col-xs-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{form.ssn(class='ssn form-control')}}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{form.phone_number.label(class="col-xs-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{ form.phone_number(class='phone_number form-control') }}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{form.employment_type.label(class="col-md-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{ form.employment_type(class="form-control") }}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{form.promotion_code.label(class="col-md-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{ form.promotion_code(class="form-control") }}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{ form.email.label(class="col-xs-2 col-form-label align-right") }}
+        <div class="col-md-4">
+          {{ form.email(class="form-control") }}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{ form.password.label(class="col-xs-2 col-form-label align-right") }}
+        <div class="col-md-4">
+          {{ form.password(class="form-control") }}
+        </div>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="offset-md-2 col-md-2">
+          {{ form.consent(class="form-control user-agreement-checkbox") }}
+        </div>
+        <div class="col-md-8">
+          <p class="user-agreement-content">I consent to this user agreement</p>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="offset-md-2 col-md-4 margin-top-medium">
+          <button type="submit" class="btn btn-orange">Sign up</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8 offset-md-2">
+          <span class="login-option">Already a member&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a></span>
+        </div>
+      </div>
+  </div>
 </div>
 </form>
-</div>
 </div>
 {% endblock %}

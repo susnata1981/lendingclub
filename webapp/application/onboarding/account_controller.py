@@ -126,6 +126,7 @@ def signup():
         return redirect(url_for('.account'))
 
     form = SignupForm(request.form)
+    print 'errors - ',form.errors
     if form.validate_on_submit():
         try:
             account = Account(

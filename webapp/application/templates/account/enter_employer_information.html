@@ -12,7 +12,7 @@
 
   {% endif %}
   <div class="row">
-    <form class="user-input col-md-6" action={{url_for('account_bp.enter_employer_information')}} method="POST">
+    <form class="user-input col-md-6" action={{url_for('lending_bp.enter_employer_information')}} method="POST">
       <fieldset>
         <h5>Enter employer information</h5>
       </fieldset>
@@ -64,7 +64,7 @@
           <button class="btn">Next</button>
         </div>
         <div class="col s4">
-          <a class="link-btn" href={{url_for('account_bp.dashboard')}}>Cancel Application</a>
+          <a class="link-btn" href={{url_for('lending_bp.dashboard')}}>Cancel Application</a>
         </div>
       </div>
     </form>

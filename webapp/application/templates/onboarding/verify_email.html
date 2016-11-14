@@ -1,0 +1,73 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container margin-top-large">
+   {% if get_flashed_messages() | length > 0 %}
+    <div class="row">
+        <div class="col s6 error-block">
+            {% for message in get_flashed_messages() %}
+            <div class="error-item">{{ message }}</div>
+            {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    {% if form.errors %}
+    <div class="row">
+       <div class="col s6 error-block">
+           {% for field in form %}
+             {% for m in field.errors %}
+              <div class="error-item">{{ m }}</div>
+             {% endfor %}
+           {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+
+      <div class="row">
+        {%if data.show_email_verification_form %}
+            <h5>Verify Your Email</h5>
+            <form id="email_verification_form" class="col s6 user-input"
+                action={{url_for('account_bp.resend_email_verification')}} method="post">
+                {{ form.csrf_token }}
+                <div class="row">
+                    <div class="input-field col s12">
+                        {{form.email.label}} {{form.email}}
+                    </div>
+                    <div class="col s12">
+                        <button class="btn">Resend</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s8">
+                        <span class="login-option">Already verified&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a> </span>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+        {%if data.email_already_verified %}
+            <h5>Your email is already verified</h5>
+            <div class="col s8">
+                <span class="login-option">Plase continue to &nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a> </span>
+            </div>
+        {% endif %}
+        {%if data.email_sent %}
+            <h5>We just emailed you a link.</h5>
+            <h5>Check your email and click on the verification link.</h5>
+            <div class="row">
+                <div class="col s12 margin-top-medium">
+                    <span class="login-option">Didn't receive verification code?&nbsp;&nbsp;<a id="resend_btn2" href={{url_for('account_bp.resend_email_verification')}}>Resend It</a> </span>
+                </div>
+            </div>
+        {% endif %}
+        {%if data.email_verification_required %}
+            <h5>We emailed you a link after signup.</h5>
+            <h5>Check your email and click on the verification link to continue logging in.</h5>
+            <div class="row">
+                <div class="col s12 margin-top-medium">
+                    <span class="login-option">Didn't receive verification code?&nbsp;&nbsp;<a id="resend_btn2" href={{url_for('account_bp.resend_email_verification')}}>Resend It</a> </span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

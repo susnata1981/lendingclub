@@ -9,6 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, Float, String, DateTime, Text
 from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
+from shared.util import constants
 
 try:
     from shared.util import util
@@ -43,7 +44,7 @@ class Account(Base):
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=True)
-    ssn = Column(Integer, nullable=True)
+    ssn = Column(String(24), nullable=True)
     dob = Column(String(24), nullable=True)
     driver_license_number = Column(String(128), nullable=True)
     employer_name = Column(String(255), nullable=True)
@@ -53,6 +54,8 @@ class Account(Base):
     _password = Column(String(1024), nullable=False)
     status = Column(Integer, default=UNVERIFIED, nullable=False)
     phone_verification_code = Column(Integer, nullable=True)
+    email_verification_token = Column(String(128), nullable=True)
+    promotion_code = Column(String(255), nullable=True)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 

@@ -1,5 +1,5 @@
 import re
-from flask_wtf import FlaskForm, Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, DateField, DateTimeField, FloatField, PasswordField, SubmitField, SelectField, BooleanField
 from wtforms.validators import Required, ValidationError, Email
 
@@ -45,13 +45,16 @@ class SignupForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     email = StringField('email', [Required('Please enter your email'), Email()])
-    phone_number = StringField('phone number')
     password = PasswordField('password', [Required('Password must be provided')])
     submit = SubmitField('Login')
 
 class PhoneVerificationForm(FlaskForm):
     verification_code = IntegerField('enter verification code', [Required('Please enter the verification code')], default = 1111)
     submit = SubmitField('Verify')
+
+class ResendEmailVerificationForm(FlaskForm):
+    email = StringField('*email',[Required('Please enter your email address to recieve the verification email.'), Email()])
+    submit = SubmitField('Resend')
 
 class PersonalInformationForm(FlaskForm):
     email = StringField('* email', [Required('Please enter your email'), Email()])
@@ -66,7 +69,7 @@ class PersonalInformationForm(FlaskForm):
     postal_code = IntegerField('* postal code', [Required('Please enter your postal code')])
 
 
-class EmployerInformationForm(Form):
+class EmployerInformationForm(FlaskForm):
     employer_name = StringField('* employer name', [Required('Please enter your employer name')])
     employer_phone_number = StringField('* employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
     street1 = StringField('* street1', [Required('Please enter your street address')])
@@ -77,22 +80,22 @@ class EmployerInformationForm(Form):
     submit = SubmitField('next')
 
 
-class SelectPlanForm(Form):
+class SelectPlanForm(FlaskForm):
     plan_id = IntegerField('plan_id', [Required()])
 
-class GetBankVerificationMethods(Form):
+class GetBankVerificationMethods(FlaskForm):
     bank_name = StringField('bank_name', [Required('Must enter your bank name')])
 
-class RandomDepositForm(Form):
+class RandomDepositForm(FlaskForm):
     name = StringField('account holder name', [Required('Please enter account holder name')])
     country = SelectField('country', choices = [('US', 'United States')], validators = [Required('Please enter the country your bank is located')])
     currency = SelectField('currency', choices = [('usd', 'usd')], validators = [Required('Please enter the currency')])
     routing_number = StringField('routing number', [Required('Please enter your bank routing number')], default = '110000000')
     account_number = StringField('account number', [Required('Please enter your account number')], default = '000123456789')
 
-class RandomDepositVerifyAccountForm(Form):
+class RandomDepositVerifyAccountForm(FlaskForm):
     deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')], default="32")
     deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')], default="45")
 
-class RequestMoneyForm(Form):
+class RequestMoneyForm(FlaskForm):
     requested_amount = FloatField('requested amount', [Required('Please enter an amount')])

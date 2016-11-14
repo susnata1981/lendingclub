@@ -13,7 +13,7 @@
 
   {% if data['application_incomplete'] %}
     <h4>Your application is partially complete. We need additional information</h4>
-    <form action="account_bp.complete_application" method="get">
+    <form action={{url_for('lending_bp.complete_application')}} method="get">
       <button class="btn btn-orange btn-lg">Complete Application</button>
     </form>
   {% endif %}

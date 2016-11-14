@@ -1,318 +1,49 @@
-{% extends "base.html" %}
-{% block head_content %}
-<!-- Google Analytics Content Experiment code -->
-<script>function utmx_section(){}function utmx(){}(function(){var
-k='128199551-0',d=document,l=d.location,c=d.cookie;
-if(l.search.indexOf('utm_expid='+k)>0)return;
-function f(n){if(c){var i=c.indexOf(n+'=');if(i>-1){var j=c.
-indexOf(';',i);return escape(c.substring(i+n.length+1,j<0?c.
-length:j))}}}var x=f('__utmx'),xx=f('__utmxx'),h=l.hash;d.write(
-'<sc'+'ript src="'+'http'+(l.protocol=='https:'?'s://ssl':
-'://www')+'.google-analytics.com/ga_exp.js?'+'utmxkey='+k+
-'&utmx='+(x?x:'')+'&utmxx='+(xx?xx:'')+'&utmxtime='+new Date().
-valueOf()+(h?'&utmxhash='+escape(h.substr(1)):'')+
-'" type="text/javascript" charset="utf-8"><\/sc'+'ript>')})();
-</script><script>utmx('url','A/B');</script>
-<!-- End of Google Analytics Content Experiment code -->
-{% endblock %}
-{% block stylesheet %}
-<link rel="stylesheet" href={{url_for( 'static', filename='style-experiment-color.css' )}}>
-{% endblock %}
-{% block content %}
-{% for m in get_flashed_messages() %}
-<p class="main-info flow-text">{{ m }}</p>
-{% endfor %}
-<section id="cover-image-section">
-    <div class="row">
-        <div class="col s6">
-          <div class="video-wrapper">
-          <video class="video" height="auto" controls="true">
-            <source src="https://storage.googleapis.com/ziplly-video/explainer.mp4" type="video/mp4" />
-          </video>
-          <div class="playpause"></div>
-        </div>
-        </div>
-        <div class="col s6" id="main-heading-section">
-            <div class="row">
-                <div class="col s12">
-                      <h3 class="blue-text text-darken-1">Need short term loan?</h4>
-                    <ul>
-                    <li>
-                      <h5 class="grey-text text-darken-2">Ziplly is a membership based lending program</h5>
-                    </li>
-                    <li>
-                      <h5 class="grey-text text-darken-2">
-                        It's <span class="bold">40-50% cheaper</span> than Payday lending</h5>
-                    </li>
-                    <li>
-                      <h5 class="grey-text text-darken-2">
-                        You pay <span class="bold">NO INTEREST</span> for 30 days</h5>
-                    </li>
-                    <li>
-                      <h5 class="grey-text text-darken-2">Membership starts at only
-                        <span class="bold">$10/month</span></h5>
-                    </li>
-                    <!-- <li>
-                      <h5 class="grey-text text-darken-2">Repay in time and build your credit</h5>
-                    </li> -->
-                  </ul>
-                    <!-- <h2 class="grey-text text-darken-3">
-                        <span class="white-text accent-2">No Interest for 30 days</span>
-                        Lending
-                    </h2>
-                    <h5 class="grey-text text-darken-2">Better alternative to Payday Loans</h5>
-                    <h6 class="grey-text text-darken-2">Coming soon</h6> -->
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section id="signup-form-section" class="row signup-form center">
-  <h5>Enter your email to be notified when Ziplly is ready to be tried out</h5>
-    <form class="offset-s4 col s4" action="{{url_for('home_blueprint.register_user')}}" method="POST">
-        <div class="input-field">
-            <input name="email" type="email" required>
-            <label id="signup-email-label" for="email">Email</label>
-            <button class="notify-btn btn red">Notify me</button>
-        </div>
-    </form>
-</section>
-<section id="how-it-works-section" class="sub-section">
-    <h3 class="sub-section-header center">How it works</h3>
-    <div class="row">
-        <ul>
-            <li class="col s4">
-                <p class="how-it-works-item-title circle flow-text large-text">
-                    Pick a plan
-                </p>
-                <p class="how-it-works-item-description">
-                    Pay a small monthly membership fee.
-                </p>
-            </li>
-            <li class="col s4">
-                <p class="how-it-works-item-title circle flow-text large-text">
-                    Borrow money
-                </p>
-                <p class="how-it-works-item-description">
-                    Borrow money anytime and pay no interest for the first 30 days.
-                </p>
-            </li>
-            <li class="col s4">
-                <p class="how-it-works-item-title circle flow-text large-text">
-                    Earn Rewards
-                </p>
-                <p class="how-it-works-item-description">
-                    Earn points for paying off the loan in time. Redeem those points for cash.
-                </p>
-            </li>
-        </ul>
-    </div>
-</section>
-<section id="our-story-section" class="sub-section">
-    <h3 class="sub-section-header center">Why Ziplly?</h3>
-    <p>
-        Erica is a single mom to her 2 wonderful daughters 6 and 8 years old. In order to make ends meet, she has to work 2 jobs - as a full-time school teacher and as a part time waitress over weekends. Spending time with her daughters is a luxury that she can
-        barely afford. In 2015 Christmas, like every other parent, she wanted to surprise her babies with gifts. Unfortunately, she didn't have the money. Borrowing from friends or family was not an option. Her only option was Payday Loans. She took out
-        a loan for $275 to buy gifts for her daughters. Being cash strapped, she couldn't pay back the loan in due time and ended up renewing it 5 times, getting slapped on with late charges and additional interests every single time. After 4 long months,
-        she was able to pay back the loan - a total amount of $575 for a loan of only $275. Is that fair we ask?
-    </p>
-    <p>
-        This is the state of affairs in our society. Honest hard working people with limited resources are being exploited by predatory lending practices. Erica and thousands of others have fallen prey to these Payday loan businesses, designed to profit off of
-        other peoples unfortunate circumstances. We want to provide a cheaper, sustainable and better alternative to short term borrowing needs.
-    </p>
-</section>
-<section id="plan-overview-section" class="sub-section plan-overview">
-    <h3 class="sub-section-header center">Our plans</h3>
-    <div class="row">
-        <div class="col s10 offset-s1">
-            <table class="centered highlight bordered">
-                <tbody>
-                    <tr>
-                        <td class="light-blue lighten-3">
-                            <h5 class="brown-text text-darken-3">Plan Name</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">Anytime $150</h5>
-                        </td>
-                        <td class="yellow accent-1">
-                            <h5 class="grey-text text-darken-2">Anytime $300</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">Anytime $500</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="light-blue lighten-3">
-                            <h5 class="brown-text text-darken-3">Loan Amount</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">$150</h5>
-                        </td>
-                        <td class="yellow accent-1">
-                            <h5 class="grey-text text-darken-2">$300</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">$500</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="light-blue lighten-3">
-                            <h5 class="brown-text">Frequency</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">3 times/year</h5>
-                        </td>
-                        <td class="yellow accent-1">
-                            <h5 class="grey-text text-darken-2">3 times/year</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">3 times/year</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="light-blue lighten-3">
-                            <h5 class="brown-text text-darken-3">Loan duration</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">
-                              0% APR for 30 days<br/>
-                              $10 per 2 weeks after that.
-                            </h5>
-                        </td>
-                        <td class="yellow accent-1">
-                            <h5 class="grey-text text-darken-2">0% APR for 30 days</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">0% APR for 30 days</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="light-blue lighten-3">
-                            <h5 class="brown-text text-darken-3">Cost (monthly)</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">$10/month</h5>
-                        </td>
-                        <td class="yellow accent-1">
-                            <h5 class="grey-text text-darken-2">$18/month</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">$35/month</h5>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="light-blue lighten-3">
-                            <h5 class="brown-text text-darken-3">Rewards</h5>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">
-                              Earn points for repaying on time and redeem those points for cash.
-                            </h6>
-                        </td>
-                        <td class="yellow accent-1">
-                            <h5 class="grey-text text-darken-2">
-                              Earn points for repaying on time and redeem those points for cash.
-                            </h6>
-                        </td>
-                        <td class="yellow lighten-2">
-                            <h5 class="grey-text text-darken-2">
-                              Earn points for repaying on time and redeem those points for cash.
-                            </h6>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <!-- <div class="row">
-        <div class="col s8 offset-s2" id="interest-comparison">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s8 offset-s2" id="principal-comparison">
-        </div>
-    </div> -->
-</section>
-<section id="plan-comparison-section">
-  <div class="row">
-    <h3 class="sub-section-header center">Our plan vs Payday</h3>
-    <div class="col s6">
-      <img width="98%" height="auto" src={{url_for('static', filename='ziplly-interest-cost-comparison.png')}} />
-    </div>
-    <div class="col s6">
-      <img width="98%" height="auto" src={{url_for('static', filename='ziplly-interest-cost-comparison.png')}} />
-    </div>
-  </div>
-</div>
-<section id="misson-statement-section" class="sub-section center">
-    <h3 class="sub-section-header">Our Mission</h3>
-    <h5 class="grey-text text-darken-3">
-        We want to make borrowing money easier, cheaper and transparent.
-    </h5>
-</section>
-<!-- <section id="enroll-now-section" class="sub-section center">
-    <h3 class="sub-section-header ">Enroll now for early access</h3>
-    <div class="row signup-form">
-        <form class="offset-s4 col s4" action="{{url_for('home_blueprint.register_user')}}" method="POST">
-            <div class="input-field">
-                <input id="email2 red" name="email2" type="email" required>
-                <label class="notify-label" for="email2 red">Email</label>
-                <button class="notify-btn-2 btn red center">Enroll now</button>
-            </div>
-        </form>
-    </div>
-</section> -->
-<section id="faq-section" class="sub-section">
-    <h3 class="sub-section-header">F.A.Q.</h3>
-    <div>
-        <blockquote>
-            Is there any penalty for canceling the service?
-        </blockquote>
-        <p>
-            No there's no penalty. You can cancel anytime you want, provided you don't owe us any money.
-        </p>
-        <p>
-            But since plans are based on yearly contract, if you want to re-enroll, you'll need to pay back the monthly membership fees for remainder of your last contract period.
-        </p>
-    </div>
-    <div>
-     <blockquote>
-      Should I enroll now even if I don't need to borrow now?
-     </blockquote>
-     <p>
-       By enrolling early, you protect yourself against unforseen circumstances. When the
-       time comes to borrow, you don't have to do any paperwork, just a text would get you
-       the money.
-     </p>
-     <p>
-       In any case, if you don't borrow money as a member, part of the membership fees will roll
-       over to the next year.
-     </p>
-    </div>
-    <div>
-        <blockquote>
-            Is there a contract for the plan?
-        </blockquote>
-        <p>
-            The plans are based on yearly contract but if you don't like the service you can cancel anytime. You need to be at 0 balance in order to cancel the plan. Once you cancel, you'll loose all benefits. In order to join back, you'll need
-            to pay back any missed monthly membership fee for remainder of the contract period.
-        </p>
-    </div>
-    <div>
-        <blockquote>
-            What are the criterias for membership?
-        </blockquote>
-        <p>
-            It's simple - we need proof of employment/paychecks. Users will apply for membership on our site. Once we verify their information, we will provide the application approval decison by the end of the day. In some cases, users may be required to provide
-            additional information such as bank statements, proof of identification etc.
-        </p>
-    </div>
-    <div>
-        <blockquote>
-            When can I get the money?
-        </blockquote>
-        <p>
-            Once you make the request, we will transfer the money within 1 business day.
-        </p>
-    </div>
-{% endblock %}
+<html lang="en">
+<head>
+  {% block head_content %} {% endblock %}
+  <meta charset="utf-8">
+  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" />
+
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css"> -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+
+  <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+
+  <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
+  <!-- <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'> -->
+
+
+  <!-- <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}> -->
+  <!-- <link rel="stylesheet" href={{url_for( 'static', filename='textanimation.css' )}}> {% block stylesheet %} -->
+  <link rel="stylesheet" href={{url_for('static', filename='style-simple2.css')}}> {% endblock %}
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="//code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Chewy" rel="stylesheet">
+  <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
+
+  <!-- <script type="text/javascript" src={{url_for( 'static', filename='main.js' )}}></script> -->
+  <title>{% block title %} Ziplly {% endblock %}</title>
+  {% block script %} {% endblock %}
+</head>
+<body>
+
+<div class="slider"></div>
+
+<script>
+$(".slider").slider({
+    min: 500,
+    max: 1000,
+    step: 50
+});
+</script>
+
+</body>
+</html>

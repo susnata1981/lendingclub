@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container margin-top-medium">
+
+  <div class="row">
+    <div class="offset-md-2 col-md-8">
+      <h5>
+        Welcome back {{current_user.first_name}} {{current_user.last_name}}.
+      </h5>
+    </div>
+  </div>
+
+  {% if data['application_incomplete'] %}
+    <h4>Your application is partially complete. We need additional information</h4>
+    <form action="account_bp.complete_application" method="get">
+      <button class="btn btn-orange btn-lg">Complete Application</button>
+    </form>
+  {% endif %}
+
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <h4>Activity</h4>
+      <p>No Activity here. No Activity here.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

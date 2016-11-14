@@ -19,7 +19,6 @@ body {
 nav {
   background-color: #00BCD4;
   position: relative;
-  height: 140px;
 }
 
 nav ul {
@@ -213,6 +212,10 @@ form {
   color: #333;
 }
 
+.white-text {
+  color: #fff;
+}
+
 .no-margin-left {
  margin-left: 0
 }
@@ -258,16 +261,46 @@ div.nav-wrapper li a {
   font-size: 1.3em;
 }
 
+#logo-section {
+  margin: 0 32px;
+}
+
 .logo-heading {
-  font-size: 2em;
-  font-family: 'Georgia', serif;
-  margin: 0 4px;
-  color: #333;
+  color: #fffff; font-size: 48px; font-family: 'Signika', sans-serif; padding-bottom: 10px;
+}
+
+.highlight-text {
+  color: #FFEF0D;
 }
 
 .logo-subtext {
-  font-family: 'Georgia', serif;
-  margin: 0 4px;
+  font-family: 'Open Sans Condensed', sans-serif; font-size: 16px; color: #FFEF0D;
+}
+
+.loan-item {
+    margin: 20px 0;
+    height: 40px;
+}
+
+.dropdown button {
+    height: 40px;
+}
+
+.loan-item h5 {
+  font-family: 'Open Sans', sans-serif; font-size: 16px; color: #555;
+  line-height: 40px;
+}
+
+.loan-item input {
+  background: #f9f9f9;
+}
+
+.ui-slider {
+  margin-top: 12px;
+}
+
+.slider-input {
+  border:0; color:#f6931f; font-weight:bold; background:#f9f9f9;
 }
 
 .bold {
@@ -400,12 +433,39 @@ div.nav-wrapper li a {
   margin: 0 8px;
 }
 
-#main-heading-section {
-    margin-top: 24px;
+#hero-section {
+    background: #00BCD4;
+    padding: 30px;
 }
+
+#hero-section h1 {
+  color: #ffffff; font-family: 'Trocchi', serif; font-size: 55px; font-weight: normal; line-height: 48px; margin: 0;
+  text-align: center;
+}
+
+#hero-section h3 {
+  color: #ffffff; font-family: 'Trocchi', serif; font-size: 30px; font-weight: normal; line-height: 48px; margin: 0;
+  text-align: center;
+}
+
+#benefits-section {
+  padding: 14px;
+  background: #00838F;
+}
+
+#benefits-section h5 {
+  color: #ffffff; font-family: 'Lato', sans-serif; font-size: 18px; font-weight: normal; line-height: 18px; margin: 0;
+  text-align: center;
+  margin-left: -40px;
+}
+
+#loan-selection-section {
+    padding: 10px;
+    text-align: center;
+}
+
 #main-heading-section ul li {
   list-style: disc inside;
-  margin: 24px 0;
 }
 
 #progress-bar {

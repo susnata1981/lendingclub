@@ -1,6 +1,6 @@
 import logging
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, flash
-from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, flash, jsonify
+from datetime import datetime, timedelta
 from shared.db.model import User
 from shared.services import mail
 from shared.util import constants
@@ -53,6 +53,45 @@ def register_user_ajax():
         return jsonify(
             error='true',
             description='Only support POST request!')
+
+@home_blueprint.route('/get_payment_plan', methods=['POST'])
+def get_payment_plan():
+    loan_amount = float(request.form.get('loan_amount'))
+    loan_duration = int(request.form.get('loan_duration'))
+
+    result = {}
+    result['summary'] = {}
+    result['payment_schedule'] = {}
+    result['summary']['loan_amount'] = loan_amount
+    result['summary']['loan_duration'] = loan_duration
+    min_apr = .36
+    max_apr = .99
+
+    start_time = datetime.now()
+
+    min_payment = loan_amount + (loan_amount * min_apr * loan_duration) / 12
+    max_payment = loan_amount + (loan_amount * max_apr * loan_duration) / 12
+    monthly_payment_min = min_payment/loan_duration
+    monthly_payment_max = max_payment/loan_duration
+    expected_monthly_payment = (monthly_payment_min + monthly_payment_max) / 2
+
+    result['summary']['min_payment'] = min_payment
+    result['summary']['max_payment'] = max_payment
+    result['summary']['min_apr'] = min_apr
+    result['summary']['max_apr'] = max_apr
+    result['summary']['min_interest'] = min_payment - loan_amount
+    result['summary']['max_interest'] = max_payment - loan_amount
+    result['summary']['monthly_payment_min'] = monthly_payment_min
+    result['summary']['monthly_payment_max'] = monthly_payment_max
+    result['summary']['expected_monthly_payment'] = expected_monthly_payment
+
+    for t in range(loan_duration):
+        result['payment_schedule'][t] = {
+            'expected_amount': expected_monthly_payment,
+            'date': start_time + timedelta(days=30)
+        }
+
+    return jsonify(result)
 
 @home_blueprint.route('/contact_us', methods=['GET', 'POST'])
 def contact_us():

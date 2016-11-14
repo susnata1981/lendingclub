@@ -45,7 +45,6 @@ class SignupForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     email = StringField('email', [Required('Please enter your email'), Email()])
-    phone_number = StringField('phone number')
     password = PasswordField('password', [Required('Password must be provided')])
     submit = SubmitField('Login')
 

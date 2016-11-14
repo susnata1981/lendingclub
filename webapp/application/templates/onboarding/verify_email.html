@@ -50,12 +50,21 @@
             </div>
         {% endif %}
         {%if data.email_sent %}
-            <h5>We just emailed you a link</h5>
-            <h5>Check your email and click on the verification link</h5>
+            <h5>We just emailed you a link.</h5>
+            <h5>Check your email and click on the verification link.</h5>
             <div class="row">
-            <div class="col s12 margin-top-medium">
-                <span class="login-option">Didn't receive verification code?&nbsp;&nbsp;<a id="resend_btn2" href={{url_for('account_bp.resend_email_verification')}}>Resend It</a> </span>
+                <div class="col s12 margin-top-medium">
+                    <span class="login-option">Didn't receive verification code?&nbsp;&nbsp;<a id="resend_btn2" href={{url_for('account_bp.resend_email_verification')}}>Resend It</a> </span>
+                </div>
             </div>
+        {% endif %}
+        {%if data.email_verification_required %}
+            <h5>We emailed you a link after signup.</h5>
+            <h5>Check your email and click on the verification link to continue logging in.</h5>
+            <div class="row">
+                <div class="col s12 margin-top-medium">
+                    <span class="login-option">Didn't receive verification code?&nbsp;&nbsp;<a id="resend_btn2" href={{url_for('account_bp.resend_email_verification')}}>Resend It</a> </span>
+                </div>
             </div>
         {% endif %}
     </div>

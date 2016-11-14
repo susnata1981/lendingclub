@@ -188,17 +188,20 @@ def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
         try:
-            account = get_account_by_phone_number(form.phone_number.data)
+            account = get_account_by_email(form.email.data)
             if account == None:
                 flash(constants.INVALID_CREDENTIALS)
                 return render_template('onboarding/login.html', form=form)
 
             # print 'Account = ',account,' Status = ',account.status
             if account.status == Account.UNVERIFIED:
-                session['account_id'] = account.id
                 flash(constants.ACCOUNT_NOT_VERIFIED)
-                return redirect(url_for('account_bp.verify_phone_number'))
-            elif account.password_match(form.password.data) and account.status == Account.VERIFIED_PHONE:
+                # verify email message
+                data = {}
+                data['email_verification_required'] = True
+                email_form = ResendEmailVerificationForm(request.form)
+                return render_template('onboarding/verify_email.html', data=data, form=email_form)
+            elif account.password_match(form.password.data) and accountBLI.isEmailVerified(account):
                 # session['logged_in'] = True
                 # session['account_id'] = account.id
                 login_user(account)

@@ -22,12 +22,6 @@ PREVIOUS_STATE = 'prev_state'
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-    if current_user.status != Account.VERIFIED_PHONE:
-        flash({
-            'content':'Please verify your phone first',
-            'class': 'error'
-        })
-        return redirect(url_for('account_bp.verify_phone_number'))
     valid_tabs = ['account', 'request_money', 'membership', 'transaction', 'bank']
     tab = request.args.get('tab')
     if tab not in valid_tabs:

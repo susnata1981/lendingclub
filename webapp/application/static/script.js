@@ -1,11 +1,6 @@
 $(function() {
     var Z = (function() {
         var LANDING_PAGE_SECTION = [
-            '#how-it-works-section',
-            '#our-story-section',
-            '#plan-overview-section',
-            '#misson-statement-section',
-            '#enroll-now-section',
             '#faq-section'
         ];
 
@@ -299,8 +294,8 @@ $(function() {
             add_notification_button_handler('.notify-btn', 'email', 'name');
             add_notification_button_handler('.notify-btn2', 'email2', 'name2');
 
-            $('ul.tabs').tabs();
-            $('.modal-trigger').leanModal();
+            // $('ul.tabs').tabs();
+            // $('.modal-trigger').leanModal();
 
             $("#resend_btn").click(function(e) {
               e.preventDefault()
@@ -332,10 +327,10 @@ $(function() {
             //   setTimeout("$('#payday-cartoon').fadeOut(500);", 1000);
             // });
 
-            $('.datepicker').pickadate({
-                selectMonths: true, // Creates a dropdown to control month
-                selectYears: 100,
-            });
+            // $('.datepicker').pickadate({
+            //     selectMonths: true, // Creates a dropdown to control month
+            //     selectYears: 100,
+            // });
 
             $('.tooltipped').tooltip({delay: 50});
 
@@ -343,9 +338,8 @@ $(function() {
             $('.ssn').keyup(ssn_formatter);
             $('.dob').keyup(dob_formatter);
 
-            $(".button-collapse").sideNav();
+            $('.dropdown-toggle').dropdown();
         }
-
 
         return {
             init: init

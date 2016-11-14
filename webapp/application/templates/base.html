@@ -8,26 +8,31 @@
   <!--Import Google Icon Font-->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <!-- <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" /> -->
-  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" />
 
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css"> -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
 
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-  <!-- <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script> -->
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
-  <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'>
+  <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script> -->
+
+  <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
+  <!-- <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'> -->
 
 
   <!-- <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}> -->
-  <link rel="stylesheet" href={{url_for( 'static', filename='textanimation.css' )}}> {% block stylesheet %}
-  <link rel="stylesheet" href={{url_for( 'static', filename='style-simple2.css' )}}> {% endblock %}
+  <!-- <link rel="stylesheet" href={{url_for( 'static', filename='textanimation.css' )}}> {% block stylesheet %} -->
+  <link rel="stylesheet" href={{url_for('static', filename='style-simple2.css')}}> {% endblock %}
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="//code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
 
   <link href="https://fonts.googleapis.com/css?family=Chewy" rel="stylesheet">
   <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
-  <script type="text/javascript" src={{url_for( 'static', filename='main.js' )}}></script>
+  <script type="text/javascript" src={{url_for( 'static', filename='widget.js' )}}></script>
+
+  <!-- <script type="text/javascript" src={{url_for( 'static', filename='main.js' )}}></script> -->
   <title>{% block title %} Ziplly {% endblock %}</title>
   {% block script %} {% endblock %}
 </head>
@@ -48,15 +53,16 @@
     </div>
     {% endmacro %}
 
-    <!-- Navbar content -->
+    <!-- Navbar Section -->
     <nav>
-      <!-- <a id="logo-link" class="margin-left-medium" href={{url_for('home_blueprint.index')}}>
-       <span class="logo-heading white-text">Ziplly</span>
+      <div id="logo-section">
+       <a href="{{url_for('home_blueprint.index')}}"><span class="logo-heading white-text">Ziplly</span></a>
        <span class="logo-subtext white-text">borrowing made affordable</span>
-     </a> -->
+     </div>
+     {% if show_navigation %}
       <ul class="list-inline navigation">
         <li class="pull-left">
-          <a href={{url_for( 'lending_bp.dashboard')}}>Ziplly</a>
+          <a href={{url_for('lending_bp.dashboard')}}>Ziplly</a>
         </li>
         {% if current_user.is_authenticated %}
         <span class="float-md-right">
@@ -67,7 +73,8 @@
        <li>
          <a href={{url_for('account_bp.logout')}}>Logout</a>
        </li>
-     </span> {% else %}
+     </span>
+     {% else %}
         <span class="float-md-right">
         <li>
           <a href={{url_for('home_blueprint.index')}}>Home</a>
@@ -78,37 +85,23 @@
         <li>
           <a href="#">About</a>
         </li>
-      </span> {% endif %}
+      </span>
+      {% endif %}
       </ul>
-      <div class="pagetitle">
+      {% endif %}
+      <!-- <div class="pagetitle">
         <div class="header">
           {% block pagetitle %} {% endblock %}
         </div>
-      </div>
+      </div> -->
     </nav>
 
+    <!-- Main Section -->
     <section id="content">
-      <!-- <ul id="slide-out" class="side-nav">
-         <li><div class="userView margin-top-large">
-           <a href="#!name"><span class="name">{{current_user.first_name}} {{current_user.last_name}}</span></a>
-           <a href="#!email"><span class="email">{{current_user.email}}</span></a>
-         </div>
-        </li>
-         <li><a href="{{url_for('lending_bp.request_money')}}">Request Money</a></li>
-         <li><a href="{{url_for('lending_bp.make_payment')}}">Make Payment</a></li>
-         <li><a href="{{url_for('lending_bp.get_transaction_info')}}">Transactions</a></li>
-         <li><div class="divider"></div></li>
-         <li><a href="{{url_for('lending_bp.get_membership_info')}}">Membership</a></li>
-         <li><div class="divider"></div></li>
-         <li><a href={{url_for('lending_bp.dashboard', tab='account')}}>Account</a></li>
-         <li><div class="divider"></div></li>
-         <li><a href={{url_for('lending_bp.dashboard', tab='bank')}}>Bank Info</a></li>
-       </ul>
-       {% if current_user.is_authenticated %}
-       <a href="#" id="sidenav-btn" data-activates="slide-out" class="btn-floating button-collapse"><i class="material-icons">menu</i></a>
-       {% endif %} -->
       {% block content %} {% endblock %}
     </section>
+
+    <!-- Footer Section -->
     <footer class="page-footer">
       <div class="container">
         <div class="row">

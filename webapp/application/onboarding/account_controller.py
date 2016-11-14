@@ -129,14 +129,30 @@ def signup():
     print 'errors - ',form.errors
     if form.validate_on_submit():
         try:
+            now = datetime.now()
             account = Account(
                first_name = form.first_name.data,
                last_name = form.last_name.data,
                phone_number = form.phone_number.data,
                email = form.email.data,
+               dob = form.dob.data,
+               ssn = form.ssn.data,
+               promotion_code = form.promotion_code.data,
                password = form.password.data,
-               time_created = datetime.now(),
-               time_updated = datetime.now())
+               time_created = now,
+               time_updated = now)
+
+            address = Address(
+                street1 = form.street1.data,
+                street2 = form.street2.data,
+                city = form.city.data,
+                state = form.state.data,
+                postal_code = form.postal_code.data,
+                address_type = Address.EMPLOYER,
+               time_created = now,
+               time_updated = now)
+
+            account.addresses.append(address)
 
             accountBLI.signup(account)
         except error.AccountExistsError:

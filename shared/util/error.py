@@ -3,13 +3,11 @@
 class StripeError(Exception):
     def __init__(self, display_message=None, orig_exp=None):
         super(StripeError, self).__init__(display_message)
-        self.my_message = actual_message
         self.orig_exp = orig_exp
 
 class DatabaseError(Exception):
     def __init__(self, display_message=None, orig_exp=None):
         super(DatabaseError, self).__init__(display_message)
-        self.my_message = actual_message
         self.orig_exp = orig_exp
 
 class UserInputError(Exception):

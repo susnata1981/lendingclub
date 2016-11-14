@@ -22,41 +22,54 @@ PREVIOUS_STATE = 'prev_state'
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-    valid_tabs = ['account', 'request_money', 'membership', 'transaction', 'bank']
-    tab = request.args.get('tab')
-    if tab not in valid_tabs:
-        return redirect(url_for('.request_money'))
-
+    # valid_tabs = ['account', 'request_money', 'membership', 'transaction', 'bank']
+    # tab = request.args.get('tab')
+    # if tab not in valid_tabs:
+    #     return redirect(url_for('.request_money'))
+    #
+    # data = {}
+    # form = RequestMoneyForm(request.form)
+    #
+    # # if len(current_user.memberships) == 0:
+    # #     data['show_notification'] = True
+    # #     data['notification_class'] = 'error'
+    # #     data['notification_message_description'] = 'You application is incomplete'
+    # #     data['notification_message_title'] = 'Apply Now'
+    # #     data['notification_url'] = 'membership_bp.apply_for_membership'
+    # # elif len(current_user.fis) == 0:
+    # #     data['show_notification'] = True
+    # #     data['notification_class'] = 'error'
+    # #     data['notification_message_description'] = 'You have not added bank account yet'
+    # #     data['notification_message_title'] = 'Add Bank'
+    # #     data['notification_url'] = 'membership_bp.add_bank'
+    # # elif has_unverified_bank_account():
+    # #     data['show_notification'] = True
+    # #     data['notification_class'] = 'error'
+    # #     data['notification_message_description'] = 'You have not verified your bank account'
+    # #     data['notification_message_title'] = 'Verify Account'
+    # #     data['notification_url'] = 'membership_bp.verify_account_random_deposit'
+    # # elif is_eligible_to_borrow() > 0:
+    # #     data['show_notification'] = True
+    # #     data['notification_class'] = 'info'
+    # #     data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
+    # data = create_notifications()
+    # session['data'] = data
+    # if tab == 'request_money':
+    #     return redirect(url_for('.request_money'))
     data = {}
-    form = RequestMoneyForm(request.form)
+    data['application_incomplete'] = True
+    return render_template('account/dashboard.html', data=data)
 
-    # if len(current_user.memberships) == 0:
-    #     data['show_notification'] = True
-    #     data['notification_class'] = 'error'
-    #     data['notification_message_description'] = 'You application is incomplete'
-    #     data['notification_message_title'] = 'Apply Now'
-    #     data['notification_url'] = 'membership_bp.apply_for_membership'
-    # elif len(current_user.fis) == 0:
-    #     data['show_notification'] = True
-    #     data['notification_class'] = 'error'
-    #     data['notification_message_description'] = 'You have not added bank account yet'
-    #     data['notification_message_title'] = 'Add Bank'
-    #     data['notification_url'] = 'membership_bp.add_bank'
-    # elif has_unverified_bank_account():
-    #     data['show_notification'] = True
-    #     data['notification_class'] = 'error'
-    #     data['notification_message_description'] = 'You have not verified your bank account'
-    #     data['notification_message_title'] = 'Verify Account'
-    #     data['notification_url'] = 'membership_bp.verify_account_random_deposit'
-    # elif is_eligible_to_borrow() > 0:
-    #     data['show_notification'] = True
-    #     data['notification_class'] = 'info'
-    #     data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
-    data = create_notifications()
-    session['data'] = data
-    if tab == 'request_money':
-        return redirect(url_for('.request_money'))
-    return render_template('onboarding/dashboard.html', data=data, tab=tab, form=form)
+@lending_bp.route('/complete_application', methods=['GET','POST'])
+@login_required
+def complete_application():
+    return redirect(url_for('.enter_employer_information'))
+
+@lending_bp.route('/enter_employer_information', methods=['GET', 'POST'])
+@login_required
+def enter_employer_information():
+    form = EmployerInformationForm(request.form)
+    return render_template('account/enter_employer_information.html', form=form)
 
 @lending_bp.route('/memberships', methods=['GET'])
 @login_required

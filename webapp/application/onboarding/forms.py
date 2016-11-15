@@ -35,8 +35,6 @@ class SignupForm(FlaskForm):
     # [Required('Please enter your driver license number')])
     phone_number = StringField('phone number',
         [Required('Please enter your phone number'), PhoneNumberValidator()])
-    employment_type = SelectField('employment type',
-    choices = [('full-time', 'Full Time'), ('part-time', 'Part Time'), ('self-employed', 'Self Employed')], validators = [Required('Please enter your employment type')])
     promotion_code = StringField('promotion code')
     email = StringField('email', [Required('Please enter your email'), Email()])
     password = PasswordField('password', validators=[Required('Please enter a password')])

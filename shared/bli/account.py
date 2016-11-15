@@ -108,3 +108,48 @@ def verify_email(id, token):
             raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
     LOGGER.info('verify_email exit')
+
+def is_application_complete(account):
+    LOGGER.info('is_application_complete entry')
+    if not account or \
+        not account.employers or \
+        not account.get_usable_fis() or \
+        not account.is_active_primary_bank_verified():
+        LOGGER.info('is_application_complete:False exit')
+        return False
+    LOGGER.info('is_application_complete:True exit')
+    return True
+
+def application_next_step(account):
+    LOGGER.info('application_next_step entry')
+    next = {}
+    if not account.employers:
+        next['enter_employer_information'] = True
+    elif not account.get_usable_fis():
+        next['add_bank'] = True
+    elif not account.is_active_primary_bank_verified():
+        primary_bank = account.get_active_primary_bank()
+        #TODO: currently if the account has active banks atleast  one of them is primary_bank
+        # not checking if primary_bank == None
+        next['verify_bank'] = True
+        next['id'] = primary_bank.id
+    else:
+        next['application_complete'] = True
+    LOGGER.info('application_next_step exit')
+    return next
+
+def add_employer(account, employer):
+    LOGGER.info('add_employer entry')
+    if not account:
+        raise ValueError('Invalid account (None) passed in.')
+    if not employer:
+        raise ValueError('Invalid employer (None) passed in.')
+
+    try:
+        account.employers.append(employer)
+        current_app.db_session.add(account)
+        current_app.db_session.commit()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+    LOGGER.info('add_employer exit')

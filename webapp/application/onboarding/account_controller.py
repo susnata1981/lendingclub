@@ -173,7 +173,6 @@ def signup():
             flash(constants.GENERIC_ERROR)
             return render_template('onboarding/signup.html', form=form)
 
-        session['account_id'] = account.id
         # verify email message
         data = {}
         data['email_sent'] = True

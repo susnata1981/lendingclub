@@ -17,16 +17,16 @@
         <h5>Enter employer information</h5>
       </fieldset>
       {{ form.csrf_token }}
+      <div class="row form-group">
+        {{form.employment_type.label(class="col-md-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{ form.employment_type(class="form-control") }}
+        </div>
+      </div>
       <div class="form-group row">
         {{form.employer_name.label(class='col-xs-2 col-form-label align-right')}}
         <div class="col-md-8">
           {{form.employer_name(class="form-control")}}
-        </div>
-      </div>
-      <div class="form-group row">
-        {{form.employer_phone_number.label(class='col-md-2 col-form-label align-right')}}
-        <div class="col-md-8">
-          {{form.employer_phone_number(class="form-control phone_number")}}
         </div>
       </div>
       <div class="form-group row">

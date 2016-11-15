@@ -15,6 +15,8 @@ import json
 import logging
 import dateutil
 from dateutil.relativedelta import relativedelta
+from shared.bli import account as accountBLI
+from shared.util import error
 
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
@@ -22,53 +24,55 @@ PREVIOUS_STATE = 'prev_state'
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-    # valid_tabs = ['account', 'request_money', 'membership', 'transaction', 'bank']
-    # tab = request.args.get('tab')
-    # if tab not in valid_tabs:
-    #     return redirect(url_for('.request_money'))
-    #
-    # data = {}
-    # form = RequestMoneyForm(request.form)
-    #
-    # # if len(current_user.memberships) == 0:
-    # #     data['show_notification'] = True
-    # #     data['notification_class'] = 'error'
-    # #     data['notification_message_description'] = 'You application is incomplete'
-    # #     data['notification_message_title'] = 'Apply Now'
-    # #     data['notification_url'] = 'membership_bp.apply_for_membership'
-    # # elif len(current_user.fis) == 0:
-    # #     data['show_notification'] = True
-    # #     data['notification_class'] = 'error'
-    # #     data['notification_message_description'] = 'You have not added bank account yet'
-    # #     data['notification_message_title'] = 'Add Bank'
-    # #     data['notification_url'] = 'membership_bp.add_bank'
-    # # elif has_unverified_bank_account():
-    # #     data['show_notification'] = True
-    # #     data['notification_class'] = 'error'
-    # #     data['notification_message_description'] = 'You have not verified your bank account'
-    # #     data['notification_message_title'] = 'Verify Account'
-    # #     data['notification_url'] = 'membership_bp.verify_account_random_deposit'
-    # # elif is_eligible_to_borrow() > 0:
-    # #     data['show_notification'] = True
-    # #     data['notification_class'] = 'info'
-    # #     data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
-    # data = create_notifications()
-    # session['data'] = data
-    # if tab == 'request_money':
-    #     return redirect(url_for('.request_money'))
     data = {}
-    data['application_incomplete'] = True
+    data['application_incomplete'] = not accountBLI.is_application_complete(current_user)
+    #TODO : add account data activity
     return render_template('account/dashboard.html', data=data)
 
 @lending_bp.route('/complete_application', methods=['GET','POST'])
 @login_required
 def complete_application():
-    return redirect(url_for('.enter_employer_information'))
+    next = accountBLI.application_next_step(current_user)
+    if next['enter_employer_information']:
+        return redirect(url_for('.enter_employer_information'))
+    elif next['add_bank']:
+        print 'TODO: add_bank'
+        #return redirect(url_for('.add_bank'))
+    elif next['verify_bank']:
+        print 'TODO: verify_bank'
+        #return redirect(url_for('.verify_bank', id=next['id']))
+    return redirect(url_for('.dashboard'))
 
 @lending_bp.route('/enter_employer_information', methods=['GET', 'POST'])
 @login_required
 def enter_employer_information():
     form = EmployerInformationForm(request.form)
+    if form.validate_on_submit():
+        try:
+            now = datetime.now()
+            employer = Employer(
+                type = Employer.TYPE_FROM_NAME[form.employment_type.data],
+                name = form.employer_name.data,
+                phone_number = form.employer_phone_number.data,
+                street1 = form.street1.data,
+                street2 = form.street2.data,
+                city = form.city.data,
+                state = form.state.data,
+                postal_code = form.postal_code.data,
+                status = Employer.ACTIVE,
+                time_created = now,
+                time_updated = now
+            )
+            accountBLI.add_employer(current_user, employer)
+            return redirect(url_for('.dashboard'))
+        except error.DatabaseError as de:
+            print 'ERROR: Database Exception: %s' % (de.message)
+            flash(constants.GENERIC_ERROR)
+            return render_template('account/enter_employer_information.html', form=form)
+        except Exception as e:
+            print 'ERROR: General Exception: %s' % (e.message)
+            flash(constants.GENERIC_ERROR)
+            return render_template('account/enter_employer_information.html', form=form)
     return render_template('account/enter_employer_information.html', form=form)
 
 @lending_bp.route('/memberships', methods=['GET'])
@@ -203,7 +207,6 @@ def get_transaction_info():
             data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(t.amount, t.payment_date.strftime("%m/%d/%Y"))
 
     return render_template('onboarding/transactions.html', data=data)
-
 
 def next_month(date):
     future_date = date.today()+ relativedelta(months=1)

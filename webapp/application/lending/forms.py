@@ -13,6 +13,8 @@ class PhoneNumberValidator:
             raise ValidationError(PhoneNumberValidator.message)
 
 class EmployerInformationForm(FlaskForm):
+    employment_type = SelectField('employment type',
+        choices = [('full-time', 'Full Time'), ('part-time', 'Part Time'), ('self-employed', 'Self Employed'), ('unemployed', 'Unemployed')], validators = [Required('Please enter your employment type')])
     employer_name = StringField('* employer name', [Required('Please enter your employer name')])
     employer_phone_number = StringField('* employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
     street1 = StringField('* street1', [Required('Please enter your street address')])

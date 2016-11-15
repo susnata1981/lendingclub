@@ -13,13 +13,13 @@ class PhoneNumberValidator:
             raise ValidationError(PhoneNumberValidator.message)
 
 class EmployerInformationForm(FlaskForm):
-    employer_name = StringField('* employer name', [Required('Please enter your employer name')])
-    employer_phone_number = StringField('* employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
-    street1 = StringField('* street1', [Required('Please enter your street address')])
+    employer_name = StringField('employer name', [Required('Please enter your employer name')])
+    employer_phone_number = StringField('employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
+    street1 = StringField('street1', [Required('Please enter your street address')])
     street2 = StringField('street2')
-    city = StringField('* city', [Required('Please enter your city')])
-    state = StringField('* state', [Required('Pleae enter your state')])
-    postal_code = IntegerField('* postal code', [Required('Please enter your postal code')])
+    city = StringField('city', [Required('Please enter your city')], render_kw={"placeholder": "city"})
+    state = StringField('state', [Required('Pleae enter your state')], render_kw={"placeholder": "state"})
+    postal_code = IntegerField('postal code', [Required('Please enter your postal code')], render_kw={"placeholder": "postal code"})
     submit = SubmitField('next')
 
 class RequestMoneyForm(FlaskForm):

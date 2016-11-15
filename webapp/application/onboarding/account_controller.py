@@ -38,7 +38,7 @@ def resend_email_verification():
             if not account:
                 flash('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
                 data['show_email_verification_form'] = True
-            elif accountBLI.isEmailVerified(account):
+            elif accountBLI.is_email_verified(account):
                 flash('Email already verified.')
                 data['email_already_verified'] = True
             else:
@@ -173,7 +173,6 @@ def signup():
             flash(constants.GENERIC_ERROR)
             return render_template('onboarding/signup.html', form=form)
 
-        session['account_id'] = account.id
         # verify email message
         data = {}
         data['email_sent'] = True
@@ -188,30 +187,31 @@ def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
         try:
-            account = get_account_by_email(form.email.data)
-            if account == None:
-                flash(constants.INVALID_CREDENTIALS)
-                return render_template('onboarding/login.html', form=form)
-
-            # print 'Account = ',account,' Status = ',account.status
-            if account.status == Account.UNVERIFIED:
-                flash(constants.ACCOUNT_NOT_VERIFIED)
-                # verify email message
-                data = {}
-                data['email_verification_required'] = True
-                email_form = ResendEmailVerificationForm(request.form)
-                return render_template('onboarding/verify_email.html', data=data, form=email_form)
-            elif account.password_match(form.password.data) and accountBLI.isEmailVerified(account):
-                # session['logged_in'] = True
-                # session['account_id'] = account.id
-                login_user(account)
-                next = request.args.get('next')
-                # next_is_valid should check if the user has valid
-                # permission to access the `next` url
-                # print 'Next page =',next,' is_valid_next =',next_is_valid(next)
-                # if not next_is_valid(next):
-                #     return flask.abort(404)
-                return redirect(next or url_for('lending_bp.dashboard'))
+            account = accountBLI.verify_login(form.email.data, form.password.data)
+            login_user(account)
+            next = request.args.get('next')
+            # next_is_valid should check if the user has valid
+            # permission to access the `next` url
+            # print 'Next page =',next,' is_valid_next =',next_is_valid(next)
+            # if not next_is_valid(next):
+            #     return flask.abort(404)
+            return redirect(next or url_for('lending_bp.dashboard'))
+        except error.DatabaseError as de:
+            print 'Database error:',de.orig_exp.message
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/login.html', form=form)
+        except error.InvalidLoginCredentialsError:
+            # print 'Invalid credentials'
+            flash(constants.INVALID_CREDENTIALS)
+            return render_template('onboarding/login.html', form=form)
+        except error.EmailVerificationRequiredError:
+            # print 'Email verification required'
+            flash(constants.ACCOUNT_NOT_VERIFIED)
+            # verify email message
+            data = {}
+            data['email_verification_required'] = True
+            email_form = ResendEmailVerificationForm(request.form)
+            return render_template('onboarding/verify_email.html', data=data, form=email_form)
         except Exception as e:
             print 'Exception::',e
             print traceback.format_exc()

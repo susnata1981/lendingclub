@@ -1,45 +1,54 @@
 #Exceptions
-
-class StripeError(Exception):
-    def __init__(self, display_message=None, orig_exp=None):
-        super(StripeError, self).__init__(display_message)
+class ZipllyError(Exception):
+    def __init__(self, message=None, orig_exp=None):
+        super(ZipllyError, self).__init__(message)
         self.orig_exp = orig_exp
 
-class DatabaseError(Exception):
-    def __init__(self, display_message=None, orig_exp=None):
-        super(DatabaseError, self).__init__(display_message)
-        self.orig_exp = orig_exp
+class StripeError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(StripeError, self).__init__(message=message, orig_exp=orig_exp)
 
-class UserInputError(Exception):
+class DatabaseError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(DatabaseError, self).__init__(message=message, orig_exp=orig_exp)
+
+class UserInputError(ZipllyError):
     def __init__(self, message=None, orig_exp=None, param=None):
-        super(UserInputError, self).__init__(message)
+        super(UserInputError, self).__init__(message=message, orig_exp=orig_exp)
         self.param=param
-        self.orig_exp = orig_exp
 
-class ValidationError(Exception):
+class ValidationError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(ValidationError, self).__init__(message)
+        super(ValidationError, self).__init__(message=message, orig_exp=orig_exp)
 
-class AccountExistsError(Exception):
+class AccountExistsError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(AccountExistsError, self).__init__(message)
+        super(AccountExistsError, self).__init__(message=message, orig_exp=orig_exp)
 
-class AccountNotFoundError(Exception):
+class AccountNotFoundError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(AccountNotFoundError, self).__init__(message)
+        super(AccountNotFoundError, self).__init__(message=message, orig_exp=orig_exp)
 
-class AccountEmailAlreadyVerifiedError(Exception):
+class AccountEmailAlreadyVerifiedError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(AccountEmailAlreadyVerifiedError, self).__init__(message)
+        super(AccountEmailAlreadyVerifiedError, self).__init__(message=message, orig_exp=orig_exp)
 
-class EmailVerificationNotMatchError(Exception):
+class EmailVerificationNotMatchError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(EmailVerificationNotMatchError, self).__init__(message)
+        super(EmailVerificationNotMatchError, self).__init__(message=message, orig_exp=orig_exp)
 
-class MailServiceError(Exception):
+class MailServiceError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(MailServiceError, self).__init__(message)
+        super(MailServiceError, self).__init__(message=message, orig_exp=orig_exp)
 
-class EmailVerificationSendingError(Exception):
+class EmailVerificationSendingError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
-        super(EmailVerificationNotMatchError, self).__init__(message)
+        super(EmailVerificationNotMatchError, self).__init__(message=message, orig_exp=orig_exp)
+
+class EmailVerificationRequiredError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(EmailVerificationRequiredError, self).__init__(message=message, orig_exp=orig_exp)
+
+class InvalidLoginCredentialsError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(InvalidLoginCredentialsError, self).__init__(message=message, orig_exp=orig_exp)

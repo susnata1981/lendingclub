@@ -6,7 +6,7 @@ from sqlalchemy import ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import Column, Integer, Float, String, DateTime, Text
+from sqlalchemy import Column, Integer, Float, String, DateTime, Text, Boolean
 from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
 from shared.util import constants
@@ -50,7 +50,7 @@ class Account(Base):
     employer_name = Column(String(255), nullable=True)
     employer_phone_number = Column(String(128), nullable=True)
     stripe_customer_id = Column(String(255), nullable=True)
-    phone_number = Column(String(50), unique=True, nullable=False)
+    phone_number = Column(String(50), nullable=False)
     _password = Column(String(1024), nullable=False)
     status = Column(Integer, default=UNVERIFIED, nullable=False)
     phone_verification_code = Column(Integer, nullable=True)
@@ -87,6 +87,26 @@ class Account(Base):
 
     def get_id(self):
         return unicode(self.id)
+
+    def get_usable_fis(self):
+        usable_fis = []
+        for fi in self.fis:
+            if fi.usage_status == Fi.ACTIVE:
+                usable_fis.append(fi)
+        return usable_fis
+
+    def is_active_primary_bank_verified(self):
+        for fi in self.fis:
+            if fi.primary and fi.usage_status == Fi.ACTIVE and fi.status == Fi.VERIFIED:
+                return True
+        return False
+
+    def get_active_primary_bank(self):
+        for fi in self.fis:
+            if fi.primary and fi.usage_status == Fi.ACTIVE:
+                return fi
+        return None
+
 
     def get_open_request(self):
         for req in self.request_money_list:
@@ -127,6 +147,7 @@ class Fi(Base):
 
     INSTANT, RANDOM_DEPOSIT = range(2)
     UNVERFIED, VERIFIED = range(2)
+    ACTIVE, INACTIVE = range(2)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
@@ -145,6 +166,8 @@ class Fi(Base):
     access_token = Column(String(255), nullable=False, unique=True)
     stripe_bank_account_token = Column(String(255), nullable=True, unique=True)
     account_number_last_4 = Column(Integer, nullable=True)
+    primary = Column(Boolean, nullable=False)
+    usage_status = Column(Integer, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
@@ -159,6 +182,48 @@ class Plan(Base):
     interest_rate_description = Column(Text, nullable=False)
     cost = Column(Float, nullable=False)
     rewards_description = Column(Text, nullable=False)
+
+class Employer(Base):
+    __tablename__ = 'employer'
+    FULL_TIME, PART_TIME, SELF_EMPLOYED, UNEMPLOYED  = range(4)
+    TYPE_NAME = {
+        FULL_TIME: 'full-time',
+        PART_TIME: 'part-time',
+        SELF_EMPLOYED: 'self-employed',
+        UNEMPLOYED: 'unemployed'
+    }
+    TYPE_FROM_NAME = {
+        'full-time': FULL_TIME,
+        'part-time': PART_TIME,
+        'self-employed': SELF_EMPLOYED,
+        'unemployed': UNEMPLOYED
+    }
+    ACTIVE,IN_ACTIVE = range(2)
+    STATUS_NAME = {
+        ACTIVE: "ACTIVE",
+        IN_ACTIVE: "IN_ACTIVE"
+    }
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    account_id = Column(Integer, ForeignKey('account.id'))
+    account = relationship('Account', back_populates='employers')
+    type = Column(Integer, nullable=False)
+    name = Column(String(255), nullable=False)
+    phone_number = phone_number = Column(String(50), nullable=False)
+    street1 = Column(String(512), nullable=False)
+    street2 = Column(String(512), nullable=True)
+    city = Column(String(128), nullable=False)
+    state = Column(String(128), nullable=False)
+    postal_code = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
+    time_created = Column(DateTime)
+    time_updated = Column(DateTime)
+
+    def get_status_name(self):
+        return EmployerInformation.STATUS_NAME.get(self.status)
+
+    def get_type_name(self):
+        return EmployerInformation.TYPE_NAME.get(self.type)
 
 class Membership(Base):
     __tablename__ = 'membership'
@@ -312,8 +377,8 @@ class TransactionHistory(Base):
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
+Account.employers = relationship('Employer', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
-Account.employer_address = relationship('Address', uselist = False, back_populates='account')
 Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.id)')
 RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request', order_by='desc(ExtensionRequest.payment_date)')
 RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
@@ -376,7 +441,6 @@ def init_db():
 
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()
-
 
 def get_account_by_phone_number(phone_number):
     return current_app.db_session.query(Account).filter(Account.phone_number == phone_number).one_or_none()

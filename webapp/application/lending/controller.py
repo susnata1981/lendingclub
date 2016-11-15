@@ -33,12 +33,12 @@ def dashboard():
 @login_required
 def complete_application():
     next = accountBLI.application_next_step(current_user)
-    if next['enter_employer_information']:
+    if 'enter_employer_information' in next:
         return redirect(url_for('.enter_employer_information'))
-    elif next['add_bank']:
+    elif 'add_bank' in next:
         print 'TODO: add_bank'
         #return redirect(url_for('.add_bank'))
-    elif next['verify_bank']:
+    elif 'verify_bank' in next:
         print 'TODO: verify_bank'
         #return redirect(url_for('.verify_bank', id=next['id']))
     return redirect(url_for('.dashboard'))

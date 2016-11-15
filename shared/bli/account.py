@@ -40,7 +40,22 @@ def signup(account):
 
     LOGGER.info('signup exit')
 
-def isEmailVerified(account):
+def verify_login(email, password):
+    LOGGER.info('verify_login entry')
+    try:
+        account = get_account_by_email(email)
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+    if not account or not account.password_match(password):
+        raise error.InvalidLoginCredentialsError('Invalid credentials')
+    elif not is_email_verified(account):
+        raise error.EmailVerificationRequiredError('Email verification required')
+    else:
+        LOGGER.info('verify_login exit')
+        return account
+
+def is_email_verified(account):
     if account and (account.status == int(Account.VERIFIED) or account.status == int(Account.VERIFIED_EMAIL)):
         return True
     return False

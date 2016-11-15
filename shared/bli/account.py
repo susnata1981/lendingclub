@@ -124,6 +124,14 @@ def verify_email(id, token):
 
     LOGGER.info('verify_email exit')
 
+def need_primary_bank(account):
+    if not account:
+        raise error.AccountNotFoundError('Account is None')
+    if not account.get_active_primary_bank():
+        return True
+    else:
+        return False
+
 def is_application_complete(account):
     LOGGER.info('is_application_complete entry')
     if not account or \

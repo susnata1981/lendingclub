@@ -44,7 +44,9 @@ def get_created_after(no_of_days_ago):
     return created_after
 
 class StripeClass(object):
-
+    INCORRECT_RANDOM_DEPOSIT_AMOUNTS_MSG = 'The amounts provided do not match the amounts that were sent to the bank account.'
+    BANK_ALREADY_VERIFIED_MSG = 'This bank account has already been verified.'
+    BANK_ALREADY_EXISTS_FOR_CUSTOMER_MSG = 'A bank account with that routing number and account number already exists for this customer.'
     def __init__(self, api_key):
         stripe.api_key = api_key
         self.LOGGER = logger.getLogger(__name__)
@@ -57,12 +59,24 @@ class StripeClass(object):
                     user_id = current_user.get_id()
 
                 return func(*args, **kwargs)
-            except (stripe.error.InvalidRequestError, stripe.error.CardError) as e:
+            except stripe.error.InvalidRequestError as e:
                 stack = inspect.stack()
                 self.LOGGER.error('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
                     stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
-
-                raise error.UserInputError(e.message, e.param)
+                if e.message == StripeClass.BANK_ALREADY_VERIFIED_MSG:
+                    error.BankAlreadyVerifiedError(e.message, e)
+                elif e.message == StripeClass.BANK_ALREADY_EXISTS_FOR_CUSTOMER_MSG:
+                    error.BankAlreadyExistsError(e.message, e)
+                else:
+                    raise error.UserInputError(e.message, e.param, e)
+            except stripe.error.CardError as e:
+                stack = inspect.stack()
+                self.LOGGER.error('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
+                    stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
+                if e.message == StripeClass.INCORRECT_RANDOM_DEPOSIT_AMOUNTS_MSG:
+                    error.IncorrectRandomDepositAmountsError(e.message, e)
+                else:
+                    raise error.UserInputError(e.message, e.param, e)
             except Exception as e:
                 stack = inspect.stack()
                 self.LOGGER.exception('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(

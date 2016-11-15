@@ -152,7 +152,8 @@ class Fi(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship('Account', back_populates='fis')
-    bank_account_id = Column(String(255), nullable=False)
+    plaid_account_id = Column(String(255), nullable=True, unique=True)
+    stripe_bank_account_token = Column(String(255), nullable=False, unique=True)
     verification_type = Column(Integer, nullable=False)
     status = Column(Integer, nullable=False)
     subtype = Column(String(128), nullable=True)
@@ -163,8 +164,7 @@ class Fi(Base):
     available_balance = Column(Float, nullable=True)
     current_balance = Column(Float, nullable=True)
     account_type = Column(String(128), nullable=True)
-    access_token = Column(String(255), nullable=False, unique=True)
-    stripe_bank_account_token = Column(String(255), nullable=True, unique=True)
+    plaid_access_token = Column(String(255), nullable=True, unique=True)
     account_number_last_4 = Column(Integer, nullable=True)
     primary = Column(Boolean, nullable=False)
     usage_status = Column(Integer, nullable=False)
@@ -454,8 +454,8 @@ def get_all_plans():
 def get_plan_by_id(plan_id):
     return current_app.db_session.query(Plan).filter(Plan.id == plan_id).one()
 
-def get_fi_by_access_token(bank_account_id):
-    return current_app.db_session.query(Fi).filter(Fi.bank_account_id == bank_account_id).one_or_none()
+def get_fi_by_plaid_account_id(id):
+    return current_app.db_session.query(Fi).filter(Fi.plaid_account_id == id).one_or_none()
 
 def get_fi_by_stripe_bank_account_token(stripe_bank_account_token):
     return current_app.db_session.query(Fi).filter(

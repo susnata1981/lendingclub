@@ -17,6 +17,7 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import account as accountBLI
 from shared.util import error
+from application.bank import controller as bank_controller
 
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
@@ -36,11 +37,10 @@ def complete_application():
     if 'enter_employer_information' in next:
         return redirect(url_for('.enter_employer_information'))
     elif 'add_bank' in next:
-        print 'TODO: add_bank'
-        #return redirect(url_for('.add_bank'))
+        return redirect(url_for('bank_bp.add_bank'))
     elif 'verify_bank' in next:
-        print 'TODO: verify_bank'
-        #return redirect(url_for('.verify_bank', id=next['id']))
+        session[bank_controller.RANDOM_DEPOSIT_FI_ID_KEY] = next['id']
+        return redirect(url_for('bank_bp.verify_random_deposit'))
     return redirect(url_for('.dashboard'))
 
 @lending_bp.route('/enter_employer_information', methods=['GET', 'POST'])
@@ -211,72 +211,6 @@ def get_transaction_info():
 def next_month(date):
     future_date = date.today()+ relativedelta(months=1)
     return future_date.strftime('%m/%d/%Y')
-
-
-def exchange_public_token(public_token, account_id):
-    Client.config({
-        'url': 'https://tartan.plaid.com'
-    })
-    client = Client(
-    client_id=current_app.config['CLIENT_ID'],
-    secret=current_app.config['CLIENT_SECRET'])
-
-    #exchange token
-    response = client.exchange_token(public_token)
-    print 'token exhcnage response = %s' % client.access_token
-    pprint(client)
-
-    return {
-        'access_token': client.access_token,
-        'stripe_bank_account_token': client.stripe_bank_account_token
-    }
-
-def exchange_token(public_token, account_id):
-    payload = {
-        'client_id':current_app.config['CLIENT_ID'],
-        'secret':current_app.config['CLIENT_SECRET'],
-        'public_token':public_token,
-        'account_id':account_id
-    }
-    print 'payload ',json.dumps(payload)
-
-    response = requests.post('https://tartan.plaid.com/exchange_token', data=payload)
-
-    # print 'response = ',response.text, 'code = ',response.status_code
-    if response.status_code == requests.codes.ok:
-        return response.text
-    else:
-        raise Exception('Failed to exchange token')
-
-def get_bank_info(bank_account_id):
-    if len(current_user.fis) == 0:
-        return
-    print 'getting bank info...'
-    Client.config({
-        'url': 'https://tartan.plaid.com',
-        'suppress_http_errors': True
-    })
-    client = Client(
-    client_id=current_app.config['CLIENT_ID'],
-    secret=current_app.config['CLIENT_SECRET'],
-    access_token=current_user.fis[0].access_token)
-
-    # print 'response = ',client.auth_get()
-    print '***************************** get-bank-info ='
-    pprint(client.auth_get())
-    response = client.auth_get().json()
-    print 'get_bank_info response = ',response
-
-    ai = {}
-    for account in response['accounts']:
-        if account['_id'] == bank_account_id:
-            ai['available_balance'] = account['balance']['available']
-            ai['current_balance'] = account['balance']['current']
-            ai['subtype'] = account['subtype']
-            ai['subtype_name'] = account['meta']['name']
-            ai['account_number_last_4'] = account['meta']['number']
-            ai['institution_type'] = account['institution_type']
-            return ai
 
 def create_notifications():
     data = {}

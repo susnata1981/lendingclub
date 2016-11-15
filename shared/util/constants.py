@@ -1,7 +1,7 @@
 from flask import current_app
 
 PHONE_VERIFICATION_MSG = 'Ziplly: your verification code is {0}'
-ACCOUNT_NOT_VERIFIED = 'You must verify your phone number first'
+ACCOUNT_NOT_VERIFIED = 'You must first verify your email.'
 INVALID_CREDENTIALS = 'Username or password is invalid'
 MISSING_ACCOUNT = 'Missing account information'
 UNKNOWN_ERROR = 'Unknown error'
@@ -33,6 +33,16 @@ YOU_OWE_MESSAGE = 'You currently owe ${0} before {1}'
 MAX_BORROW_MESSAGE = 'As per your membership plan, the maximum you can borrow is ${0}'
 ACCOUNT_ACTIVE_FOR_REQUEST_MONEY_MESSAGE = 'Your account needs to be active to request money.'
 ACTIVE_PLAN_REQUIRED_MESSAGE = 'You should be enrolled in a plan to be able to request money.'
+
+#Email verification constants
+EMAIL_ACCOUNT_ID_CONSTANT = 458213
+EMAIL_VERIFICATION_TOKEN_NAME = 'tok'
+EMAIL_VERIFICATION_TOKEN_LENGTH = 12
+EMAIL_VERIFICATION_LINK = 'http://localhost:8080/account/%s/verify?' + EMAIL_VERIFICATION_TOKEN_NAME + '=%s'
+EMAIL_VERIFICATION_SUBJECT = 'Verify your email to complete your signup'
+EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE = 'Sorry, our service failed to send the verification email. Please request the verification email again.'
+ACCOUNT_CREATED_BUT_EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE = 'Account successfully created but our service failed to send the verification email. Please request the verification email again.'
+
 
 def init():
     pass

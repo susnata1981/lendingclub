@@ -27,6 +27,54 @@ def generate_and_store_new_verification_code(account):
     current_app.db_session.commit()
     return verification_code
 
+@account_bp.route('/verify/resend', methods=['GET', 'POST'])
+def resend_email_verification():
+    form = ResendEmailVerificationForm(request.form)
+    data = {}
+    if form.validate_on_submit():
+        email = form.email.data
+        try:
+            account = get_account_by_email(email)
+            if not account:
+                flash('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
+                data['show_email_verification_form'] = True
+            elif accountBLI.isEmailVerified(account):
+                flash('Email already verified.')
+                data['email_already_verified'] = True
+            else:
+                try:
+                    accountBLI.initiate_email_verification(account)
+                    data['email_sent'] = True
+                except error.EmailVerificationSendingError:
+                    flash(constants.EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE)
+                    data['show_email_verification_form'] = True
+        except Exception:
+            flash(constants.GENERIC_ERROR)
+
+            data['show_email_verification_form'] = True
+    else:
+        data['show_email_verification_form'] = True
+    return render_template('onboarding/verify_email.html', data=data, form=form)
+
+@account_bp.route('/<id>/verify', methods=['GET'])
+def verify_email(id):
+    form = ResendEmailVerificationForm(request.form)
+    token = request.args.get(constants.EMAIL_VERIFICATION_TOKEN_NAME)
+    data = {}
+    try:
+        accountBLI.verify_email(int(id), token)
+        return redirect(url_for('account_bp.account_verified'))
+    except (error.AccountNotFoundError, error.EmailVerificationNotMatchError) as e:
+        flash('Invalid verification code.')
+        data['show_email_verification_form'] = True
+    except error.AccountEmailAlreadyVerifiedError:
+        flash('Email already verified.')
+        data['email_already_verified'] = True
+    except error.DatabaseError:
+        flash(constants.GENERIC_ERROR)
+        data['show_email_verification_form'] = True
+    return render_template('onboarding/verify_email.html', data=data, form=form)
+
 @account_bp.route('/verify', methods=['GET', 'POST'])
 def verify_phone_number():
     form = PhoneVerificationForm(request.form)
@@ -81,19 +129,41 @@ def signup():
     print 'errors - ',form.errors
     if form.validate_on_submit():
         try:
+            now = datetime.now()
             account = Account(
                first_name = form.first_name.data,
                last_name = form.last_name.data,
                phone_number = form.phone_number.data,
                email = form.email.data,
+               dob = form.dob.data,
+               ssn = form.ssn.data,
+               promotion_code = form.promotion_code.data,
                password = form.password.data,
-               time_created = datetime.now(),
-               time_updated = datetime.now())
+               time_created = now,
+               time_updated = now)
+
+            address = Address(
+                street1 = form.street1.data,
+                street2 = form.street2.data,
+                city = form.city.data,
+                state = form.state.data,
+                postal_code = form.postal_code.data,
+                address_type = Address.EMPLOYER,
+               time_created = now,
+               time_updated = now)
+
+            account.addresses.append(address)
 
             accountBLI.signup(account)
         except error.AccountExistsError:
             flash(constants.ACCOUNT_WITH_EMAIL_ALREADT_EXISTS)
             return render_template('onboarding/signup.html', form=form)
+        except error.EmailVerificationSendingError:
+            flash(constants.ACCOUNT_CREATED_BUT_EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE)
+            data = {}
+            data['show_email_verification_form'] = True
+            email_form = ResendEmailVerificationForm(request.form)
+            return render_template('onboarding/verify_email.html', data=data, form=email_form)
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
             flash(constants.GENERIC_ERROR)
@@ -103,12 +173,13 @@ def signup():
             flash(constants.GENERIC_ERROR)
             return render_template('onboarding/signup.html', form=form)
 
-        # verify phone
         session['account_id'] = account.id
-        verification_code = generate_and_store_new_verification_code(account)
-        target_phone = '+1' + form.phone_number.data.replace('-','')
-        # services.phone.send_message(target_phone, constants.PHONE_VERIFICATION_MSG.format(verification_code))
-        return redirect(url_for('.verify_phone_number'))
+        # verify email message
+        data = {}
+        data['email_sent'] = True
+        email_form = ResendEmailVerificationForm(request.form)
+        return render_template('onboarding/verify_email.html', data=data, form=email_form)
+
     return render_template('onboarding/signup.html', form=form)
 
 
@@ -117,17 +188,20 @@ def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
         try:
-            account = get_account_by_phone_number(form.phone_number.data)
+            account = get_account_by_email(form.email.data)
             if account == None:
                 flash(constants.INVALID_CREDENTIALS)
                 return render_template('onboarding/login.html', form=form)
 
             # print 'Account = ',account,' Status = ',account.status
             if account.status == Account.UNVERIFIED:
-                session['account_id'] = account.id
                 flash(constants.ACCOUNT_NOT_VERIFIED)
-                return redirect(url_for('account_bp.verify_phone_number'))
-            elif account.password_match(form.password.data) and account.status == Account.VERIFIED_PHONE:
+                # verify email message
+                data = {}
+                data['email_verification_required'] = True
+                email_form = ResendEmailVerificationForm(request.form)
+                return render_template('onboarding/verify_email.html', data=data, form=email_form)
+            elif account.password_match(form.password.data) and accountBLI.isEmailVerified(account):
                 # session['logged_in'] = True
                 # session['account_id'] = account.id
                 login_user(account)

@@ -19,7 +19,7 @@ login_manager.login_view = "account_bp.login"
 def load_user(id):
     return get_account_by_id(id)
 
-def format_datetime(value, format='%d-%m-%Y / %H:%M'):
+def format_datetime(value, format='%m-%d-%Y / %H:%M'):
     if value is None:
         return constants.NOT_AVAILABLE
     return value.strftime(format)
@@ -57,11 +57,15 @@ def format_value(value, default = constants.NOT_AVAILABLE):
 def format_currency(value):
     return "${:,.2f}".format(value)
 
+def format_percentage(value):
+    return "{}%".format(value)
+
 def setup_jinja_filter(app):
     app.jinja_env.filters['format_datetime'] = format_datetime
     app.jinja_env.filters['format_value'] = format_value
     app.jinja_env.filters['format_membership_status'] = format_membership_status
     app.jinja_env.filters['format_currency'] = format_currency
+    app.jinja_env.filters['format_percentage'] = format_percentage
     app.jinja_env.filters['format_transaction_status'] = format_transaction_status
     app.jinja_env.filters['format_transaction_type'] = format_transaction_type
 

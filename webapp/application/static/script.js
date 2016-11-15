@@ -124,6 +124,12 @@ $(function() {
             }));
         }
 
+        function show_notification(alerttype, message) {
+          $("#alert-placeholder").html(
+            '<div id="alertdiv" class="alert ' +  alerttype + '"><span>'+message+'</span></div>');
+          $("#alertdiv").fadeOut(2500);
+        }
+
         function register_user(selector, email_id, name_id) {
             var emailRegex = /\S+@\S+\.\S+/;
             var name = $("input[name='"+name_id+"']").val();
@@ -146,7 +152,7 @@ $(function() {
             }
 
             if (!valid) {
-              Materialize.toast(msg, 3000);
+              show_notification('alert-danger', msg)
               return;
             }
 
@@ -162,11 +168,18 @@ $(function() {
                   $("#circular-wait-section").hide();
                   $(selector).removeAttr('disabled');
                     var content = "<div>";
+                    var alerttype = 'alert alert-success';
+                    var message = '';
                     if (data.error) {
-                        Materialize.toast('Failed to register user: ' + email, toast_duration);
+                      alerttype = 'alert alert-danger'
+                      message = 'Sorry we were unable to register';
+                        // Materialize.toast('Failed to register user: ' + email, toast_duration);
                     } else {
-                        Materialize.toast('Thanks for expressing interest!', toast_duration);
+                        // Materialize.toast('Thanks for expressing interest!', toast_duration);
+                        message = 'Thanks for expressing your interest';
                     }
+                    show_notification('alert-success', message)
+
                     $("input[name='"+email_id+"'").val("");
                     $("input[name='"+name_id+"'").val("");
                 }
@@ -257,7 +270,7 @@ $(function() {
             // google.charts.load('current', {'packages': ['corechart']});
             // google.charts.setOnLoadCallback(drawChart);
 
-            initialize_video_player();
+            // initialize_video_player();
 
             (function(i, s, o, g, r, a, m) {
                 i['GoogleAnalyticsObject'] = r;

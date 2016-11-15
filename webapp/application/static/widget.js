@@ -34,11 +34,15 @@
       'with Ziplly you save &nbsp;<span class="green-text bold">$'+(payday_interest -(total_amount - loan_amount)).toFixed(2)+
       '</span></div>';
 
-      $("#monthly-payments").html(payments_html);
-      $("#payment-details").show();
+      // $("#monthly-payments").html(payments_html);
+      // $("#payment-details").show();
     }
 
     function get_payment_plan() {
+      var loan_duration_suffix = loan_duration == 1 ? "month" : "months";
+      $("#loan-duration").val(loan_duration +" "+ loan_duration_suffix);
+      $("#loan-amount").val("$"+loan_amount);
+
       $.post(
         '/get_payment_plan',
         {
@@ -46,7 +50,8 @@
           'loan_duration': loan_duration
         },
         function(response) {
-          console.log('received response = '+response);
+          $("#loan-info-section").show();
+          $("#loan-info-section").html(response);
         }
       )
     }
@@ -58,7 +63,6 @@
       step: 50,
       slide: function( event, ui ) {
         loan_amount = ui.value;
-        recalculate();
         get_payment_plan();
       }
     });
@@ -70,12 +74,10 @@
       step: 1,
       slide: function( event, ui ) {
         loan_duration = ui.value;
-        recalculate();
         get_payment_plan();
       }
     });
-    $( "#amount" ).val( "$" + loan_amount );
-    $( "#loan-duration" ).val(loan_duration + " month");
-    $("#payment-details").hide();
-    // recalculate();
+    $("#loan-amount").val( "$" + loan_amount );
+    $("#loan-duration").val(loan_duration + " month");
+    $("#loan-info-section").hide();
     });

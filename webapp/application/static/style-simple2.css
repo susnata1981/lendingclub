@@ -47,6 +47,10 @@ nav a {
   color: #fff !important;
 }
 
+h5 { font-family: 'Enriqueta', arial, serif; margin: 0 0 10px; font-size: 24px; font-weight: 400; }
+
+p.normal-text { font-family: 'Enriqueta', arial, serif; line-height: 1.25; margin: 0 0 10px; font-size: 24px; font-weight: 400; }
+
 #sidenav-btn {
   position: absolute;
   top: 88px;
@@ -86,10 +90,14 @@ nav a {
 }
 
 .page-footer {
-    background-color: #e1f5fe !important;
+    background-color: #EF5350 !important;
     padding-top: 0 !important;
     margin: 0 0 0 0 !important;
     color: #333;
+}
+
+.center {
+  text-align: center;
 }
 
 .btn-orange {
@@ -216,6 +224,10 @@ form {
   color: #fff;
 }
 
+.btn-primary-accent-color, .primary-accent-color {
+  color: #EF5350;
+}
+
 .no-margin-left {
  margin-left: 0
 }
@@ -309,7 +321,7 @@ div.nav-wrapper li a {
 
 .tiny-text {
   font-family: arial;
-  font-size: .65em;
+  font-size: 14px;
 }
 
 .normal-text {
@@ -347,42 +359,12 @@ div.nav-wrapper li a {
     color: #333;
 }
 
-#signup-button-section {
-  margin: 0;
-  padding: 32px 0;
-}
-
 #signup-form {
     background: #fff;
 }
 
-.signup-form-section {
-  background-color: #006064;
-  margin: 0;
-  padding: 32px 0;
-}
-
-.signup-form-section div.row {
-    margin: 0;
-}
-
-.signup-form-section form {
-  margin-top: 24px;
-}
-
-.signup-form-section form div.row {
-  margin-bottom: 0;
-}
-
-.signup-form-section input {
-    border: 0;
-    background: #fff;
-    height: 24px;
-    padding: 8px;
-}
-
-.signup-form-section button {
-  height: 45px;
+#signup-form-section div.no-padding {
+  padding: 0;
 }
 
 #signup-email-label {
@@ -454,14 +436,26 @@ div.nav-wrapper li a {
 }
 
 #benefits-section h5 {
-  color: #ffffff; font-family: 'Lato', sans-serif; font-size: 18px; font-weight: normal; line-height: 18px; margin: 0;
+  color: #ffffff; font-family: 'Lato', sans-serif; font-size: 16px; font-weight: normal; line-height: 16px; margin: 0;
   text-align: center;
   margin-left: -40px;
 }
 
 #loan-selection-section {
-    padding: 10px;
+    padding: 20px;
     text-align: center;
+    background: #ffffff;
+}
+
+#loan-selection-section input {
+  background: #ffffff;
+  color: #FF5722;
+  border: 0;
+}
+
+#signup-form-section {
+    background: #80DEEA;
+    padding: 20px;
 }
 
 #main-heading-section ul li {
@@ -477,6 +471,32 @@ div.nav-wrapper li a {
   z-index: 100;
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+}
+
+#loan_info {
+  padding: 16px;
+}
+
+.heading1 {
+  color: #ff4411;
+  font-size: 26px;
+  font-family: 'Lato', sans-serif;
+  padding-bottom: 10px;
+}
+
+.heading2 {
+    color: #ffffff;
+    font-family: 'Lato', sans-serif; font-size: 18px; font-weight: 300;
+    background: #00838F;
+    padding: 6px;
+}
+
+#loan_info table tr td {
+  font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 300;
+}
+
+#loan_info table tr th {
+  font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 500;
 }
 
 .modal-content {
@@ -511,13 +531,13 @@ div.nav-wrapper li a {
     position: relative;
 }
 .circle-fill {
-    border-radius: 100px;
-    width: 180px;
-    height: 180px;
+    border-radius: 120px;
+    width: 220px;
+    height: 220px;
     text-align: center;
-    line-height: 180px;
-    background-color: #e1f5fe;
+    background-color: #EF5350;
     margin: auto;
+    line-height: 220px;
 }
 .margin-left-medium {
   margin-left: 24px;
@@ -553,8 +573,8 @@ div.nav-wrapper li a {
     text-align: center;
 }
 
-#our-story-section {
-  background-color: #e1f5fe;
+#our-story-section ul {
+  list-style: none;
 }
 
 #our-story-section p {
@@ -567,11 +587,13 @@ div.nav-wrapper li a {
 
 #misson-statement-section {
 background-color: #e1f5fe;
+padding: 36px;
 }
 
 #faq-section {
-  /*background-color: #e1f5fe;*/
+  background-color: #e2e2e2;
 }
+
 #faq-section div {
     margin: 32px;
 }
@@ -606,10 +628,12 @@ background-color: #e1f5fe;
 #how-it-works-section ul li {
     margin: 20px 0;
     display: inline-block;
+    font-family: 'Enriqueta', arial, serif;
 }
 .how-it-works-item-title {
-    font-size: 1.3em;
+    font-size: 1em;
     margin: auto;
+    color: #ffffff;
 }
 .how-it-works-item-description {
     font-family: Tahoma, sans-serif;

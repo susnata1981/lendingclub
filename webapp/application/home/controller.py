@@ -77,21 +77,26 @@ def get_payment_plan():
 
     result['summary']['min_payment'] = min_payment
     result['summary']['max_payment'] = max_payment
-    result['summary']['min_apr'] = min_apr
-    result['summary']['max_apr'] = max_apr
+    result['summary']['min_apr'] = min_apr * 100
+    result['summary']['max_apr'] = max_apr * 100
     result['summary']['min_interest'] = min_payment - loan_amount
     result['summary']['max_interest'] = max_payment - loan_amount
     result['summary']['monthly_payment_min'] = monthly_payment_min
     result['summary']['monthly_payment_max'] = monthly_payment_max
     result['summary']['expected_monthly_payment'] = expected_monthly_payment
+    result['summary']['expected_interest_charge'] = expected_monthly_payment * loan_duration - loan_amount
+    result['summary']['max_apr'] = max_apr * 100
 
+
+    result['repayment_schedule'] = []
     for t in range(loan_duration):
-        result['payment_schedule'][t] = {
+        result['repayment_schedule'].append({
             'expected_amount': expected_monthly_payment,
-            'date': start_time + timedelta(days=30)
-        }
+            'date': start_time + timedelta(days=30*(t+1))
+        })
 
-    return jsonify(result)
+    # return jsonify(result)
+    return render_template('home/loan-info.html', data=result)
 
 @home_blueprint.route('/contact_us', methods=['GET', 'POST'])
 def contact_us():

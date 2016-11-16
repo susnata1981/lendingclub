@@ -110,6 +110,10 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     from lending.controller import lending_bp
     app.register_blueprint(lending_bp)
 
+    #Bank
+    from bank.controller import bank_bp
+    app.register_blueprint(bank_bp)
+
     # Admin
     from admin.controller import admin_bp
     app.register_blueprint(admin_bp)

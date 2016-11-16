@@ -218,16 +218,6 @@ def login():
             return render_template('404.html')
     return render_template('onboarding/login.html', form=form)
 
-def fetch_financial_information():
-    for fi in current_user.fis:
-        response = get_bank_info(fi.bank_account_id)
-        fi.available_balance = response['available_balance']
-        fi.current_balance = response['current_balance']
-        fi.subtype = response['subtype']
-        fi.subtype_name = response['subtype_name']
-        fi.account_number_last_4 = response['account_number_last_4']
-        fi.institution_type = response['institution_type']
-
 @account_bp.route('/logout', methods=['GET', 'POST'])
 def logout():
     logout_user()

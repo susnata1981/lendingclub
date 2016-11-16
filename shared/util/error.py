@@ -13,7 +13,7 @@ class DatabaseError(ZipllyError):
         super(DatabaseError, self).__init__(message=message, orig_exp=orig_exp)
 
 class UserInputError(ZipllyError):
-    def __init__(self, message=None, orig_exp=None, param=None):
+    def __init__(self, message=None, param=None, orig_exp=None,):
         super(UserInputError, self).__init__(message=message, orig_exp=orig_exp)
         self.param=param
 
@@ -52,3 +52,19 @@ class EmailVerificationRequiredError(ZipllyError):
 class InvalidLoginCredentialsError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
         super(InvalidLoginCredentialsError, self).__init__(message=message, orig_exp=orig_exp)
+
+class PlaidBankInfoFetchError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(PlaidBankInfoFetchError, self).__init__(message=message, orig_exp=orig_exp)
+
+class BankAlreadyVerifiedError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(BankAlreadyVerifiedError, self).__init__(message=message, orig_exp=orig_exp)
+
+class IncorrectRandomDepositAmountsError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(IncorrectRandomDepositAmountsError, self).__init__(message=message, orig_exp=orig_exp)
+
+class BankAlreadyExistsError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(BankAlreadyExistsError, self).__init__(message=message, orig_exp=orig_exp)

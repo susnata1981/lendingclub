@@ -30,7 +30,7 @@
          from your bank statement and enter them below</p>
       </div>
     </div>
- <form class="col s6 user-input" action={{url_for( 'membership_bp.verify_account_random_deposit')}} method="post">
+ <form class="col s6 user-input" action={{url_for( 'bank_bp.verify_random_deposit')}} method="post">
     <h5>Verify your bank account</h5>
    <p class="help-text">enter 32 &amp; 45 for deposit1 &amp; deposit2 respectively</p>
   {{ form.csrf_token }}

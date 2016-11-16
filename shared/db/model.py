@@ -424,11 +424,10 @@ def recreate_tables(engine):
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     logging.info('******* done recreating tables ********')
-    # create_plan()
     logging.info('creating lending plans')
 
 def init_db():
-    env = os.getenv('SERVER_SOFTWARE')
+    # env = os.getenv('SERVER_SOFTWARE')
     if util.is_running_on_app_engine():
         engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=False)
     else:

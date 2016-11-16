@@ -34,7 +34,7 @@ def signup(account):
     #Send verification email
     try:
         initiate_email_verification(account)
-    except error.DatabaseError as e:
+    except Exception as e:
         Logger.error(e.message)
         raise error.EmailVerificationSendingError(constants.GENERIC_ERROR, e.orig_exp)
 
@@ -63,9 +63,7 @@ def is_email_verified(account):
 def initiate_email_verification(account):
     LOGGER.info('initiate_email_verification entry')
     id = str(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT)
-    print 'TEST id=:%s' % (id)
-    token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.EMAIL_VERIFICATION_TOKEN_LENGTH))
-    print 'TEST token=:%s' % (token)
+    token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.VERIFICATION_TOKEN_LENGTH))
     account.email_verification_token = token
 
     try:
@@ -176,3 +174,66 @@ def add_employer(account, employer):
         LOGGER.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
     LOGGER.info('add_employer exit')
+
+def initiate_reset_password(account):
+    LOGGER.info('initiate_reset_password entry')
+    id = str(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT)
+    token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.VERIFICATION_TOKEN_LENGTH))
+    account.password_reset_token = token
+
+    try:
+        #save token to DB
+        current_app.db_session.add(account)
+        current_app.db_session.commit()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    # send email
+    link = constants.RESET_PASSWORD_VERIFICATION_LINK % (id, token)
+    text = 'Please click on the below link to reset your password.\n'+link
+    html_text = "<h4>Please click on the below link to reset your password.</h4><br />"+link
+
+    try:
+        mail.send(current_app.config['ADMIN_EMAIL'],
+            account.email,
+            constants.RESET_PASSWORD_VERIFICATION_SUBJECT,
+            text,
+            html_text)
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.MailServiceError(constants.GENERIC_ERROR,e)
+
+    LOGGER.info('initiate_reset_password exit')
+
+def verify_password_reset(id, token):
+    LOGGER.info('verify_password_reset entry')
+
+    account_id = id - constants.EMAIL_ACCOUNT_ID_CONSTANT
+    try:
+        account = get_account_by_id(account_id)
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    if not account:
+        raise error.AccountNotFoundError('Invalid reset code.')
+    elif token != account.password_reset_token:
+        raise error.PasswordResetTokenNotMatchError('Invalid verification code.')
+
+    LOGGER.info('verify_password_reset exit')
+    return account
+
+
+def reset_password(account, password):
+    LOGGER.info('reset_password entry')
+    account.password = password
+    account.password_reset_token = None
+    try:
+        current_app.db_session.add(account)
+        current_app.db_session.commit()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    LOGGER.info('reset_password exit')

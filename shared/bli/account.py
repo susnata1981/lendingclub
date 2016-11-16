@@ -1,7 +1,7 @@
 from flask import current_app
 from datetime import datetime
 
-from shared.util import logger, error, constants
+from shared.util import util, logger, error, constants
 from shared.db.model import *
 from shared.services import mail
 import random, string
@@ -25,6 +25,9 @@ def signup(account):
 
     try:
         #NOTE: The account parameters are not verified, if it is a non None value then it will be sent as param to the Account model
+        now = datetime.now()
+        account.time_created = now
+        account.time_updated = now
         current_app.db_session.add(account)
         current_app.db_session.commit()
     except Exception as e:
@@ -65,6 +68,7 @@ def initiate_email_verification(account):
     id = str(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT)
     token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.VERIFICATION_TOKEN_LENGTH))
     account.email_verification_token = token
+    account.time_updated = datetime.now()
 
     try:
         #save token to DB
@@ -75,7 +79,7 @@ def initiate_email_verification(account):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
     # send verification email
-    link = constants.EMAIL_VERIFICATION_LINK % (id, token)
+    link = constants.EMAIL_VERIFICATION_LINK % (util.get_url_root(), id, token)
     text = 'Thanks for signing up with Ziplly.\nPlease click on the below link to verify your email.\n'+link
     html_text = "<h3>Thanks for signing up with Ziplly.</h3><br /><h4>Please click on the below link to verify your email.</h4><br />"+link
 
@@ -167,6 +171,10 @@ def add_employer(account, employer):
         raise ValueError('Invalid employer (None) passed in.')
 
     try:
+        now = datetime.now()
+        employer.time_created = now
+        employer.time_updated = now
+        account.time_updated = now
         account.employers.append(employer)
         current_app.db_session.add(account)
         current_app.db_session.commit()
@@ -180,6 +188,7 @@ def initiate_reset_password(account):
     id = str(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT)
     token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.VERIFICATION_TOKEN_LENGTH))
     account.password_reset_token = token
+    account.time_updated = datetime.now()
 
     try:
         #save token to DB
@@ -190,7 +199,7 @@ def initiate_reset_password(account):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
     # send email
-    link = constants.RESET_PASSWORD_VERIFICATION_LINK % (id, token)
+    link = constants.RESET_PASSWORD_VERIFICATION_LINK % (util.get_url_root(), id, token)
     text = 'Please click on the below link to reset your password.\n'+link
     html_text = "<h4>Please click on the below link to reset your password.</h4><br />"+link
 
@@ -229,6 +238,7 @@ def reset_password(account, password):
     LOGGER.info('reset_password entry')
     account.password = password
     account.password_reset_token = None
+    account.time_updated = datetime.now()
     try:
         current_app.db_session.add(account)
         current_app.db_session.commit()

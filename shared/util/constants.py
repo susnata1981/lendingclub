@@ -38,12 +38,12 @@ VERIFICATION_TOKEN_NAME = 'tok'
 VERIFICATION_TOKEN_LENGTH = 12
 EMAIL_ACCOUNT_ID_CONSTANT = 458213
 #Email verification constants
-EMAIL_VERIFICATION_LINK = 'http://localhost:8080/account/%s/verify?' + VERIFICATION_TOKEN_NAME + '=%s'
+EMAIL_VERIFICATION_LINK = '%s/account/%s/verify?' + VERIFICATION_TOKEN_NAME + '=%s'
 EMAIL_VERIFICATION_SUBJECT = 'Verify your email to complete your signup'
 EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE = 'Sorry, our service failed to send the verification email. Please request the verification email again.'
 ACCOUNT_CREATED_BUT_EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE = 'Account successfully created but our service failed to send the verification email. Please request the verification email again.'
 
-RESET_PASSWORD_VERIFICATION_LINK = 'http://localhost:8080/lending/%s/reset_password?' + VERIFICATION_TOKEN_NAME + '=%s'
+RESET_PASSWORD_VERIFICATION_LINK = '%s/lending/%s/reset_password?' + VERIFICATION_TOKEN_NAME + '=%s'
 RESET_PASSWORD_VERIFICATION_SUBJECT = 'Reset your Ziplly password'
 RESET_PASSWORD_VERIFICATION_SEND_FAILURE_MESSAGE = 'Sorry, our service failed to send the reset password link. Please request the link again.'
 

@@ -17,6 +17,12 @@ def is_running_on_app_engine():
         return True
     return False
 
+def get_url_root():
+    if is_running_on_app_engine():
+        return 'http://www.ziplly.com'
+    else:
+        return 'http://localhost:8080'
+
 def generate_fake_token(n):
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(n))
 

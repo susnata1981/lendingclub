@@ -4,4 +4,5 @@
 !lib/README.md
 webapp/lib/*
 .DS_Store
+webapp/config.py
 **/venv/*

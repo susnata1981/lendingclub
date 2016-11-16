@@ -49,7 +49,7 @@ nav a {
 
 h5 { font-family: 'Enriqueta', arial, serif; margin: 0 0 10px; font-size: 24px; font-weight: 400; }
 
-p.normal-text { font-family: 'Enriqueta', arial, serif; line-height: 1.25; margin: 0 0 10px; font-size: 24px; font-weight: 400; }
+/*p.normal-text { font-family: 'Enriqueta', arial, serif; line-height: 1.25; margin: 0 0 10px; font-size: 24px; font-weight: 400; }*/
 
 .normal-text { font-family: 'Enriqueta', arial, serif; line-height: 1.25; font-size: 16px; font-weight: 300; }
 
@@ -108,7 +108,11 @@ p.normal-text { font-family: 'Enriqueta', arial, serif; line-height: 1.25; margi
 }
 
 .margin-left-12 {
-    margin-left: 12px;
+  margin-left: 12px;
+}
+
+.margin-12 {
+  margin: 12px;
 }
 
 .main-info {
@@ -772,22 +776,12 @@ form.user-input {
   margin: 0 -0.75rem;
 }
 
-#bank-verification-methods-section p {
-  margin: 10px 0;
-}
-
-#bank-verification-methods-section table td {
-  background: #f9f9f9;
-  padding: 12px;
-  margin-right: 20px;
-}
-
 .verification-method-box {
-  height: 280px;
+  height: 220px;
   position: relative;
 }
 
-.verification-method-box a {
+.verification-method-box button {
   display: inline-block;
   position: absolute;
   bottom: 10px;

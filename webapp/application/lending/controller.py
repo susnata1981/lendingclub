@@ -64,7 +64,7 @@ def enter_employer_information():
                 time_updated = now
             )
             accountBLI.add_employer(current_user, employer)
-            return redirect(url_for('.dashboard'))
+            return redirect(url_for('.complete_application'))
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
             flash(constants.GENERIC_ERROR)

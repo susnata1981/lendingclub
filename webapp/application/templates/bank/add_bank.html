@@ -3,24 +3,24 @@
 {% block content %}
 <div class="container">
   <div class="error-block">
-    <div class="error-item">
-    </div>
-  </div>
+-    <div class="error-item alert">
+-    </div>
+-  </div>
   {% if get_flashed_messages() | length > 0 %}
     <div class="row">
-      <div class="col s6 error-block">
+      <div class="col-md-6">
         {% for message in get_flashed_messages() %}
-           <div class="error-item">{{ message }}</div>
+           <div class="alert alert-danger">{{ message }}</div>
         {% endfor %}
       </div>
     </div>
   {% endif %}
 
 <div class="row">
-  <div class="col s4">
+  <div class="col-md-8">
     <div class="row">
-      <div class="input-field s12">
-        <p class="flow-text">List of supported banks<br/><span class="help-text">(Choose Wells Fargo, the most trusted bank :-))</p>
+      <div class="form-group col-md-12 margin-top-large">
+        <h5>Select your bank<br/><span class="help-text">(Choose Wells Fargo, the most trusted bank :-))</h5>
         <select>
           <option value="" disabled selected>Pick your bank</option>
           {% for b in institutions %}
@@ -33,33 +33,32 @@
 </div>
 
 <div id="bank-verification-methods-section">
-  <h5>Add your bank</h5>
-  <p>You can choose one of the following methods to add your bank account</p>
-  <table>
-    <tr class="row">
-      <td class="col s5 padding-medium">
+  <h5 class="margin-left-12 margin-top-medium">Add your bank</h5>
+  <p class="margin-left-12">You can choose one of the following methods to add your bank account</p>
+    <div class="row margin-12">
+      <div class="col-md-5 white-bg padding-medium">
         <div class="verification-method-box" id="random-deposit-section">
-            <p class="flow-text">Random deposit</p>
+            <h5>Random deposit</h5>
             <hr/>
-            <p>We will debit and credit amounts less than $1 to your bank account. In 3-5 business
+            <p class="normal-text">We will debit and credit amounts less than $1 to your bank account. In 3-5 business
               days they'll appear in your bank statement. You'll have to come back and enter the amoun
               to verify your account</p>
-            <a class="btn" href={{url_for('bank_bp.add_random_deposit')}}>Initiate random deposit</a>
+              <form action="{{url_for('bank_bp.add_random_deposit')}}" method="get">
+                <button id="random-deposit-button" class="btn btn-orange" role="button">Initiate random deposit</button>
+              </form>
         </div>
-      </td>
-      <td class="col s5 padding-medium">
+      </div>
+      <div class="offset-md-1 col-md-5 white-bg padding-medium">
         <div class="verification-method-box" id="instant-verification-section">
-            <p class="flow-text">Instant Bank Verification</p>
+            <h5>Instant Bank Verification</h5>
             <hr/>
-            <p>You will need to login to your bank account using secure connection</p>
+            <p class="normal-text">You will need to login to your bank account using secure connection</p>
             <p class="help-text">(username: plaid_test, password:plaid_good)</p>
-            <a class="btn" id='linkButton'>Add bank account</a>
+            <button class="btn btn-orange instant-verification-button" id='linkButton'>Instant Bank Verification</button>
         </div>
-      </td>
-    </tr>
-  </table>
+      </div>
+    </div>
 </div>
-
 
  <script src="https://cdn.plaid.com/link/stable/link-initialize.js"></script>
  <script>
@@ -88,11 +87,15 @@
         $("#progress-bar").hide();
         $('btn').removeAttr('disabled');
         if (data.error) {
-          Materialize.toast('Could not add your bank account: ', 1500);
+          // Materialize.toast('Could not add your bank account: ', 1500);
+          $('div.error-item').addClass('alert-danger');
           $('div.error-item').html('Could not add your bank account');
           $('div.error-block').show();
         } else {
-          Materialize.toast('Bank account added', 1500);
+          // Materialize.toast('Bank account added', 1500);
+          $('div.error-item').addClass('alert-success');
+          $('div.error-item').html('Bank account added', 1500);
+          $('div.error-block').show();
           window.location.replace('{{url_for('bank_bp.verified')}}');
         }
       }
@@ -101,30 +104,31 @@
 
   $("#bank-verification-methods-section").hide();
 
-  $("input[name='other']").change(function() {
-    if ($(this).is(':checked')) {
-        $("#bank-verification-methods-section").show();
-        $("#instant-verification-section").hide();
-        $('#random-deposit-section').show();
-    } else {
-      var cs = $('select').val();
-      if (cs === 'Other') {
-        $('#random-deposit-section').hide();
-      }
-    }
-  });
+  // $("input[name='other']").change(function() {
+  //   if ($(this).is(':checked')) {
+  //       $("#bank-verification-methods-section").show();
+  //       $("#instant-verification-section").hide();
+  //       $('#random-deposit-section').show();
+  //   } else {
+  //     var cs = $('select').val();
+  //     if (cs === 'Other') {
+  //       $('#random-deposit-section').hide();
+  //     }
+  //   }
+  // });
 
   $('select').change(function() {
     var cs = $('select').val();
     $("#bank-verification-methods-section").show();
-    if (cs === 'Other') {
-      $('#random-deposit-section').show();
-      $("#instant-verification-section").hide();
+
+    if (cs.toUpperCase() === 'Other'.toUpperCase()) {
+      $(".instant-verification-button").attr('disabled', 'disabled');
     } else {
-      $("#instant-verification-section").show();
-      $('#random-deposit-section').show();
+      $(".instant-verification-button").removeAttr('disabled');
     }
   });
+
+  $('select').prop('selectedIndex', 0);
 
   // Trigger the Link UI
   document.getElementById('linkButton').onclick = function() {

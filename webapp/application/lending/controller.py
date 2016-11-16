@@ -22,6 +22,62 @@ from application.bank import controller as bank_controller
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
 
+@lending_bp.route('/reset_password', methods=['GET','POST'])
+def reset_password():
+    form = ResetPasswordForm(request.form)
+    data = {}
+    if form.validate_on_submit():
+        email = form.email.data
+        try:
+            account = get_account_by_email(email)
+            if not account:
+                flash('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
+            else:
+                try:
+                    accountBLI.initiate_reset_password(account)
+                    data['email_sent'] = True
+                except error.MailServiceError:
+                    flash(constants.RESET_PASSWORD_EMAIL_SEND_FAILURE_MESSAGE)
+        except Exception:
+            flash(constants.GENERIC_ERROR)
+    return render_template('lending/reset_password.html', data=data, form=form)
+
+@lending_bp.route('/<id>/reset_password', methods=['GET','POST'])
+def reset_password_verify(id):
+    token = request.args.get(constants.VERIFICATION_TOKEN_NAME)
+    account = None
+    try:
+        account = accountBLI.verify_password_reset(int(id), token)
+    except error.DatabaseError as de:
+        logging.error('ERROR: Database Exception: %s' % (de.message))
+        flash(constants.GENERIC_ERROR)
+    except Exception as e:
+        logging.error(e.message)
+    if account:
+        session['password_account_id'] = account.id
+    return redirect(url_for('.reset_password_confirm'))
+
+@lending_bp.route('/reset_password_confirm', methods=['GET','POST'])
+def reset_password_confirm():
+    logging.info('reset_password_confirm entry')
+    form = ResetPasswordConfirmForm(request.form)
+    data = {}
+    if not 'password_account_id' in session or not session['password_account_id']:
+        data['unauthorized'] = True
+    elif form.validate_on_submit():
+        account = get_account_by_id(session['password_account_id'])
+        try:
+            accountBLI.reset_password(account, form.password.data)
+            session.pop('password_account_id', None)
+            login_user(account)
+            logging.info('reset_password_confirm - redirect exit')
+            return redirect(url_for('.dashboard'))
+        except error.DatabaseError as de:
+            print 'ERROR: Database Exception: %s' % (de.message)
+            flash(constants.GENERIC_ERROR)
+    logging.info('reset_password_confirm exit')
+    return render_template('lending/reset_password_confirm.html', data=data, form=form)
+
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():

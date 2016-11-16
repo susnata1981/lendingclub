@@ -55,6 +55,7 @@ class Account(Base):
     status = Column(Integer, default=UNVERIFIED, nullable=False)
     phone_verification_code = Column(Integer, nullable=True)
     email_verification_token = Column(String(128), nullable=True)
+    password_reset_token = Column(String(128), nullable=True)
     promotion_code = Column(String(255), nullable=True)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)

@@ -1,7 +1,7 @@
 from flask import current_app
 from datetime import datetime
 
-from shared.util import logger, error, constants
+from shared.util import util, logger, error, constants
 from shared.db.model import *
 from shared.services import mail
 import random, string
@@ -25,6 +25,9 @@ def signup(account):
 
     try:
         #NOTE: The account parameters are not verified, if it is a non None value then it will be sent as param to the Account model
+        now = datetime.now()
+        account.time_created = now
+        account.time_updated = now
         current_app.db_session.add(account)
         current_app.db_session.commit()
     except Exception as e:
@@ -34,7 +37,7 @@ def signup(account):
     #Send verification email
     try:
         initiate_email_verification(account)
-    except error.DatabaseError as e:
+    except Exception as e:
         Logger.error(e.message)
         raise error.EmailVerificationSendingError(constants.GENERIC_ERROR, e.orig_exp)
 
@@ -63,10 +66,9 @@ def is_email_verified(account):
 def initiate_email_verification(account):
     LOGGER.info('initiate_email_verification entry')
     id = str(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT)
-    print 'TEST id=:%s' % (id)
-    token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.EMAIL_VERIFICATION_TOKEN_LENGTH))
-    print 'TEST token=:%s' % (token)
+    token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.VERIFICATION_TOKEN_LENGTH))
     account.email_verification_token = token
+    account.time_updated = datetime.now()
 
     try:
         #save token to DB
@@ -77,7 +79,7 @@ def initiate_email_verification(account):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
     # send verification email
-    link = constants.EMAIL_VERIFICATION_LINK % (id, token)
+    link = constants.EMAIL_VERIFICATION_LINK % (util.get_url_root(), id, token)
     text = 'Thanks for signing up with Ziplly.\nPlease click on the below link to verify your email.\n'+link
     html_text = "<h3>Thanks for signing up with Ziplly.</h3><br /><h4>Please click on the below link to verify your email.</h4><br />"+link
 
@@ -169,6 +171,10 @@ def add_employer(account, employer):
         raise ValueError('Invalid employer (None) passed in.')
 
     try:
+        now = datetime.now()
+        employer.time_created = now
+        employer.time_updated = now
+        account.time_updated = now
         account.employers.append(employer)
         current_app.db_session.add(account)
         current_app.db_session.commit()
@@ -176,3 +182,68 @@ def add_employer(account, employer):
         LOGGER.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
     LOGGER.info('add_employer exit')
+
+def initiate_reset_password(account):
+    LOGGER.info('initiate_reset_password entry')
+    id = str(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT)
+    token = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(constants.VERIFICATION_TOKEN_LENGTH))
+    account.password_reset_token = token
+    account.time_updated = datetime.now()
+
+    try:
+        #save token to DB
+        current_app.db_session.add(account)
+        current_app.db_session.commit()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    # send email
+    link = constants.RESET_PASSWORD_VERIFICATION_LINK % (util.get_url_root(), id, token)
+    text = 'Please click on the below link to reset your password.\n'+link
+    html_text = "<h4>Please click on the below link to reset your password.</h4><br />"+link
+
+    try:
+        mail.send(current_app.config['ADMIN_EMAIL'],
+            account.email,
+            constants.RESET_PASSWORD_VERIFICATION_SUBJECT,
+            text,
+            html_text)
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.MailServiceError(constants.GENERIC_ERROR,e)
+
+    LOGGER.info('initiate_reset_password exit')
+
+def verify_password_reset(id, token):
+    LOGGER.info('verify_password_reset entry')
+
+    account_id = id - constants.EMAIL_ACCOUNT_ID_CONSTANT
+    try:
+        account = get_account_by_id(account_id)
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    if not account:
+        raise error.AccountNotFoundError('Invalid reset code.')
+    elif token != account.password_reset_token:
+        raise error.PasswordResetTokenNotMatchError('Invalid verification code.')
+
+    LOGGER.info('verify_password_reset exit')
+    return account
+
+
+def reset_password(account, password):
+    LOGGER.info('reset_password entry')
+    account.password = password
+    account.password_reset_token = None
+    account.time_updated = datetime.now()
+    try:
+        current_app.db_session.add(account)
+        current_app.db_session.commit()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    LOGGER.info('reset_password exit')

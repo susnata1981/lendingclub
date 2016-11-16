@@ -59,7 +59,7 @@ def resend_email_verification():
 @account_bp.route('/<id>/verify', methods=['GET'])
 def verify_email(id):
     form = ResendEmailVerificationForm(request.form)
-    token = request.args.get(constants.EMAIL_VERIFICATION_TOKEN_NAME)
+    token = request.args.get(constants.VERIFICATION_TOKEN_NAME)
     data = {}
     try:
         accountBLI.verify_email(int(id), token)

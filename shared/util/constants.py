@@ -34,15 +34,18 @@ MAX_BORROW_MESSAGE = 'As per your membership plan, the maximum you can borrow is
 ACCOUNT_ACTIVE_FOR_REQUEST_MONEY_MESSAGE = 'Your account needs to be active to request money.'
 ACTIVE_PLAN_REQUIRED_MESSAGE = 'You should be enrolled in a plan to be able to request money.'
 
-#Email verification constants
+VERIFICATION_TOKEN_NAME = 'tok'
+VERIFICATION_TOKEN_LENGTH = 12
 EMAIL_ACCOUNT_ID_CONSTANT = 458213
-EMAIL_VERIFICATION_TOKEN_NAME = 'tok'
-EMAIL_VERIFICATION_TOKEN_LENGTH = 12
-EMAIL_VERIFICATION_LINK = 'http://localhost:8080/account/%s/verify?' + EMAIL_VERIFICATION_TOKEN_NAME + '=%s'
+#Email verification constants
+EMAIL_VERIFICATION_LINK = '%s/account/%s/verify?' + VERIFICATION_TOKEN_NAME + '=%s'
 EMAIL_VERIFICATION_SUBJECT = 'Verify your email to complete your signup'
 EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE = 'Sorry, our service failed to send the verification email. Please request the verification email again.'
 ACCOUNT_CREATED_BUT_EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE = 'Account successfully created but our service failed to send the verification email. Please request the verification email again.'
 
+RESET_PASSWORD_VERIFICATION_LINK = '%s/lending/%s/reset_password?' + VERIFICATION_TOKEN_NAME + '=%s'
+RESET_PASSWORD_VERIFICATION_SUBJECT = 'Reset your Ziplly password'
+RESET_PASSWORD_VERIFICATION_SEND_FAILURE_MESSAGE = 'Sorry, our service failed to send the reset password link. Please request the link again.'
 
 def init():
     pass

@@ -68,3 +68,7 @@ class IncorrectRandomDepositAmountsError(ZipllyError):
 class BankAlreadyExistsError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
         super(BankAlreadyExistsError, self).__init__(message=message, orig_exp=orig_exp)
+
+class PasswordResetTokenNotMatchError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(PasswordResetTokenNotMatchError, self).__init__(message=message, orig_exp=orig_exp)

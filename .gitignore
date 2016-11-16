@@ -6,3 +6,4 @@ webapp/lib/*
 .DS_Store
 webapp/config.py
 **/venv/*
+**/config.py

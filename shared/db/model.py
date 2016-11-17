@@ -100,17 +100,17 @@ class Account(Base):
             usable_fis.sort(key=byTime_key, reverse=descending)
         return usable_fis
 
-    def is_active_primary_bank_verified(self):
-        fi = get_active_primary_bank()
-        if fi and fi.status == Fi.VERIFIED:
-            return True
-        return False
-
     def get_active_primary_bank(self):
         for fi in self.fis:
             if fi.primary and fi.usage_status == Fi.ACTIVE:
                 return fi
         return None
+
+    def is_active_primary_bank_verified(self):
+        fi = self.get_active_primary_bank()
+        if fi and fi.status == Fi.VERIFIED:
+            return True
+        return False
 
     def get_open_request(self):
         for req in self.request_money_list:

@@ -1,6 +1,4 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container margin-top-medium">
 
   <div class="row">
@@ -12,11 +10,16 @@
   </div>
 
   {% if data['application_incomplete'] %}
-    <h4>Your application is partially complete. We need additional information</h4>
-    <form action={{url_for('lending_bp.complete_application')}} method="get">
-      <button class="btn btn-orange btn-lg">Complete Application</button>
-    </form>
+  <h4>Your application is partially complete. We need additional information</h4>
+  <form action={{url_for( 'lending_bp.complete_application')}} method="get">
+    <button class="btn btn-orange btn-lg">Complete Application</button>
+  </form>
   {% endif %}
+
+  <h4>Your application is partially complete. We need additional information</h4>
+  <form action={{url_for( 'lending_bp.loan_application')}} method="get">
+    <button class="btn btn-orange btn-lg">Apply for Loan</button>
+  </form>
 
   <div class="row">
     <div class="col-md-8 offset-md-2">

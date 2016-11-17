@@ -44,7 +44,7 @@
       $("#loan-amount").val("$"+loan_amount);
 
       $.post(
-        '/get_payment_plan',
+        'lending/get_payment_plan_estimate',
         {
           'loan_amount': loan_amount,
           'loan_duration': loan_duration

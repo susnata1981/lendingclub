@@ -11,8 +11,6 @@ PLEASE_TRY_AGAIN = 'Sorry, there was an error on the server, please try again.'
 GENERIC_ERROR = 'Aww crap....something bad happened. Please try again after sometime.'
 ACCOUNT_WITH_EMAIL_ALREADT_EXISTS = 'Account with this email already exists'
 
-FI_ID_KEY = 'fi_id'
-
 SIGNUP_EMAIL_SUBJECT = 'Thanks for expressing interest'
 SIGNUP_EMAIL_BODY = '''
 <p>

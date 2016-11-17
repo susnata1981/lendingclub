@@ -1,7 +1,7 @@
 $(function() {
     var Z = (function() {
         var LANDING_PAGE_SECTION = [
-            '#faq-section'
+            // '#faq-section'
         ];
 
         function initialize_video_player() {

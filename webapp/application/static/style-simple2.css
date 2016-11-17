@@ -313,16 +313,12 @@ div.nav-wrapper li a {
   line-height: 40px;
 }
 
-.loan-item input {
-  background: #f9f9f9;
-}
-
 .ui-slider {
   margin-top: 12px;
 }
 
 .slider-input {
-  border:0; color:#f6931f; font-weight:bold; background:#f9f9f9;
+  border:0; color:#FF5722; font-weight:bold;
 }
 
 .bold {
@@ -787,4 +783,16 @@ form.user-input {
   bottom: 10px;
 }
 /***********************************************************************/
+
+
+/*********************** loan application page ***********************/
+#loan-application-form, #loan-application-info-section, #bank-info-section, #authorization-section {
+    background: #ffffff;
+    margin: 32px 0;
+    padding: 16px;
+}
+
+#authorization-section {
+  margin-bottom: 32px;
+}
 </style>

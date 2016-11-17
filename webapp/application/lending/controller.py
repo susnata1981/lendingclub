@@ -86,10 +86,18 @@ def dashboard():
     data = {}
     data['application_incomplete'] = not accountBLI.is_application_complete(current_user)
     #TODO : add account data activity
-    if not get_all_open_loans():
+    # if not get_all_open_loans():
         #no loans, show apply loans
-        data['can_apply_for_loan'] = True
+    data['can_apply_for_loan'] = True
     return render_template('account/dashboard.html', data=data)
+
+@lending_bp.route('/loan_application', methods=['GET'])
+@login_required
+def start_loan_application():
+    form = LoanApplicationForm()
+    data = {}
+    data['fis'] = current_user.fis
+    return render_template('lending/loan_application.html', form=form, data=data)
 
 @lending_bp.route('/complete_application', methods=['GET','POST'])
 @login_required
@@ -143,13 +151,13 @@ def get_payment_plan_estimate():
 
     save_loan_request_to_session(loan_amount, loan_duration)
     result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
-    # return jsonify(result)
     return render_template('lending/loan-info.html', data=result)
 
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
     data = {}
+    data['fis'] = current_user.fis
     if request.method == 'GET':
         return render_template('lending/loan_application.html', data=data)
     else:
@@ -162,15 +170,15 @@ def loan_application():
             account_id = current_user.id,
             amount = loan_amount,
             duration = loan_duration,
-            status = Req.PENDING,
+            status = RequestMoney.PENDING,
             fi_id = selected_fi_id,
             time_updated = datetime.now(),
             time_created = datetime.now())
         try:
             req_money = lendingBLI.create_request(current_user, req_money)
             return redirect(url_for('.dashboard'))
-        except Exception:
-            logging.error(msg)
+        except Exception as e:
+            logging.error('loan_application failed with exception %s' % e)
             data['error'] = True
             flash(constants.GENERIC_ERROR)
             return render_template('lending/loan_application.html', data=data)
@@ -190,19 +198,19 @@ def save_loan_request_to_session(loan_amount=None, loan_duration=None):
 
 ############################
 
-@lending_bp.route('/memberships', methods=['GET'])
-@login_required
-def get_membership_info():
-    data = create_notifications()
-    for t in current_user.request_money_list:
-        if t.status != RequestMoney.PAYMENT_COMPLETED:
-            if request.method == 'GET':
-                data['show_notification'] = True
-                data['notification_class'] = 'info'
-                data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(t.amount, t.payment_date.strftime("%d/%m/%Y"))
-                request_money_enabled = False
-
-    return render_template('onboarding/account-membership-section.html', data=data)
+# @lending_bp.route('/memberships', methods=['GET'])
+# @login_required
+# def get_membership_info():
+#     data = create_notifications()
+#     for t in current_user.request_money_list:
+#         if t.status != RequestMoney.PAYMENT_COMPLETED:
+#             if request.method == 'GET':
+#                 data['show_notification'] = True
+#                 data['notification_class'] = 'info'
+#                 data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(t.amount, t.payment_date.strftime("%d/%m/%Y"))
+#                 request_money_enabled = False
+#
+#     return render_template('onboarding/account-membership-section.html', data=data)
 
 @lending_bp.route('/make_payment', methods=['GET', 'POST'])
 @login_required

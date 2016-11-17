@@ -42,19 +42,19 @@
   <div class="row loan-item">
       <h5 class="offset-md-3 col-md-2 col-xs-6">Loan Amount</h5>
       <div class="col-md-4 text-md-left col-xs-6">
-        <div class="amount-slider"></div>
-        <input class="slider-input" type="text" id="loan-amount">
+        <div class="lp-loan-amount-slider"></div>
+        <input class="slider-input" type="text" id="lp-loan-amount">
       </div>
   </div>
   <div class="row loan-item">
       <h5 class="offset-md-3 col-md-2 col-xs-6">Loan Duration</h5>
       <div class="col-md-4 text-md-left col-xs-6">
-        <div class="loan-duration-slider"></div>
-        <input class="slider-input" type="text" id="loan-duration">
+        <div class="lp-loan-duration-slider"></div>
+        <input class="slider-input" type="text" id="lp-loan-duration">
       </div>
   </div>
   </section>
-  <section id="loan-info-section">
+  <section id="lp-loan-info-section">
   </section>
 
   <section id="signup-form-section">
@@ -277,5 +277,11 @@
         early or on time.
       </p>
     </div>
+    <script>
+      loanAppForm = new LoanApplicationForm(
+        "#lp-loan-amount", "#lp-loan-duration", "#lp-loan-info-section",
+        ".lp-loan-amount-slider", ".lp-loan-duration-slider", 'lending/get_payment_plan_estimate');
+      loanAppForm.bind();
+    </script>
 
     {% endblock %}

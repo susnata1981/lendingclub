@@ -54,50 +54,6 @@ def register_user_ajax():
             error='true',
             description='Only support POST request!')
 
-@home_blueprint.route('/get_payment_plan', methods=['POST'])
-def get_payment_plan():
-    loan_amount = float(request.form.get('loan_amount'))
-    loan_duration = int(request.form.get('loan_duration'))
-
-    result = {}
-    result['summary'] = {}
-    result['payment_schedule'] = {}
-    result['summary']['loan_amount'] = loan_amount
-    result['summary']['loan_duration'] = loan_duration
-    min_apr = .36
-    max_apr = .99
-
-    start_time = datetime.now()
-
-    min_payment = loan_amount + (loan_amount * min_apr * loan_duration) / 12
-    max_payment = loan_amount + (loan_amount * max_apr * loan_duration) / 12
-    monthly_payment_min = min_payment/loan_duration
-    monthly_payment_max = max_payment/loan_duration
-    expected_monthly_payment = (monthly_payment_min + monthly_payment_max) / 2
-
-    result['summary']['min_payment'] = min_payment
-    result['summary']['max_payment'] = max_payment
-    result['summary']['min_apr'] = min_apr * 100
-    result['summary']['max_apr'] = max_apr * 100
-    result['summary']['min_interest'] = min_payment - loan_amount
-    result['summary']['max_interest'] = max_payment - loan_amount
-    result['summary']['monthly_payment_min'] = monthly_payment_min
-    result['summary']['monthly_payment_max'] = monthly_payment_max
-    result['summary']['expected_monthly_payment'] = expected_monthly_payment
-    result['summary']['expected_interest_charge'] = expected_monthly_payment * loan_duration - loan_amount
-    result['summary']['max_apr'] = max_apr * 100
-
-
-    result['repayment_schedule'] = []
-    for t in range(loan_duration):
-        result['repayment_schedule'].append({
-            'expected_amount': expected_monthly_payment,
-            'date': start_time + timedelta(days=30*(t+1))
-        })
-
-    # return jsonify(result)
-    return render_template('home/loan-info.html', data=result)
-
 @home_blueprint.route('/contact_us', methods=['GET', 'POST'])
 def contact_us():
     form = ContactUsForm()

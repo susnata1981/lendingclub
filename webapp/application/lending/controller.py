@@ -16,6 +16,8 @@ import logging
 import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import account as accountBLI
+from shared.bli import lending as lendingBLI
+from shared.bli import bank as bankBLI
 from shared.util import error
 from application.bank import controller as bank_controller
 
@@ -84,6 +86,9 @@ def dashboard():
     data = {}
     data['application_incomplete'] = not accountBLI.is_application_complete(current_user)
     #TODO : add account data activity
+    if not get_all_open_loans():
+        #no loans, show apply loans
+        data['can_apply_for_loan'] = True
     return render_template('account/dashboard.html', data=data)
 
 @lending_bp.route('/complete_application', methods=['GET','POST'])
@@ -95,7 +100,7 @@ def complete_application():
     elif 'add_bank' in next:
         return redirect(url_for('bank_bp.add_bank'))
     elif 'verify_bank' in next:
-        session[bank_controller.RANDOM_DEPOSIT_FI_ID_KEY] = next['id']
+        session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY]
         return redirect(url_for('bank_bp.verify_random_deposit'))
     return redirect(url_for('.dashboard'))
 
@@ -130,6 +135,60 @@ def enter_employer_information():
             flash(constants.GENERIC_ERROR)
             return render_template('account/enter_employer_information.html', form=form)
     return render_template('account/enter_employer_information.html', form=form)
+
+@lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
+def get_payment_plan_estimate():
+    loan_amount = float(request.form.get('loan_amount'))
+    loan_duration = int(request.form.get('loan_duration'))
+
+    save_loan_request_to_session(loan_amount, loan_duration)
+    result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
+    # return jsonify(result)
+    return render_template('lending/loan-info.html', data=result)
+
+@lending_bp.route('/loan_application', methods=['GET','POST'])
+@login_required
+def loan_application():
+    data = {}
+    if request.method == 'GET':
+        return render_template('lending/loan_application.html', data=data)
+    else:
+        #Question: can the java script be modified in the browser to send an amount greater than 1000 or less than 500?
+        loan_amount = float(request.form.get('loan_amount'))
+        loan_duration = int(request.form.get('loan_duration'))
+        selected_fi_id = int(request.form.get('selected_fi_id'))
+        #TODO: Compare form fieds with session fields
+        req_money = RequestMoney(
+            account_id = current_user.id,
+            amount = loan_amount,
+            duration = loan_duration,
+            status = Req.PENDING,
+            fi_id = selected_fi_id,
+            time_updated = datetime.now(),
+            time_created = datetime.now())
+        try:
+            req_money = lendingBLI.create_request(current_user, req_money)
+            return redirect(url_for('.dashboard'))
+        except Exception:
+            logging.error(msg)
+            data['error'] = True
+            flash(constants.GENERIC_ERROR)
+            return render_template('lending/loan_application.html', data=data)
+
+def save_loan_request_to_session(loan_amount=None, loan_duration=None):
+    if current_user and current_user.is_authenticated:
+        if lendingBLI.LOAN_REQUEST_KEY in session and session[lendingBLI.LOAN_REQUEST_KEY]:
+            loan_request = session[lendingBLI.LOAN_REQUEST_KEY]
+        else:
+            loan_request = {}
+        if loan_amount:
+            loan_request[lendingBLI.LOAN_AMOUNT_KEY] = loan_amount
+        if loan_duration:
+            loan_request[lendingBLI.LOAN_DURATION_KEY] = loan_duration
+        if loan_request:
+            session[lendingBLI.LOAN_REQUEST_KEY] = loan_request
+
+############################
 
 @lending_bp.route('/memberships', methods=['GET'])
 @login_required
@@ -197,61 +256,6 @@ def payment_success():
     data['payment_date'] = session['payment_date']
     return render_template('lending/payment_success.html', data=data)
 
-@lending_bp.route('/request_money', methods=['GET','POST'])
-@login_required
-def request_money():
-    form = RequestMoneyForm(request.form)
-    data = create_notifications()
-    request_money_enabled = False
-    if current_user.memberships:
-        current_user.memberships.sort(lambda x: x.time_created)
-        request_money_enabled = current_user.memberships[0].status == Membership.APPROVED
-
-    for t in current_user.request_money_list:
-        if t.status != RequestMoney.PAYMENT_COMPLETED:
-            data['show_notification'] = True
-            data['notification_class'] = 'info' if request.method == 'GET' else 'error'
-            data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(t.amount, t.payment_date.strftime("%m/%d/%Y"))
-            request_money_enabled = False
-            return render_template('onboarding/request_money.html', data=data,
-            request_money_enabled = request_money_enabled, form=form)
-
-    if form.validate_on_submit():
-        if form.requested_amount.data > current_user.memberships[0].plan.max_loan_amount:
-            data = {}
-            data['show_notification'] = True
-            data['notification_class'] = 'error'
-            data['notification_message_description'] = 'As per your membership plan, the maximum you can borrow is {}'.format(current_user.memberships[0].plan.max_loan_amount)
-            return render_template('onboarding/request_money.html',
-            data=data, request_money_enabled = request_money_enabled, form=form)
-        try:
-            print 'saving transaction...'
-            today = datetime.now()
-            payment_date = today + relativedelta(month=1)
-            request_money = RequestMoney(
-                account_id = current_user.id,
-                amount = form.requested_amount.data,
-                status = RequestMoney.PENDING,
-                payment_date = payment_date,
-                time_updated = today,
-                time_created = today)
-
-            current_user.request_money_list.append(request_money)
-            current_app.db_session.add(current_user)
-            current_app.db_session.add(request_money)
-            current_app.db_session.commit()
-
-            data = {}
-            data['show_notification'] = True
-            data['notification_class'] = 'info'
-            data['notification_message_description'] = 'We have received your request to borrow ${0}. This will be transferred to your account in 1 business day'.format(form.requested_amount.data)
-        except Exception as e:
-            # traceback.print_exc()
-            flash('Failed to process your request. Please try again.')
-            logging.error('request_money failed with exception %s' % e)
-    return render_template('onboarding/request_money.html',
-    data=data, request_money_enabled = request_money_enabled, form=form)
-
 @lending_bp.route('/transactions', methods=['GET'])
 @login_required
 def get_transaction_info():
@@ -267,79 +271,3 @@ def get_transaction_info():
 def next_month(date):
     future_date = date.today()+ relativedelta(months=1)
     return future_date.strftime('%m/%d/%Y')
-
-def create_notifications():
-    data = {}
-    if not current_user.memberships:
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You application is incomplete'
-        data['notification_message_title'] = 'Apply Now'
-        data['notification_url'] = 'membership_bp.apply_for_membership'
-    elif len(current_user.fis) == 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You have not added bank account yet'
-        data['notification_message_title'] = 'Add Bank'
-        data['notification_url'] = 'membership_bp.add_bank'
-    elif has_unverified_bank_account():
-        data['show_notification'] = True
-        data['notification_class'] = 'error'
-        data['notification_message_description'] = 'You have not verified your bank account'
-        data['notification_message_title'] = 'Verify Account'
-        data['notification_url'] = 'membership_bp.verify_account_random_deposit'
-    elif is_eligible_to_borrow() > 0:
-        data['show_notification'] = True
-        data['notification_class'] = 'info'
-        data['notification_message_description'] = 'You can borrow money {0} times before 20th Nov 2017 by sending us a text @ 408-306-4444'.format(is_eligible_to_borrow())
-    return data
-
-def has_entered_personal_information(user):
-    if user.ssn == None or user.dob == None or user.driver_license_number == None:
-        return False
-
-    for address in user.addresses:
-        if address.type == Address.INDIVIDUAL:
-            return True
-
-    return False
-
-def has_entered_employer_information(user):
-    if user.employer_name == None or user.employer_phone_number == None:
-        return False
-    for address in user.addresses:
-        if address.type == Address.BUSINESS:
-            return True
-
-    return False
-
-def create_fake_membership_payments():
-    m = current_user.memberships[0]
-    for i in range(1):
-        mp = MembershipPayment(
-            membership_id = m.id,
-            status = MembershipPayment.COMPLETED,
-            time_updated = datetime.now() - dateutil.relativedelta.relativedelta(month=i),
-            time_created = datetime.now() - dateutil.relativedelta.relativedelta(month=i))
-        m.transactions.append(mp)
-        current_app.db_session.add(m)
-        current_app.db_session.add(mp)
-
-def has_unverified_bank_account():
-    for fi in current_user.fis:
-        if fi.status == Fi.UNVERFIED:
-            session[constants.FI_ID_KEY] = fi.id
-            return True
-    return False
-
-def is_eligible_to_borrow():
-    current_user.memberships.sort(key = lambda x : x.time_created)
-    allowed_borrow_frequency = current_user.memberships[0].plan.loan_frequency
-
-    if not current_user.request_money_list:
-        return allowed_borrow_frequency
-    for txn in current_user.request_money_list:
-        if txn.status != RequestMoney.PAYMENT_COMPLETED:
-            return 0
-
-    return allowed_borrow_frequency - len(filter(lambda x: x.transaction_type == RequestMoney.BORROW, current_user.transactions))

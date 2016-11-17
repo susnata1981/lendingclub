@@ -4,6 +4,7 @@ from datetime import datetime
 from shared.util import util, logger, error, constants
 from shared.db.model import *
 from shared.services import mail
+import bank as bankBLI
 import random, string
 
 LOGGER = logger.getLogger('shared.bli.account')
@@ -23,11 +24,11 @@ def signup(account):
     if existing_account is not None:
         raise error.AccountExistsError(constants.ACCOUNT_WITH_EMAIL_ALREADT_EXISTS)
 
+    now = datetime.now()
+    account.time_created = now
+    account.time_updated = now
     try:
         #NOTE: The account parameters are not verified, if it is a non None value then it will be sent as param to the Account model
-        now = datetime.now()
-        account.time_created = now
-        account.time_updated = now
         current_app.db_session.add(account)
         current_app.db_session.commit()
     except Exception as e:
@@ -157,7 +158,7 @@ def application_next_step(account):
         #TODO: currently if the account has active banks atleast  one of them is primary_bank
         # not checking if primary_bank == None
         next['verify_bank'] = True
-        next['id'] = primary_bank.id
+        next[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY] = primary_bank.id
     else:
         next['application_complete'] = True
     LOGGER.info('application_next_step exit')

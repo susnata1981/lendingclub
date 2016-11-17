@@ -24,9 +24,16 @@ import json
 import logging
 import dateutil
 from dateutil.relativedelta import relativedelta
+from shared.bli import bank as bankBLI
 
 bank_bp = Blueprint('bank_bp', __name__, url_prefix='/bank')
-RANDOM_DEPOSIT_FI_ID_KEY = 'random_deposit_fi_id'
+
+@bank_bp.route('/get_usable_banks')
+@login_required
+def get_usable_banks():
+    #get usable banks from db
+    bank_list = current_user.get_usable_fis(Fi.VERIFIED)
+    return jsonify(bank_list)
 
 @bank_bp.route('/add_bank', methods=['GET', 'POST'])
 @login_required
@@ -69,7 +76,7 @@ def add_bank():
 
             logging.info('fetching financial information...')
             fetch_financial_information_from_plaid(fi)
-            #TODO: should we save the Fi even if the fetch bank ifo fails? - I think yes,
+            #TODO: should we save the Fi to DB even if the fetch bank info fails? - I think yes,
             # we can retry the fetch bank info later
             logging.info('received financial information...')
             current_app.db_session.add(current_user)
@@ -122,7 +129,6 @@ def add_random_deposit():
         current_user.fis.append(fi)
         current_app.db_session.add(current_user)
         current_app.db_session.commit()
-        session[RANDOM_DEPOSIT_FI_ID_KEY] = fi.id
         return redirect(url_for('.add_bank_random_deposit_success'))
     else:
         return render_template('bank/add_random_deposit.html', form = form)
@@ -130,14 +136,14 @@ def add_random_deposit():
 @bank_bp.route('/verify_random_deposit', methods=['GET', 'POST'])
 @login_required
 def verify_random_deposit():
-    if not RANDOM_DEPOSIT_FI_ID_KEY in session:
-        logging.error('verify_random_deposit call doesn\'t contain %s in session. redirecting to dashboard.' % (RANDOM_DEPOSIT_FI_ID_KEY))
+    if not bankBLI.RANDOM_DEPOSIT_FI_ID_KEY in session:
+        logging.error('verify_random_deposit call doesn\'t contain %s in session. redirecting to dashboard.' % (bankBLI.RANDOM_DEPOSIT_FI_ID_KEY))
         return redirect(url_for('lending_bp.dashboard'))
 
     form = VerifyRandomDepositForm(request.form)
     if form.validate_on_submit():
         try:
-            fi_id = session[RANDOM_DEPOSIT_FI_ID_KEY]
+            fi_id = session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY]
             fi_to_be_verified = None
             for fi in current_user.fis:
                 if fi.id == int(fi_id):
@@ -155,7 +161,7 @@ def verify_random_deposit():
                 form.deposit1.data,
                 form.deposit2.data)
             logging.info('Verified bank account, response = ',response)
-            session.pop(RANDOM_DEPOSIT_FI_ID_KEY, None)
+            session.pop(bankBLI.RANDOM_DEPOSIT_FI_ID_KEY, None)
             return mark_bank_as_verified(fi)
         except error.BankAlreadyVerifiedError:
             logging.info('Stripe service raised BankAlreadyVerifiedError. Updating DB to mark bank with id:%s as verified.' % (fi.id))
@@ -192,7 +198,6 @@ def verified():
 @bank_bp.route('/add_bank_random_deposit_success', methods=['GET'])
 @login_required
 def add_bank_random_deposit_success():
-    #session[RANDOM_DEPOSIT_FI_ID_KEY]
     return render_template('bank/add_bank_random_deposit_success.html')
 
 def plaid_exchange_token(public_token, account_id):

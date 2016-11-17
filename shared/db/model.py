@@ -18,7 +18,6 @@ except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'util'))
     import util
 
-
 Base = declarative_base()
 
 class User(Base):
@@ -89,17 +88,22 @@ class Account(Base):
     def get_id(self):
         return unicode(self.id)
 
-    def get_usable_fis(self):
+    def get_usable_fis(self, verification_status=None, descending=True):
         usable_fis = []
         for fi in self.fis:
             if fi.usage_status == Fi.ACTIVE:
-                usable_fis.append(fi)
+                if verification_status == None:
+                    usable_fis.append(fi)
+                elif verification_status == fi.status:
+                    usable_fis.append(fi)
+        if usable_fis:
+            usable_fis.sort(key=byTime_key, reverse=descending)
         return usable_fis
 
     def is_active_primary_bank_verified(self):
-        for fi in self.fis:
-            if fi.primary and fi.usage_status == Fi.ACTIVE and fi.status == Fi.VERIFIED:
-                return True
+        fi = get_active_primary_bank()
+        if fi and fi.status == Fi.VERIFIED:
+            return True
         return False
 
     def get_active_primary_bank(self):
@@ -107,7 +111,6 @@ class Account(Base):
             if fi.primary and fi.usage_status == Fi.ACTIVE:
                 return fi
         return None
-
 
     def get_open_request(self):
         for req in self.request_money_list:
@@ -172,18 +175,6 @@ class Fi(Base):
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
 
-class Plan(Base):
-    __tablename__ = "plan"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False)
-    max_loan_amount = Column(Integer, nullable=False)
-    loan_frequency = Column(Integer, nullable=False)
-    interest_rate = Column(Float, nullable=False)
-    interest_rate_description = Column(Text, nullable=False)
-    cost = Column(Float, nullable=False)
-    rewards_description = Column(Text, nullable=False)
-
 class Employer(Base):
     __tablename__ = 'employer'
     FULL_TIME, PART_TIME, SELF_EMPLOYED, UNEMPLOYED  = range(4)
@@ -225,6 +216,61 @@ class Employer(Base):
 
     def get_type_name(self):
         return EmployerInformation.TYPE_NAME.get(self.type)
+
+class IAVInstitutions(Base):
+    __tablename__ = "iav_institutions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    institution_type = Column(String(255), nullable=False)
+    plaid_id = Column(String(128), nullable=False)
+
+class RequestMoney(Base):
+    __tablename__ = "request_money"
+
+    PENDING, IN_PROGRESS, CANCELED, REJECTED, TRANSFERRED, PAYMENT_DUE, PAYMENT_COMPLETED = range(7)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    account_id = Column(Integer, ForeignKey('account.id'))
+    account = relationship('Account', back_populates="request_money_list")
+    amount = Column(Float, nullable=False)
+    duration = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
+    fi_id = Column(Integer, ForeignKey('fi.id'))
+    fi = relationship('Fi', back_populates="request_money_list")
+    memo = Column(Text, nullable=True)
+    time_updated = Column(DateTime)
+    time_created = Column(DateTime)
+
+class RequestMoneyHistory(Base):
+    __tablename__ = "request_money_history"
+
+    id = Column(Integer, ForeignKey('request_money.id'))
+    request = relationship('RequestMoney', uselist=False, back_populates="history")
+    amount = Column(Float, nullable=False)
+    status = Column(Integer, nullable=False)
+    duration = Column(Integer, nullable=False)
+    fi_id = Column(Integer, ForeignKey('account.id'))
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'time_created'),
+        {},
+    )
+
+#####################
+
+class Plan(Base):
+    __tablename__ = "plan"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    max_loan_amount = Column(Integer, nullable=False)
+    loan_frequency = Column(Integer, nullable=False)
+    interest_rate = Column(Float, nullable=False)
+    interest_rate_description = Column(Text, nullable=False)
+    cost = Column(Float, nullable=False)
+    rewards_description = Column(Text, nullable=False)
 
 class Membership(Base):
     __tablename__ = 'membership'
@@ -268,51 +314,6 @@ class MembershipPayment(Base):
     status = Column(Integer, nullable=False)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
-
-class IAVInstitutions(Base):
-    __tablename__ = "iav_institutions"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False)
-    institution_type = Column(String(255), nullable=False)
-    plaid_id = Column(String(128), nullable=False)
-
-class RequestMoney(Base):
-    __tablename__ = "request_money"
-
-    PENDING, IN_PROGRESS, CANCELED, REJECTED, TRANSFERRED, PAYMENT_DUE, PAYMENT_COMPLETED = range(7)
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship('Account', back_populates="request_money_list")
-    amount = Column(Float, nullable=False)
-    status = Column(Integer, nullable=False)
-    payment_date = Column(DateTime, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_updated = Column(DateTime)
-    time_created = Column(DateTime)
-
-    def get_extension_count(self):
-        i = 0
-        for ext in extensions:
-            if ext.status == ExtensionRequest.APPROVED:
-                i+=1
-        return i
-
-class RequestMoneyHistory(Base):
-    __tablename__ = "request_money_history"
-
-    id = Column(Integer, ForeignKey('request_money.id'))
-    request = relationship('RequestMoney', uselist=False, back_populates="history")
-    amount = Column(Float, nullable=False)
-    status = Column(Integer, nullable=False)
-    payment_date = Column(DateTime, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_created = Column(DateTime)
-    __table_args__ = (
-        PrimaryKeyConstraint('id', 'time_created'),
-        {},
-    )
 
 class ExtensionRequest(Base):
     __tablename__ = "extensions"
@@ -374,13 +375,14 @@ class TransactionHistory(Base):
         PrimaryKeyConstraint('id', 'time_created'),
         {},
     )
-
+###########
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.employers = relationship('Employer', back_populates='account')
 Account.memberships = relationship('Membership', back_populates='account')
 Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.id)')
+Fi.request_money_list = relationship('RequestMoney', back_populates='fi', order_by='desc(RequestMoney.id)')
 RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request', order_by='desc(ExtensionRequest.payment_date)')
 RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
 RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='desc(RequestMoneyHistory.time_created)')
@@ -439,6 +441,9 @@ def init_db():
         bind=engine))
     # recreate_tables(engine)
 
+def byTime_key(obj):
+    return obj.time_updated
+
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()
 
@@ -448,14 +453,11 @@ def get_account_by_phone_number(phone_number):
 def get_account_by_email(email):
     return current_app.db_session.query(Account).filter(Account.email == email).one_or_none()
 
-def get_all_plans():
-    return current_app.db_session.query(Plan).all()
-
-def get_plan_by_id(plan_id):
-    return current_app.db_session.query(Plan).filter(Plan.id == plan_id).one()
-
 def get_fi_by_plaid_account_id(id):
     return current_app.db_session.query(Fi).filter(Fi.plaid_account_id == id).one_or_none()
+
+def get_fi_by_id(id):
+    return current_app.db_session.query(Fi).filter(Fi.id == id).one_or_none()
 
 def get_fi_by_stripe_bank_account_token(stripe_bank_account_token):
     return current_app.db_session.query(Fi).filter(
@@ -466,3 +468,14 @@ def clear_institutions_table():
 
 def get_all_iav_supported_institutions():
     return current_app.db_session.query(IAVInstitutions).all()
+
+def get_all_open_loans(account_id):
+    return current_app.db_session.query(RequestMoney).filter(
+    RequestMoney.account_id == account_id, RequestMoney.status.in_([RequestMoney.PENDING, RequestMoney.IN_PROGRESS, RequestMoney.TRANSFERRED, RequestMoney.PAYMENT_DUE])
+    ).all()
+
+def get_all_plans():
+    return current_app.db_session.query(Plan).all()
+
+def get_plan_by_id(plan_id):
+    return current_app.db_session.query(Plan).filter(Plan.id == plan_id).one()

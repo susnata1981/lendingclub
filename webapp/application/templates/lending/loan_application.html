@@ -29,14 +29,16 @@
         <h5 class="col-md-2 col-xs-6">Loan Amount</h5>
         <div class="col-md-6 text-md-left col-xs-6">
           <div class="loan-amount-slider"></div>
-          <input name="loan_amount" class="slider-input" type="text" id="loan-amount">
+          <input name="loan_amount" class="slider-input hidden" type="text" id="loan_amount">
+          <input class="slider-input" type="text" id="loan_amount_2">
         </div>
       </div>
       <div class="row loan-item">
         <h5 class="col-md-2 col-xs-6">Loan Duration</h5>
         <div class="col-md-6 text-md-left col-xs-6">
           <div class="loan-duration-slider"></div>
-          <input name="loan_duration" class="slider-input" type="text" id="loan-duration">
+          <input name="loan_duration" class="slider-input hidden" type="text" id="loan_duration">
+          <input class="slider-input" type="text" id="loan_duration_2">
         </div>
       </div>
   </section>
@@ -68,7 +70,7 @@
 
   <script>
     loanAppForm = new LoanApplicationForm(
-      "#loan-amount", "#loan-duration", "#loan-application-info-section",
+      "#loan_amount", "#loan_amount_2", "#loan_duration", "#loan_duration_2", "#loan-application-info-section",
       ".loan-amount-slider", ".loan-duration-slider", 'get_payment_plan_estimate');
 
     function LoanApplicationFormListener() {

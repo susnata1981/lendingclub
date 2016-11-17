@@ -45,10 +45,12 @@
     //   $("#loan-info-section").hide();
     // });
 
-    function LoanApplicationForm(loanAmountSel, loanDurationSel, loanInfoSectionSel,
-      loanAmountSliderSel, loanDurationSliderSel, endpoint) {
-      this.loanAmountSel = loanAmountSel;
-      this.loanDurationSel = loanDurationSel;
+    function LoanApplicationForm(loanAmountSel1, loanAmountSel2, loanDurationSel1, loanDurationSel2,
+      loanInfoSectionSel, loanAmountSliderSel, loanDurationSliderSel, endpoint) {
+      this.loanAmountSel1 = loanAmountSel1;
+      this.loanAmountSel2 = loanAmountSel2;
+      this.loanDurationSel1 = loanDurationSel1;
+      this.loanDurationSel2 = loanDurationSel2;
       this.loanInfoSectionSel = loanInfoSectionSel;
       this.loanAmountSliderSel = loanAmountSliderSel;
       this.loanDurationSliderSel = loanDurationSliderSel;
@@ -58,10 +60,22 @@
       this.listeners = [];
       var $this = this;
 
+      this.setLoanAmount = function(amount) {
+        $this.loan_amount = amount;
+        $($this.loanAmountSel1).val(amount);
+        $($this.loanAmountSel2).val("$" + amount);
+      }
+
+      this.setLoanDuration = function(duration) {
+        $this.loan_duration = duration;
+        var loan_duration_suffix = duration == 1 ? "month" : "months";
+        $($this.loanDurationSel1).val(duration);
+        $($this.loanDurationSel2).val(duration + " " + loan_duration_suffix);
+      }
+
       this.getPaymentPlan = function() {
-        var loan_duration_suffix = $this.loan_duration == 1 ? "month" : "months";
-        $($this.loanDurationSel).val($this.loan_duration);//+ " " + loan_duration_suffix);
-        $($this.loanAmountSel).val($this.loan_amount);
+        $this.setLoanAmount($this.loan_amount);
+        $this.setLoanDuration($this.loan_duration);
 
         $.post(
           $this.endpoint,
@@ -118,8 +132,8 @@
       }
 
       this.bind = function() {
-        $($this.loanAmountSel).val($this.loan_amount);
-        $($this.loanDurationSel).val($this.loan_duration);
+        $this.setLoanDuration($this.loan_duration);
+        $this.setLoanAmount($this.loan_amount);
         $($this.loanInfoSectionSel).hide();
 
         this.registerLoanAmountListener();

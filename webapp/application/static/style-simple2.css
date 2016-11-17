@@ -98,6 +98,10 @@ h5 { font-family: 'Enriqueta', arial, serif; margin: 0 0 10px; font-size: 24px; 
     color: #333;
 }
 
+.hidden {
+  display: none;
+}
+
 .center {
   text-align: center;
 }

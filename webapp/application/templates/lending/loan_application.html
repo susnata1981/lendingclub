@@ -15,15 +15,14 @@
       <h4 class="">Enter Loan Information</h4>
       <div class="loan-item">
         <h5 class="col-md-2 col-xs-6">I would like to</h5>
-        <div class="dropdown col-md-6 col-xs-6 text-md-left">
-          <button class="btn btn-secondary dropdown-toggle btn-primary-accent-color" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            borrow to
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {% for field in form %} {% if field.name == 'loan_request_reason' %} {% for item in field.choices %}
-            <a class="dropdown-item" name={{item[0]}} href="#">{{item[1]}}</a> {% endfor %} {% endif %} {% endfor %}
-          </div>
-        </div>
+        <select class="custom-select primary-accent-color" name="loan_request_reason">
+          {% for field in form %}
+          {% if field.name == 'loan_request_reason' %}
+          <option selected>borrow to</option>
+          {% for item in field.choices %}
+          <option value="{{item[0]}}" >{{item[1]}}</option>
+          {% endfor %} {% endif %} {% endfor %}
+        </select>
       </div>
       <div class="row loan-item">
         <h5 class="col-md-2 col-xs-6">Loan Amount</h5>
@@ -42,6 +41,7 @@
         </div>
       </div>
   </section>
+
   <section class="row" id="loan-application-info-section">
   </section>
 
@@ -62,8 +62,9 @@
         <input class="form-check-input" type="checkbox" value="">I authorize
       </label>
     </div>
-    <div class="row">
-      <button class="btn btn-orange align-right">Confirm</button>
+    <div class="row text-md-right">
+      <button class="btn btn-orange">Confirm</button>
+      <a class="btn btn-outline-secondary" href={{url_for('.dashboard')}} role="button">Cancel</a>
     </div>
   </form>
   </section>

@@ -80,29 +80,30 @@ def reset_password_confirm():
     logging.info('reset_password_confirm exit')
     return render_template('lending/reset_password_confirm.html', data=data, form=form)
 
+@lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
+def get_payment_plan_estimate():
+    loan_amount = float(request.form.get('loan_amount'))
+    loan_duration = int(request.form.get('loan_duration'))
+
+    save_loan_request_to_session(loan_amount, loan_duration)
+    result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
+    return render_template('lending/loan-info.html', data=result)
+
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
     data = {}
-    data['application_incomplete'] = not accountBLI.is_application_complete(current_user)
-    #TODO : add account data activity
-    # if not get_all_open_loans():
+    data['application_incomplete'] = not accountBLI.is_signup_complete(current_user)
+    if not accountBLI.get_all_open_loans(current_user):
         #no loans, show apply loans
-    data['can_apply_for_loan'] = True
+        data['can_apply_for_loan'] = True
+    #TODO : add account data activity
     return render_template('account/dashboard.html', data=data)
 
-@lending_bp.route('/loan_application', methods=['GET'])
+@lending_bp.route('/complete_signup', methods=['GET','POST'])
 @login_required
-def start_loan_application():
-    form = LoanApplicationForm()
-    data = {}
-    data['fis'] = current_user.fis
-    return render_template('lending/loan_application.html', form=form, data=data)
-
-@lending_bp.route('/complete_application', methods=['GET','POST'])
-@login_required
-def complete_application():
-    next = accountBLI.application_next_step(current_user)
+def complete_signup():
+    next = accountBLI.signup_next_step(current_user)
     if 'enter_employer_information' in next:
         return redirect(url_for('.enter_employer_information'))
     elif 'add_bank' in next:
@@ -133,7 +134,7 @@ def enter_employer_information():
                 time_updated = now
             )
             accountBLI.add_employer(current_user, employer)
-            return redirect(url_for('.complete_application'))
+            return redirect(url_for('.complete_signup'))
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
             flash(constants.GENERIC_ERROR)
@@ -144,27 +145,21 @@ def enter_employer_information():
             return render_template('account/enter_employer_information.html', form=form)
     return render_template('account/enter_employer_information.html', form=form)
 
-@lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
-def get_payment_plan_estimate():
-    loan_amount = float(request.form.get('loan_amount'))
-    loan_duration = int(request.form.get('loan_duration'))
-
-    save_loan_request_to_session(loan_amount, loan_duration)
-    result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
-    return render_template('lending/loan-info.html', data=result)
-
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
+    form = LoanApplicationForm()
     data = {}
     data['fis'] = current_user.fis
     if request.method == 'GET':
         return render_template('lending/loan_application.html', data=data)
     else:
+        print 'Loan application confirm called'
         #Question: can the java script be modified in the browser to send an amount greater than 1000 or less than 500?
         loan_amount = float(request.form.get('loan_amount'))
         loan_duration = int(request.form.get('loan_duration'))
         selected_fi_id = int(request.form.get('selected_fi_id'))
+        print 'loan_amount:%f, loan_duration:%d, fi_id:%d' % (loan_amount, loan_duration, selected_fi_id)
         #TODO: Compare form fieds with session fields
         req_money = RequestMoney(
             account_id = current_user.id,

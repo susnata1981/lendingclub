@@ -1,5 +1,8 @@
+from flask import current_app
 from datetime import datetime, timedelta
 from shared.db import model
+from shared.util import error, constants
+import logging
 
 MIN_APR = .36
 MAX_APR = .99
@@ -41,14 +44,14 @@ def get_payment_plan_estimate(loan_amount, loan_duration):
         })
     return result
 
-def create_request(current_user, req_money):
+def create_request(account, req_money):
     now = datetime.now()
     req_money.time_created = now
     req_money.time_updated = now
     try:
-        current_user.request_money_list.append(req_money)
+        account.request_money_list.append(req_money)
         current_app.db_session.add(account)
         current_app.db_session.commit()
     except Exception as e:
-        LOGGER.error(e.message)
+        logging.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)

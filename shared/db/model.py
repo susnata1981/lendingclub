@@ -234,7 +234,9 @@ class RequestMoney(Base):
     account_id = Column(Integer, ForeignKey('account.id'))
     account = relationship('Account', back_populates="request_money_list")
     amount = Column(Float, nullable=False)
+    #duration in months
     duration = Column(Integer, nullable=False)
+    apr = Column(Float, default=0.99, nullable=False)
     status = Column(Integer, nullable=False)
     fi_id = Column(Integer, ForeignKey('fi.id'))
     fi = relationship('Fi', back_populates="request_money_list")
@@ -468,11 +470,6 @@ def clear_institutions_table():
 
 def get_all_iav_supported_institutions():
     return current_app.db_session.query(IAVInstitutions).all()
-
-def get_all_open_loans(account_id):
-    return current_app.db_session.query(RequestMoney).filter(
-    RequestMoney.account_id == account_id, RequestMoney.status.in_([RequestMoney.PENDING, RequestMoney.IN_PROGRESS, RequestMoney.TRANSFERRED, RequestMoney.PAYMENT_DUE])
-    ).all()
 
 def get_all_plans():
     return current_app.db_session.query(Plan).all()

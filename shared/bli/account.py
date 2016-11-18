@@ -135,7 +135,7 @@ def need_primary_bank(account):
     else:
         return False
 
-def is_application_complete(account):
+def is_signup_complete(account):
     LOGGER.info('is_application_complete entry')
     if not account or \
         not account.employers or \
@@ -146,7 +146,7 @@ def is_application_complete(account):
     LOGGER.info('is_application_complete:True exit')
     return True
 
-def application_next_step(account):
+def signup_next_step(account):
     LOGGER.info('application_next_step entry')
     next = {}
     if not account.employers:
@@ -234,7 +234,6 @@ def verify_password_reset(id, token):
     LOGGER.info('verify_password_reset exit')
     return account
 
-
 def reset_password(account, password):
     LOGGER.info('reset_password entry')
     account.password = password
@@ -248,3 +247,8 @@ def reset_password(account, password):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
     LOGGER.info('reset_password exit')
+
+def get_all_open_loans(account):
+    return current_app.db_session.query(RequestMoney).filter(
+    RequestMoney.account_id == account.id, RequestMoney.status.in_([RequestMoney.PENDING, RequestMoney.IN_PROGRESS, RequestMoney.TRANSFERRED, RequestMoney.PAYMENT_DUE])
+    ).all()

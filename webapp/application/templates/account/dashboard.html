@@ -11,16 +11,15 @@
 
   {% if data['application_incomplete'] %}
   <h4>Your application is partially complete. We need additional information</h4>
-  <form action={{url_for( 'lending_bp.complete_application')}} method="get">
+  <form action={{url_for( 'lending_bp.complete_signup')}} method="get">
     <button class="btn btn-orange btn-lg">Complete Application</button>
   </form>
-  {% endif %}
-
-  <h4>Your application is partially complete. We need additional information</h4>
+  {% elif data['can_apply_for_loan'] %}
+  <h4>Yay!!! You can apply for a new loan.</h4>
   <form action={{url_for( 'lending_bp.loan_application')}} method="get">
     <button class="btn btn-orange btn-lg">Apply for Loan</button>
   </form>
-
+  {% endif %}
   <div class="row">
     <div class="col-md-8 offset-md-2">
       <h4>Activity</h4>

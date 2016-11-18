@@ -247,8 +247,3 @@ def reset_password(account, password):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
     LOGGER.info('reset_password exit')
-
-def get_all_open_loans(account):
-    return current_app.db_session.query(RequestMoney).filter(
-    RequestMoney.account_id == account.id, RequestMoney.status.in_([RequestMoney.PENDING, RequestMoney.IN_PROGRESS, RequestMoney.TRANSFERRED, RequestMoney.PAYMENT_DUE])
-    ).all()

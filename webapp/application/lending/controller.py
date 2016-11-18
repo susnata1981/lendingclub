@@ -24,6 +24,7 @@ from application.bank import controller as bank_controller
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
 
+####### should be in account_bp ############
 @lending_bp.route('/reset_password', methods=['GET','POST'])
 def reset_password():
     form = ResetPasswordForm(request.form)
@@ -80,25 +81,29 @@ def reset_password_confirm():
     logging.info('reset_password_confirm exit')
     return render_template('lending/reset_password_confirm.html', data=data, form=form)
 
-@lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
-def get_payment_plan_estimate():
-    loan_amount = float(request.form.get('loan_amount'))
-    loan_duration = int(request.form.get('loan_duration'))
-
-    save_loan_request_to_session(loan_amount, loan_duration)
-    result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
-    return render_template('lending/loan-info.html', data=result)
-
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
     data = {}
     data['application_incomplete'] = not accountBLI.is_signup_complete(current_user)
-    if not accountBLI.get_all_open_loans(current_user):
+    if not lendingBLI.get_all_open_loans(current_user):
         #no loans, show apply loans
         data['can_apply_for_loan'] = True
-    #TODO : add account data activity
+    data['loans'] = lendingBLI.get_loan_activity(current_user)
+    # pprint(data)
     return render_template('account/dashboard.html', data=data)
+
+@lending_bp.route('/loan_schedule', methods=['POST'])
+@login_required
+def loan_schedule():
+    loan_id = int(request.form.get('loan_id'))
+    data = {}
+    try:
+        data['schedule'] = lendingBLI.get_loan_schedule_by_id(loan_id, current_user)
+    except Exception as e:
+        logging.error('loan_schedule failed with exception: %s' % (e.message))
+        flash(constants.GENERIC_ERROR)
+    return render_template('account/payment_schedule.html', data=data)
 
 @lending_bp.route('/complete_signup', methods=['GET','POST'])
 @login_required
@@ -145,16 +150,29 @@ def enter_employer_information():
             return render_template('account/enter_employer_information.html', form=form)
     return render_template('account/enter_employer_information.html', form=form)
 
+############## /lending ###########
+@lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
+def get_payment_plan_estimate():
+    loan_amount = float(request.form.get('loan_amount'))
+    loan_duration = int(request.form.get('loan_duration'))
+
+    save_loan_request_to_session(loan_amount, loan_duration)
+    result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
+    return render_template('lending/loan-info.html', data=result)
+
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
+    if lendingBLI.get_all_open_loans(current_user):
+        logging.info('User:%d has open loans.' % (current_user.id))
+        return redirect(url_for('.dashboard'))
+
     form = LoanApplicationForm()
     data = {}
     data['fis'] = current_user.fis
     if request.method == 'GET':
         return render_template('lending/loan_application.html', data=data, form=form)
     else:
-        print 'Loan application confirm called'
         #Question: can the java script be modified in the browser to send an amount greater than 1000 or less than 500?
         loan_amount = float(request.form.get('loan_amount'))
         loan_duration = int(request.form.get('loan_duration'))
@@ -171,12 +189,34 @@ def loan_application():
             time_created = datetime.now())
         try:
             req_money = lendingBLI.create_request(current_user, req_money)
-            return redirect(url_for('.dashboard'))
+            return render_template('lending/loan_application_completed.html')
         except Exception as e:
             logging.error('loan_application failed with exception %s' % e)
             data['error'] = True
             flash(constants.GENERIC_ERROR)
             return render_template('lending/loan_application.html', data=data, form=form)
+
+# @lending_bp.route('/accept_loan', methods=['GET','POST'])
+# @login_required
+# def accept_loan():
+#     pending_loan = accountBLI.get_pending_loan(current_user)
+#     if not pending_loan:
+#         return redirect(url_for('.dashboard'))
+#
+#     form = AcceptLoanForm()
+#     data = {}
+#     data['loan_payment_schedule'] = lendingBLI.get_pre_accept_payment_schedule(pending_loan)
+#     if request.method == 'GET':
+#         return render_template('lending/accept_loan.html', data=data, form=form)
+#     else:
+#         try:
+#             lendingBLI.create_payment_schedule(pending_loan)
+#             return redirect(url_for('.dashboard'))
+#         except Exception as e:
+#             logging.error('accept_loan failed with exception %s' % e)
+#             data['error'] = True
+#             flash(constants.GENERIC_ERROR)
+#             return render_template('lending/accept_loan.html', data=data, form=form)
 
 def save_loan_request_to_session(loan_amount=None, loan_duration=None):
     if current_user and current_user.is_authenticated:

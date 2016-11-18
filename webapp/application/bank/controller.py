@@ -28,13 +28,6 @@ from shared.bli import bank as bankBLI
 
 bank_bp = Blueprint('bank_bp', __name__, url_prefix='/bank')
 
-@bank_bp.route('/get_usable_banks')
-@login_required
-def get_usable_banks():
-    #get usable banks from db
-    bank_list = current_user.get_usable_fis(Fi.VERIFIED)
-    return jsonify(bank_list)
-
 @bank_bp.route('/add_bank', methods=['GET', 'POST'])
 @login_required
 def add_bank():

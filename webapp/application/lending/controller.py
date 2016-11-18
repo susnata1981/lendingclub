@@ -152,14 +152,14 @@ def loan_application():
     data = {}
     data['fis'] = current_user.fis
     if request.method == 'GET':
-        return render_template('lending/loan_application.html', data=data)
+        return render_template('lending/loan_application.html', data=data, form=form)
     else:
         print 'Loan application confirm called'
         #Question: can the java script be modified in the browser to send an amount greater than 1000 or less than 500?
         loan_amount = float(request.form.get('loan_amount'))
         loan_duration = int(request.form.get('loan_duration'))
         selected_fi_id = int(request.form.get('selected_fi_id'))
-        print 'loan_amount:%f, loan_duration:%d, fi_id:%d' % (loan_amount, loan_duration, selected_fi_id)
+        # print 'loan_amount:%f, loan_duration:%d, fi_id:%d' % (loan_amount, loan_duration, selected_fi_id)
         #TODO: Compare form fieds with session fields
         req_money = RequestMoney(
             account_id = current_user.id,
@@ -176,7 +176,7 @@ def loan_application():
             logging.error('loan_application failed with exception %s' % e)
             data['error'] = True
             flash(constants.GENERIC_ERROR)
-            return render_template('lending/loan_application.html', data=data)
+            return render_template('lending/loan_application.html', data=data, form=form)
 
 def save_loan_request_to_session(loan_amount=None, loan_duration=None):
     if current_user and current_user.is_authenticated:

@@ -1,13 +1,16 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container margin-top-medium">
+<div class="container mt-3">
 
   <div class="row">
-    <div class="offset-md-2 col-md-8">
+
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-md-6">
       <h5>
         Welcome back {{current_user.first_name}} {{current_user.last_name}}.
       </h5>
     </div>
-  </div>
 
   {% if data['application_incomplete'] %}
   <h4>Your application is partially complete. We need additional information</h4>
@@ -15,16 +18,131 @@
     <button class="btn btn-orange btn-lg">Complete Application</button>
   </form>
   {% elif data['can_apply_for_loan'] %}
-  <h4>Yay!!! You can apply for a new loan.</h4>
-  <form action={{url_for( 'lending_bp.loan_application')}} method="get">
-    <button class="btn btn-orange btn-lg">Apply for Loan</button>
+  <form class="text-md-right col-md-6" action={{url_for('lending_bp.loan_application')}} method="get">
+    <button class="btn btn-orange">Apply for Loan</button>
   </form>
   {% endif %}
+  </div>
+
   <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <h4>Activity</h4>
-      <p>No Activity here. No Activity here.</p>
+    <div class="col-md-4">
+      <h6 class="bg-primary text-white mb-0 p-1">Financial information</h6>
+      <table class="table table-bordered">
+        {% for fi in current_user.fis %}
+        <tr>
+          <td>
+            <p class="small-text font-weight-bold">Bank Name</p>
+          </td>
+          <td class="center">
+            <p class="small-text">{{fi.institution}}</p>
+            </td>
+        </tr>
+        <tr>
+          <td>
+            <p class="small-text font-weight-bold">Institution Type</p>
+          </td>
+          <td class="center small-text">{{fi.institution_type}}</td>
+        </tr>
+        <tr>
+          <td>
+            <p class="small-text font-weight-bold">Status</p>
+          </td>
+          <td class="center small-text">{{fi.status}}</td>
+        </tr>
+        <tr>
+          <td>
+            <p class="small-text font-weight-bold">Account</p>
+          </td>
+          <td class="center small-text">xxxx-{{fi.account_number_last_4}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="col-md-8">
+      <h6 class="bg-primary text-white mb-0 p-1">Loan History</h6>
+      <table id="loan-history" class="table table-bordered">
+        <thead>
+          <tr>
+            <th class="small-text">Loan Amount</th>
+            <th class="small-text">APR</th>
+            <th class="small-text">Total interest</th>
+            <th class="small-text">Status</th>
+            <th class="small-text">Bank account</th>
+            <th class="small-text">Application Date</th>
+          </tr>
+        </thead>
+        {% if not data['loans'] %}
+        </table>
+        <p class="normal-text">No loans</p>
+        {% else %}
+        {% for loan in data['loans'] %}
+        <tr loan-id={{loan['summary']['id']}}>
+          <td>
+            <p class="small-text">
+              {{ loan['summary']['loan_amount'] | format_currency }}
+            </p>
+          </td>
+          <td>
+            <p class="small-text">
+              {{ loan['summary']['apr'] | format_percentage }}
+            </p>
+          </td>
+          <td>
+            <p class="small-text">
+              {{ loan['summary']['total_interest'] | format_currency }}
+            </p>
+          </td>
+          <td>
+            <p class="small-text">
+              {{ loan['summary']['status'] }}
+            </p>
+          </td>
+          <td>
+            <p class="small-text">
+              {{ loan['summary']['date_applied'] | format_datetime }}
+            </p>
+          </td>
+          <td>
+            <p class="small-text">
+              {{ loan['summary']['bank_name'] }} {{ loan['summary']['bank_last_4']}}
+            </p>
+          </td>
+          {% if loan['summary']['status'] == 0 %}
+            <button class="btn btn-sm btn-primary-accent-color">Proceed</button>
+          {% endif %}
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </table>
     </div>
   </div>
+
+  <div class="row">
+    <div class="offset-md-4 col-md-8">
+      <div id="loan-schedule">
+      </div>
+    </div>
+  </div>
+
+  {% with data=data %}
+  {% include 'account/payment_schedule.html' %}
+  {% endwith %}
 </div>
+
+<script>
+  $("#loan-history td").click(function() {
+    var loanId = $(this).parent().attr('loan-id');
+    $.post(
+      '/lending/loan_schedule',
+      {
+        'loan_id': loanId
+      },
+      function(data) {
+        $("#loan-schedule").html(data);
+      }
+    );
+  });
+</script>
+
+
 {% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-3">
+
+  <div class="row mb-2">
+    <div class="col-md-6">
+      <h5>
+        Welcome back {{current_user.first_name}} {{current_user.last_name}}.
+      </h5>
+    </div>
+
+
+    {% with data=data %}
+    {% include 'account/payment_schedule.html' %}
+    {% endwith %}
+
+    <form class="mt-2 row" action={{url_for( 'lending_bp.accept_loan')}} method="post">
+      <div class="col-md-8">
+        <input type="hidden" name="loan_id" value="{{data['schedule']['loan_id']}}" />
+        <div class="form-group row">
+          <div class="col-md-2">
+            <input class="form-control" type="checkbox">I agree</button>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-md-4">
+            <button class="btn btn-orange">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  {% endblock %}

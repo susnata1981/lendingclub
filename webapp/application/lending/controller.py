@@ -20,6 +20,7 @@ from shared.bli import lending as lendingBLI
 from shared.bli import bank as bankBLI
 from shared.util import error
 from application.bank import controller as bank_controller
+import traceback
 
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
@@ -90,19 +91,23 @@ def dashboard():
         #no loans, show apply loans
         data['can_apply_for_loan'] = True
     data['loans'] = lendingBLI.get_loan_activity(current_user)
-    # pprint(data)
+    #data['loans'] = lendingBLI.fake_loan_summary(current_user)
+    #pprint(data)
     return render_template('account/dashboard.html', data=data)
 
 @lending_bp.route('/loan_schedule', methods=['POST'])
 @login_required
 def loan_schedule():
+    # print 'loan_id:', request.form.get('loan_id')
     loan_id = int(request.form.get('loan_id'))
     data = {}
     try:
-        data['schedule'] = lendingBLI.get_loan_schedule_by_id(loan_id, current_user)
+        data['schedule'] = lendingBLI.get_loan_schedule_by_id(loan_id, current_user.id)
     except Exception as e:
+        traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
         flash(constants.GENERIC_ERROR)
+    pprint(data)
     return render_template('account/payment_schedule.html', data=data)
 
 @lending_bp.route('/complete_signup', methods=['GET','POST'])
@@ -196,27 +201,32 @@ def loan_application():
             flash(constants.GENERIC_ERROR)
             return render_template('lending/loan_application.html', data=data, form=form)
 
-# @lending_bp.route('/accept_loan', methods=['GET','POST'])
-# @login_required
-# def accept_loan():
-#     pending_loan = accountBLI.get_pending_loan(current_user)
-#     if not pending_loan:
-#         return redirect(url_for('.dashboard'))
-#
-#     form = AcceptLoanForm()
-#     data = {}
-#     data['loan_payment_schedule'] = lendingBLI.get_pre_accept_payment_schedule(pending_loan)
-#     if request.method == 'GET':
-#         return render_template('lending/accept_loan.html', data=data, form=form)
-#     else:
-#         try:
-#             lendingBLI.create_payment_schedule(pending_loan)
-#             return redirect(url_for('.dashboard'))
-#         except Exception as e:
-#             logging.error('accept_loan failed with exception %s' % e)
-#             data['error'] = True
-#             flash(constants.GENERIC_ERROR)
-#             return render_template('lending/accept_loan.html', data=data, form=form)
+@lending_bp.route('/loan_details', methods=['POST'])
+@login_required
+def loan_details():
+    loan_id = int(request.form.get('loan_id'))
+    try:
+        data = lendingBLI.get_approved_loan_payment_plan(loan_id, current_user.id)
+    except Exception as e:
+        traceback.print_exc()
+        logging.error('loan_schedule failed with exception: %s' % (e.message))
+        flash(constants.GENERIC_ERROR)
+    pprint(data)
+    return render_template('account/loan_details.html', data=data)
+
+@lending_bp.route('/loan_details_confirm', methods=['POST'])
+@login_required
+def loan_details_confirm():
+    print 'VD: ******** loan_id:%s' % (request.form.get('loan_id'))
+    loan_id = int(request.form.get('loan_id'))
+    try:
+        lendingBLI.process_loan_acceptance(loan_id, current_user.id)
+        return render_template('account/loan_accepted_success.html')
+    except Exception as e:
+        traceback.print_exc()
+        logging.error('loan_schedule failed with exception: %s' % (e.message))
+        #TODO: handle notification
+        return redirect(url_for('.dashboard'))
 
 def save_loan_request_to_session(loan_amount=None, loan_duration=None):
     if current_user and current_user.is_authenticated:

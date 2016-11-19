@@ -55,10 +55,17 @@ def format_value(value, default = constants.NOT_AVAILABLE):
     return value
 
 def format_currency(value):
-    return "${:,.2f}".format(value)
+    try:
+        return "${:,.2f}".format(value)
+    except ValueError:
+        return value;
 
 def format_percentage(value):
-    return "{}%".format(value)
+    try:
+        # return "{}%".format(value)
+        return "{:,.2f}%".format(value)
+    except ValueError:
+        return value;
 
 def setup_jinja_filter(app):
     app.jinja_env.filters['format_datetime'] = format_datetime

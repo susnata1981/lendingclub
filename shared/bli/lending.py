@@ -13,8 +13,11 @@ LOGGER = logger.getLogger('shared.bli.account')
 def get_total_interest(amount, duration, apr):
     return (amount * apr * duration) / 12
 
+def get_total_payment(amount, duration, apr):
+    return amount + get_total_interest(amount, duration, apr)
+
 def get_monthly_payment(amount, duration, apr):
-    return (amount + get_total_interest(amount, duration, apr)) / duration
+    return get_total_payment(amount, duration, apr) / duration
 
 def get_payment_plan_estimate(loan_amount, loan_duration):
     result = {}
@@ -22,12 +25,10 @@ def get_payment_plan_estimate(loan_amount, loan_duration):
     result['summary']['loan_amount'] = loan_amount
     result['summary']['loan_duration'] = loan_duration
 
-    start_time = datetime.now()
-
-    min_payment = loan_amount + (loan_amount * MIN_APR * loan_duration) / 12
-    max_payment = loan_amount + (loan_amount * MAX_APR * loan_duration) / 12
-    monthly_payment_min = min_payment/loan_duration
-    monthly_payment_max = max_payment/loan_duration
+    min_payment = get_total_payment(loan_amount, loan_duration, MIN_APR)
+    max_payment = get_total_payment(loan_amount, loan_duration, MAX_APR)
+    monthly_payment_min = get_monthly_payment(loan_amount, loan_duration, MIN_APR)
+    monthly_payment_max = get_monthly_payment(loan_amount, loan_duration, MAX_APR)
     expected_monthly_payment = (monthly_payment_min + monthly_payment_max) / 2
 
     result['summary']['min_payment'] = min_payment
@@ -42,6 +43,7 @@ def get_payment_plan_estimate(loan_amount, loan_duration):
     result['summary']['expected_interest_charge'] = expected_monthly_payment * loan_duration - loan_amount
 
     result['repayment_schedule'] = []
+    start_time = datetime.now()
     for t in range(loan_duration):
         result['repayment_schedule'].append({
             'expected_amount': expected_monthly_payment,
@@ -79,6 +81,57 @@ def get_all_open_loans(account):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
     LOGGER.info('get_all_open_loans exit')
 
+def fake_loan_summary():
+    data = [{'schedule': [{'amount': 166.56,
+                          'date': datetime(2017, 4, 17, 17, 50, 30),
+                          'status': 0L},
+                         {'amount': 166.56,
+                          'date': datetime(2017, 3, 17, 17, 50, 30),
+                          'status': 0L},
+                         {'amount': 166.56,
+                          'date': datetime(2017, 2, 17, 17, 50, 30),
+                          'status': 0L},
+                         {'amount': 166.56,
+                          'date': datetime(2017, 1, 17, 17, 50, 30),
+                          'status': 0L},
+                         {'amount': 166.56,
+                          'date': datetime(2016, 12, 17, 17, 50, 30),
+                          'status': 0L}],
+                        'summary': {'amount': 650.0,
+                            'apr': 0.99,
+                            'bank_last_4': 5204L,
+                            'bank_name': 'USAA',
+                            'date_applied': datetime(2016, 11, 17, 17, 50, 30),
+                            'duration': 5L,
+                            'loan_id': 3L,
+                            'monthly_payment': 183.625,
+                            'status': 6L,
+                            'total_interest': 268.125}},
+                        {'schedule': [],
+                        'summary': {'amount': 650.0,
+                            'apr': 0.40,
+                            'bank_last_4': 5204L,
+                            'bank_name': 'USAA',
+                            'date_applied': datetime(2016, 11, 17, 17, 39, 49),
+                            'duration': 4L,
+                            'loan_id': 2L,
+                            'monthly_payment': 216.125,
+                            'status': 1L,
+                            'total_interest': 214.5}},
+                        {'schedule': [],
+                        'summary': {'amount': 600.0,
+                            'apr': 'N/A',
+                            'bank_last_4': 5204L,
+                            'bank_name': 'USAA',
+                            'date_applied': datetime(2016, 11, 17, 14, 39, 9),
+                            'duration': 3L,
+                            'loan_id': 1L,
+                            'monthly_payment': 'N/A',
+                            'status': 3L,
+                            'total_interest': 'N/A'}}]
+    #pprint(jsonify(data))
+    return data
+
 def get_loan_summary(loan):
     LOGGER.info('get_loan_summary entry')
     summary = {}
@@ -115,7 +168,7 @@ def get_loan_schedule(loan):
     return schedule
 
 def get_loan_schedule_by_id(loan_id, account_id):
-    LOGGER.info('get_loan_schedule_by_id entry')
+    LOGGER.info('get_loan_schedule_by_id entry loan_id = '+str(loan_id)+' account_id:'+str(account_id))
     try:
         loan = current_app.db_session.query(RequestMoney).filter(
         RequestMoney.id == loan_id, RequestMoney.account_id == account_id).one_or_none()
@@ -136,8 +189,78 @@ def get_loan_activity(account):
         #loan summary
         info['summary'] = get_loan_summary(loan)
         #payment schedule
-        info['repayment_schedule'] = get_loan_schedule(loan)
+        info['schedule'] = get_loan_schedule(loan)
         #add to activity list
         activity.append(info)
     LOGGER.info('get_loan_activity exit')
     return activity
+
+def calculate_loan_schedule(loan):
+    LOGGER.info('calculate_loan_schedule Enter')
+    monthly_payment = get_monthly_payment(loan.amount, loan.duration, loan.apr)
+    start_time = datetime.now()
+    schedule = []
+    for t in range(loan.duration):
+        schedule.append({
+            'amount': monthly_payment,
+            'date': start_time + timedelta(days=30*(t+1)),
+            'status': Transaction.PENDING
+        })
+    LOGGER.info('calculate_loan_schedule Exit')
+    return schedule
+
+def get_approved_loan_payment_plan(loan_id, account_id):
+    LOGGER.info('get_payment_plan loan_id = '+str(loan_id)+' account_id:'+str(account_id)+' : Enter')
+    try:
+        loan = current_app.db_session.query(RequestMoney).filter(
+        RequestMoney.id == loan_id, RequestMoney.account_id == account_id).one_or_none()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+    if not loan:
+        LOGGER.error('Loan(id=%s) not found for Account(id=%s)' % (loan_id, account_id))
+        raise error.LoanNotFoundError('Loan(id=%s) not found for Account(id=%s)' % (loan_id, account_id))
+    if loan.status != RequestMoney.APPROVED:
+        LOGGER.error('Loan(id=%s) not in approved status.' % (loan_id))
+        raise error.LoanNotInApprovedStatus('Loan(id=%s) not in approved status.' % (loan_id))
+    result = {}
+    result['summary'] = get_loan_summary(loan)
+    result['schedule'] = calculate_loan_schedule(loan)
+    LOGGER.info('get_payment_plan loan_id = '+str(loan_id)+' account_id:'+str(account_id)+' : Exit')
+    return result
+
+def process_loan_acceptance(loan_id, account_id):
+    LOGGER.info('get_payment_plan loan_id = '+str(loan_id)+' account_id:'+str(account_id)+' : Enter')
+    try:
+        loan = current_app.db_session.query(RequestMoney).filter(
+        RequestMoney.id == loan_id, RequestMoney.account_id == account_id).one_or_none()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+    if not loan:
+        LOGGER.error('Loan(id=%s) not found for Account(id=%s)' % (loan_id, account_id))
+        raise error.LoanNotFoundError('Loan(id=%s) not found for Account(id=%s)' % (loan_id, account_id))
+    if loan.status != RequestMoney.APPROVED:
+        LOGGER.error('Loan(id=%s) not in approved status.' % (loan_id))
+        raise error.LoanNotInApprovedStatus('Loan(id=%s) not in approved status.' % (loan_id))
+
+    now = datetime.now()
+    loan.status = RequestMoney.ACCEPTED
+    loan.time_updated = now
+    data = calculate_loan_schedule(loan)
+    for schedule in data:
+        print ''
+        loan.transactions.append(Transaction(
+            transaction_type = Transaction.FULL,
+            status = Transaction.PENDING,
+            amount = float(schedule['amount']),
+            due_date = schedule['date'],
+            time_created = now,
+            time_updated = now
+        ))
+    try:
+        current_app.db_session.add(loan)
+        current_app.db_session.commit()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)

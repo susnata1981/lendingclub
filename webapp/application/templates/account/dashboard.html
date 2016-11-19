@@ -76,10 +76,10 @@
         <p class="normal-text">No loans</p>
         {% else %}
         {% for loan in data['loans'] %}
-        <tr loan-id={{loan['summary']['id']}}>
+        <tr loan-id={{loan['summary']['loan_id']}}>
           <td>
             <p class="small-text">
-              {{ loan['summary']['loan_amount'] | format_currency }}
+              {{ loan['summary']['amount'] | int | format_currency }}
             </p>
           </td>
           <td>
@@ -99,17 +99,22 @@
           </td>
           <td>
             <p class="small-text">
-              {{ loan['summary']['date_applied'] | format_datetime }}
+              {{ loan['summary']['bank_name'] }} {{ loan['summary']['bank_last_4']}}
             </p>
           </td>
           <td>
             <p class="small-text">
-              {{ loan['summary']['bank_name'] }} {{ loan['summary']['bank_last_4']}}
+              {{ loan['summary']['date_applied'] | format_datetime(format='%m-%d-%Y') }}
             </p>
           </td>
-          {% if loan['summary']['status'] == 0 %}
-            <button class="btn btn-sm btn-primary-accent-color">Proceed</button>
+          <td>
+          {% if loan['summary']['status'] == 1 %}
+          <form action="{{url_for('lending_bp.loan_details')}}" method="post">
+              <input type="hidden" name="loan_id" value={{loan['summary']['loan_id']}}></input>
+            <button class="btn btn-sm btn-primary">Proceed</button>
+            </form>
           {% endif %}
+          </td>
         </tr>
         {% endfor %}
         {% endif %}
@@ -123,10 +128,6 @@
       </div>
     </div>
   </div>
-
-  {% with data=data %}
-  {% include 'account/payment_schedule.html' %}
-  {% endwith %}
 </div>
 
 <script>
@@ -138,6 +139,7 @@
         'loan_id': loanId
       },
       function(data) {
+        $("#loan-schedule").html("");
         $("#loan-schedule").html(data);
       }
     );

@@ -72,3 +72,15 @@ class BankAlreadyExistsError(ZipllyError):
 class PasswordResetTokenNotMatchError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
         super(PasswordResetTokenNotMatchError, self).__init__(message=message, orig_exp=orig_exp)
+
+class AccountHasOpenLoanError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(AccountHasOpenLoanError, self).__init__(message=message, orig_exp=orig_exp)
+
+class LoanNotFoundError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(LoanNotFoundError, self).__init__(message=message, orig_exp=orig_exp)
+
+class LoanNotInApprovedStatus(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(LoanNotInApprovedStatus, self).__init__(message=message, orig_exp=orig_exp)

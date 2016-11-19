@@ -227,8 +227,7 @@ class IAVInstitutions(Base):
 
 class RequestMoney(Base):
     __tablename__ = "request_money"
-
-    PENDING, IN_PROGRESS, CANCELED, REJECTED, TRANSFERRED, PAYMENT_DUE, PAYMENT_COMPLETED = range(7)
+    IN_REVIEW, APPROVED, CANCELED, DECLINED, ACCEPTED, TRANSFER_IN_PROGRESS, ACTIVE, PAID_OFF, DELINQUENT, IN_COLLECTION, WRITE_OFF = range(11)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey('account.id'))
@@ -236,7 +235,7 @@ class RequestMoney(Base):
     amount = Column(Float, nullable=False)
     #duration in months
     duration = Column(Integer, nullable=False)
-    apr = Column(Float, default=0.99, nullable=False)
+    apr = Column(Float, nullable=True)
     status = Column(Integer, nullable=False)
     fi_id = Column(Integer, ForeignKey('fi.id'))
     fi = relationship('Fi', back_populates="request_money_list")
@@ -253,6 +252,42 @@ class RequestMoneyHistory(Base):
     status = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=False)
     fi_id = Column(Integer, ForeignKey('account.id'))
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'time_created'),
+        {},
+    )
+
+class Transaction(Base):
+    __tablename__ = 'transaction'
+
+    #status
+    PENDING, IN_PROGRESS, CANCELED, FAILED, COMPLETED = range(5)
+    #transaction_type
+    FULL, PARTIAL = range(2)
+    #initiated_by
+    USER, AUTOMATIC, MANUAL = range(3)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(Integer, ForeignKey('request_money.id'))
+    request = relationship('RequestMoney', back_populates="transactions")
+    transaction_type = Column(Integer, nullable=False)
+    stripe_transaction_id = Column(String(256), nullable=True)
+    status = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
+    due_date = Column(DateTime, nullable=False)
+    initiated_by = Column(Integer)
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    time_updated = Column(DateTime)
+
+class TransactionHistory(Base):
+    __tablename__ = 'transaction_history'
+
+    id = Column(Integer, ForeignKey('transaction.id'))
+    transaction = relationship('Transaction', uselist=False, back_populates="history")
+    status = Column(Integer, nullable=False)
     memo = Column(Text, nullable=True)
     time_created = Column(DateTime)
     __table_args__ = (
@@ -345,38 +380,6 @@ class ExtensionRequestHistory(Base):
         {},
     )
 
-class Transaction(Base):
-    __tablename__ = 'transaction'
-
-    PENDING, IN_PROGRESS, CANCELED, FAILED, COMPLETED = range(5)
-    BORROW, PAYMENT, INTEREST_CHARGE = range(3)
-    USER_INITIATED, AUTOMATIC, MANUAL = range(3)
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    parent_id = Column(Integer, nullable=True)
-    request_id = Column(Integer, ForeignKey('request_money.id'))
-    request = relationship('RequestMoney', back_populates="transactions")
-    transaction_type = Column(Integer, nullable=False)
-    stripe_transaction_id = Column(String(256), nullable=True)
-    status = Column(Integer, nullable=False)
-    amount = Column(Float, nullable=False)
-    initiated_by = Column(Integer, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_created = Column(DateTime)
-    time_updated = Column(DateTime)
-
-class TransactionHistory(Base):
-    __tablename__ = 'transaction_history'
-
-    id = Column(Integer, ForeignKey('transaction.id'))
-    transaction = relationship('Transaction', uselist=False, back_populates="history")
-    status = Column(Integer, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_created = Column(DateTime)
-    __table_args__ = (
-        PrimaryKeyConstraint('id', 'time_created'),
-        {},
-    )
 ###########
 
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')

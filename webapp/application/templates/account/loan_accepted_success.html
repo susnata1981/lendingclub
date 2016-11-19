@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="circular-wait-section" class="preloader-wrapper big active">
+    <div class="spinner-layer spinner-blue-only">
+      <div class="circle-clipper left">
+        <div class="circle"></div>
+      </div><div class="gap-patch">
+        <div class="circle"></div>
+      </div><div class="circle-clipper right">
+        <div class="circle"></div>
+      </div>
+    </div>
+  </div>
+
+<div id="success-div" class="row margin-top-large">
+ <div class="col s12 center">
+  <h4 class="green-text">
+    Congratulations {{ current_user.first_name }}, your application has been accepted!
+  </h4>
+
+  <h4>You will receive the money in your account within 24 hours</h4>
+  <a class="btn btn-orange" role="button" href={{url_for('lending_bp.dashboard')}}>Continue</a>
+
+
+{% endblock %}

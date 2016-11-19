@@ -54,19 +54,6 @@ class ResendEmailVerificationForm(FlaskForm):
     email = StringField('*email',[Required('Please enter your email address to recieve the verification email.'), Email()])
     submit = SubmitField('Resend')
 
-class PersonalInformationForm(FlaskForm):
-    email = StringField('* email', [Required('Please enter your email'), Email()])
-    ssn = StringField('* social security', [Required('Please enter your social security'), SSNValidator()])
-    dob = DateTimeField('* date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
-    driver_license_number = StringField('* driver license number',
-    [Required('Please enter your driver license number')])
-    street1 = StringField('* street1', [Required('Please enter your street address')])
-    street2 = StringField('street2')
-    city = StringField('* city', [Required('Please enter your city')])
-    state = StringField('* state', [Required('Pleae enter your state')])
-    postal_code = IntegerField('* postal code', [Required('Please enter your postal code')])
-
-
 class EmployerInformationForm(FlaskForm):
     employer_name = StringField('employer name', [Required('Please enter your employer name')])
     employer_phone_number = StringField('* employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
@@ -77,12 +64,17 @@ class EmployerInformationForm(FlaskForm):
     postal_code = IntegerField('postal code', [Required('Please enter your postal code')])
     submit = SubmitField('next')
 
-
-class SelectPlanForm(FlaskForm):
-    plan_id = IntegerField('plan_id', [Required()])
-
 class GetBankVerificationMethods(FlaskForm):
     bank_name = StringField('bank_name', [Required('Must enter your bank name')])
 
-class RequestMoneyForm(FlaskForm):
-    requested_amount = FloatField('requested amount', [Required('Please enter an amount')])
+class AddRandomDepositForm(FlaskForm):
+    name = StringField('account holder name', [Required('Please enter account holder name')])
+    country = SelectField('country', choices = [('US', 'United States')], validators = [Required('Please enter the country your bank is located')])
+    currency = SelectField('currency', choices = [('usd', 'usd')], validators = [Required('Please enter the currency')])
+    routing_number = StringField('routing number', [Required('Please enter your bank routing number')], default = '110000000')
+    account_number = StringField('account number', [Required('Please enter your account number')], default = '000123456789')
+
+class VerifyRandomDepositForm(FlaskForm):
+    deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')], default="32")
+    deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')], default="45")
+    

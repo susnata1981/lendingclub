@@ -41,7 +41,7 @@
               <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
               {% if fi.verification_type == 1 and fi.status == 0 %}
               <td class="flow-text">
-                <form action="{{url_for('membership_bp.start_account_verify_random_deposit')}}" method="post">
+                <form action="{{url_for('account_bp.verify_random_deposit')}}" method="post">
                   <input type="hidden" name="id" value={{ fi.id }} />
                   <button class="btn">Verify</button>
                 </form>
@@ -54,11 +54,11 @@
       </table>
       {% if current_user.fis | length == 0 %}
       <div class="margin-top-medium">
-      <span class="flow-text">No banks added to your account yet. <a href={{url_for('membership_bp.add_bank')}}>Add Bank Now</a>
+      <span class="flow-text">No banks added to your account yet. <a href={{url_for('account_bp.add_bank')}}>Add Bank Now</a>
         </span>
       </div>
       {% else %}
-      <a class="btn" href={{url_for('membership_bp.add_bank')}}>Add another bank</a>
+      <a class="btn" href={{url_for('account_bp.add_bank')}}>Add another bank</a>
       {% endif %}
     </div>
   </div> <!-- end of bank info section -->

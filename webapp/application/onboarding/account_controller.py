@@ -16,6 +16,7 @@ import json
 import logging
 import dateutil
 from dateutil.relativedelta import relativedelta
+from shared.bli import bank as bankBLI
 
 account_bp = Blueprint('account_bp', __name__, url_prefix='/account')
 
@@ -94,7 +95,7 @@ def verify_phone_number():
             return redirect(url_for('account_bp.account_verified'))
         else:
             flash('Invalid verification code')
-    return render_template('onboarding/verify.html', form=form)
+    return render_template('onboarding/verify_phone.html', form=form)
 
 @account_bp.route('/account_verified', methods=['GET'])
 def account_verified():
@@ -199,11 +200,11 @@ def login():
         except error.DatabaseError as de:
             print 'Database error:',de.orig_exp.message
             flash(constants.GENERIC_ERROR)
-            return render_template('onboarding/login.html', form=form)
+            return render_template('account/login.html', form=form)
         except error.InvalidLoginCredentialsError:
             # print 'Invalid credentials'
             flash(constants.INVALID_CREDENTIALS)
-            return render_template('onboarding/login.html', form=form)
+            return render_template('account/login.html', form=form)
         except error.EmailVerificationRequiredError:
             # print 'Email verification required'
             flash(constants.ACCOUNT_NOT_VERIFIED)
@@ -216,33 +217,259 @@ def login():
             print 'Exception::',e
             print traceback.format_exc()
             return render_template('404.html')
-    return render_template('onboarding/login.html', form=form)
+    return render_template('account/login.html', form=form)
 
 @account_bp.route('/logout', methods=['GET', 'POST'])
 def logout():
     logout_user()
     return redirect(url_for('.login'))
 
-@account_bp.route('/home', methods=['GET'])
+@account_bp.route('/profile', methods=['GET'])
 @login_required
 def account():
-    if current_user.status != Account.VERIFIED_PHONE:
-        flash({
-            'content':'Please verify your phone first',
-            'class': 'error'
-        })
-        return redirect(url_for('.verify_phone_number'))
+    # if current_user.status != Account.VERIFIED_PHONE:
+    #     flash({
+    #         'content':'Please verify your phone first',
+    #         'class': 'error'
+    #     })
+    #     return redirect(url_for('.verify_phone_number'))
 
     data = {}
-    eligible_for_membership_reapplication = True
-    for membership in current_user.memberships:
-        if membership.is_active() or membership.is_pending():
-            eligible_for_membership_reapplication = False
-    data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
+    # eligible_for_membership_reapplication = True
+    # for membership in current_user.memberships:
+    #     if membership.is_active() or membership.is_pending():
+    #         eligible_for_membership_reapplication = False
+    # data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
+    #
+    # if len(current_user.memberships) == 0:
+    #     data['show_notification'] = True
+    #     data['notification_message'] = 'You application is incomplete'
+    #     data['notification_url'] = 'onboarding_bp.apply_for_membership'
 
-    if len(current_user.memberships) == 0:
-        data['show_notification'] = True
-        data['notification_message'] = 'You application is incomplete'
-        data['notification_url'] = 'onboarding_bp.apply_for_membership'
+    return render_template('account/account.html', data=data)
 
-    return render_template('onboarding/account.html', data=data)
+
+@account_bp.route('/add_bank', methods=['GET', 'POST'])
+@login_required
+def add_bank():
+    if request.method == 'GET':
+        institutions = get_all_iav_supported_institutions()
+        return render_template('onboarding/add_bank.html',
+        institutions = institutions)
+    else:
+        try:
+            public_token = request.form['public_token']
+            plaid_account_id = request.form['bank_account_id']
+            bank_account_name = request.form['bank_account_name']
+            institution = request.form['institution']
+            institution_type = request.form['institution_type']
+
+            response = json.loads(plaid_exchange_token(public_token, plaid_account_id))
+            result = {}
+            if get_fi_by_plaid_account_id(response['account_id']) is not None:
+                #TODO: this acocunt id could be present for same user or for different user
+                # need to think about what messaging shoud be here.
+                result['error'] = True
+                result['message'] = constants.BANK_ALREADY_ADDED
+                return jsonify(result)
+
+            fi = Fi(
+                account_name = bank_account_name,
+                plaid_account_id = plaid_account_id,
+                institution = institution,
+                institution_type = institution_type,
+                verification_type = Fi.INSTANT,
+                status = Fi.VERIFIED,
+                plaid_access_token = response['access_token'],
+                stripe_bank_account_token = response['stripe_bank_account_token'],
+                primary = accountBLI.need_primary_bank(current_user),
+                usage_status = Fi.ACTIVE,
+                time_updated = datetime.now(),
+                time_created = datetime.now())
+            current_user.fis.append(fi)
+
+            logging.info('fetching financial information...')
+            fetch_financial_information_from_plaid(fi)
+            #TODO: should we save the Fi to DB even if the fetch bank info fails? - I think yes,
+            # we can retry the fetch bank info later
+            logging.info('received financial information...')
+            current_app.db_session.add(current_user)
+            current_app.db_session.commit()
+
+            response = {}
+            response['success'] = True
+
+            return jsonify(response)
+        except Exception as e:
+            traceback.print_exc()
+            logging.error('add_bank::received exception %s' % e)
+            response = {}
+            response['error'] = 'true'
+            return jsonify(response)
+
+
+#TODO handle duplicate bank addition.
+@account_bp.route('/add_random_deposit', methods=['GET', 'POST'])
+@login_required
+def add_random_deposit():
+    form = AddRandomDepositForm(request.form)
+    if form.validate_on_submit():
+        try:
+            response = current_app.stripe_client.add_customer_bank(
+                current_user.stripe_customer_id,
+                account_number = form.account_number.data,
+                routing_number = form.routing_number.data,
+                currency = form.currency.data,
+                country = form.country.data,
+                account_holder_name = form.name.data)
+        except error.UserInputError as e:
+            flash(e.message)
+            return render_template('onboarding/add_random_deposit.html', form = form)
+        except Exception as e:
+            #TODO: should we handle if bank already exists for customer?
+            logging.error('add_random_deposit::received exception %s' % e)
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/add_random_deposit.html', form = form)
+
+        logging.info('Added bank account to stripe resposne = {}'.format(response))
+        fi = Fi(
+            institution = response['bank_name'],
+            account_number_last_4 = response['last4'],
+            stripe_bank_account_token = response['id'],
+            verification_type = Fi.RANDOM_DEPOSIT,
+            status = Fi.UNVERFIED,
+            primary = accountBLI.need_primary_bank(current_user),
+            usage_status = Fi.ACTIVE,
+            time_updated = datetime.now(),
+            time_created = datetime.now())
+        current_user.fis.append(fi)
+        current_app.db_session.add(current_user)
+        current_app.db_session.commit()
+        return redirect(url_for('.add_bank_random_deposit_success'))
+    else:
+        return render_template('onboarding/add_random_deposit.html', form = form)
+
+@account_bp.route('/verify_random_deposit', methods=['GET', 'POST'])
+@login_required
+def verify_random_deposit():
+    if not bankBLI.RANDOM_DEPOSIT_FI_ID_KEY in session:
+        logging.error('verify_random_deposit call doesn\'t contain %s in session. redirecting to dashboard.' % (bankBLI.RANDOM_DEPOSIT_FI_ID_KEY))
+        return redirect(url_for('lending_bp.dashboard'))
+
+    form = VerifyRandomDepositForm(request.form)
+    if form.validate_on_submit():
+        try:
+            fi_id = session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY]
+            fi_to_be_verified = None
+            for fi in current_user.fis:
+                if fi.id == int(fi_id):
+                    fi_to_be_verified = fi
+                    break
+
+            #TODO: If 'fi_id' not present, raise exception - show error
+            #TODO: If the fi is already verified raise exception - show error
+            logging.info('About to verify bank account(stripe token) %s, customer id %s deposit1 %s deposit2 %s '
+            % (fi_to_be_verified.stripe_bank_account_token, current_user.stripe_customer_id, form.deposit1.data, form.deposit2.data))
+
+            response = current_app.stripe_client.verify_customer_bank(
+                current_user.stripe_customer_id,
+                fi_to_be_verified.stripe_bank_account_token,
+                form.deposit1.data,
+                form.deposit2.data)
+            logging.info('Verified bank account, response = ',response)
+            session.pop(bankBLI.RANDOM_DEPOSIT_FI_ID_KEY, None)
+            return mark_bank_as_verified(fi)
+        except error.BankAlreadyVerifiedError:
+            logging.info('Stripe service raised BankAlreadyVerifiedError. Updating DB to mark bank with id:%s as verified.' % (fi.id))
+            return mark_bank_as_verified(fi)
+        except error.IncorrectRandomDepositAmountsError as e:
+            logging.info('Stripe service raised IncorrectRandomDepositAmountsError')
+            flash(e.message)
+            return render_template('onboarding/verify_random_deposit.html', form=form)
+        except error.UserInputError as e:
+            flash(e.message)
+            return render_template('onboarding/verify_random_deposit.html', form=form)
+        except Exception as e:
+            logging.error('failed to verify_account_random_deposit, exception %s' % e)
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/verify_random_deposit.html', form=form)
+    else:
+        return render_template('onboarding/verify_random_deposit.html', form=form)
+
+@account_bp.route('/verified', methods=['GET'])
+@login_required
+def verified():
+    return redirect(url_for('lending_bp.dashboard'))
+
+@account_bp.route('/add_bank_random_deposit_success', methods=['GET'])
+@login_required
+def add_bank_random_deposit_success():
+    return render_template('onboarding/add_bank_random_deposit_success.html')
+
+def plaid_exchange_token(public_token, account_id):
+    payload = {
+        'client_id':current_app.config['CLIENT_ID'],
+        'secret':current_app.config['CLIENT_SECRET'],
+        'public_token':public_token,
+        'account_id':account_id
+    }
+    print 'payload ',json.dumps(payload)
+
+    response = requests.post('https://tartan.plaid.com/exchange_token', data=payload)
+
+    print 'response = ',response.text, 'code = ',response.status_code
+    if response.status_code == requests.codes.ok:
+        return response.text
+    else:
+        raise Exception('Failed to exchange token')
+
+def get_bank_info_from_plaid(plaid_access_token, plaid_account_id):
+    print 'getting bank info from plaid...'
+    Client.config({
+        'url': 'https://tartan.plaid.com',
+        'suppress_http_errors': True
+    })
+    client = Client(
+    client_id=current_app.config['CLIENT_ID'],
+    secret=current_app.config['CLIENT_SECRET'],
+    access_token=plaid_access_token)
+
+    # print 'response = ',client.auth_get()
+    print '***************************** get-bank-info ='
+    pprint(client.auth_get())
+    response = client.auth_get().json()
+    print 'get_bank_info_from_plaid response = ',response
+
+    ai = {}
+    for account in response['accounts']:
+        if account['_id'] == plaid_account_id:
+            ai['available_balance'] = account['balance']['available']
+            ai['current_balance'] = account['balance']['current']
+            ai['subtype'] = account['subtype']
+            ai['subtype_name'] = account['meta']['name']
+            ai['account_number_last_4'] = account['meta']['number']
+            ai['institution_type'] = account['institution_type']
+            return ai
+    if not ai:
+        logging.error('Plaid response didn\'t contain the request plaid_account_id:%s' % (plaid_account_id))
+        raise error.PlaidBankInfoFetchError('Plaid response didn\'t contain the request plaid_account_id:%s' % (plaid_account_id))
+
+def fetch_financial_information_from_plaid(fi):
+    #TODO: If 'fi' is None, raise exception
+    response = get_bank_info_from_plaid(fi.plaid_access_token, fi.plaid_account_id)
+    fi.available_balance = response['available_balance']
+    fi.current_balance = response['current_balance']
+    fi.subtype = response['subtype']
+    fi.subtype_name = response['subtype_name']
+    fi.account_number_last_4 = response['account_number_last_4']
+    fi.institution_type = response['institution_type']
+
+def mark_bank_as_verified(fi):
+    #TODO: raise exception if fi == None
+    fi.status = Fi.VERIFIED
+    fi.time_updated = datetime.now()
+    current_app.db_session.add(fi)
+    current_app.db_session.commit()
+    #TODO: show success and show loan review page if needed
+    #return redirect(url_for('.application_complete'))
+    return redirect(url_for('lending_bp.dashboard'))

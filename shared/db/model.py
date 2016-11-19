@@ -295,137 +295,14 @@ class TransactionHistory(Base):
         {},
     )
 
-#####################
-
-class Plan(Base):
-    __tablename__ = "plan"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False)
-    max_loan_amount = Column(Integer, nullable=False)
-    loan_frequency = Column(Integer, nullable=False)
-    interest_rate = Column(Float, nullable=False)
-    interest_rate_description = Column(Text, nullable=False)
-    cost = Column(Float, nullable=False)
-    rewards_description = Column(Text, nullable=False)
-
-class Membership(Base):
-    __tablename__ = 'membership'
-
-    PENDING, APPROVED, REJECTED = range(3)
-    STATUS_NAME = {
-        PENDING: "PENDING",
-        APPROVED: "APPROVED",
-        REJECTED: "REJECTED"
-    }
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship('Account', back_populates='memberships')
-    plan_id = Column(Integer, ForeignKey('plan.id'))
-    plan = relationship('Plan', uselist=False)
-    transactions = relationship('MembershipPayment', back_populates='membership')
-    status = Column(Integer, nullable=False)
-    time_created = Column(DateTime)
-    time_updated = Column(DateTime)
-
-    def is_active(self):
-        return self.status == Membership.APPROVED
-
-    def is_pending(self):
-        return self.status == Membership.PENDING
-
-    def is_rejected(self):
-        return self.status == Membership.REJECTED
-
-    def get_status(self):
-        return Membership.STATUS_NAME.get(self.status)
-
-class MembershipPayment(Base):
-    __tablename__ = 'membership_payment'
-    PENDING, COMPLETED, FAILED = range(3)
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    membership_id = Column(Integer, ForeignKey('membership.id'))
-    membership = relationship('Membership', back_populates='transactions')
-    status = Column(Integer, nullable=False)
-    time_created = Column(DateTime)
-    time_updated = Column(DateTime)
-
-class ExtensionRequest(Base):
-    __tablename__ = "extensions"
-
-    PENDING, CANCELED, REJECTED, APPROVED = range(4)
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    request_id = Column(Integer, ForeignKey('request_money.id'))
-    request = relationship('RequestMoney', back_populates="extensions")
-    status = Column(Integer, nullable=False)
-    payment_date = Column(DateTime, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_updated = Column(DateTime)
-    time_created = Column(DateTime)
-
-class ExtensionRequestHistory(Base):
-    __tablename__ = "extensions_history"
-
-    id = Column(Integer, ForeignKey('extensions.id'))
-    extension = relationship('ExtensionRequest', uselist=False, back_populates="history")
-    status = Column(Integer, nullable=False)
-    payment_date = Column(DateTime, nullable=False)
-    memo = Column(Text, nullable=True)
-    time_created = Column(DateTime)
-    __table_args__ = (
-        PrimaryKeyConstraint('id', 'time_created'),
-        {},
-    )
-
-###########
-
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.employers = relationship('Employer', back_populates='account')
-Account.memberships = relationship('Membership', back_populates='account')
 Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.id)')
 Fi.request_money_list = relationship('RequestMoney', back_populates='fi', order_by='desc(RequestMoney.id)')
-RequestMoney.extensions = relationship('ExtensionRequest', back_populates='request', order_by='desc(ExtensionRequest.payment_date)')
 RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
 RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='desc(RequestMoneyHistory.time_created)')
-ExtensionRequest.history = relationship('ExtensionRequestHistory', back_populates='extension', order_by='desc(ExtensionRequestHistory.time_created)')
 Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='desc(TransactionHistory.time_created)')
-Membership.payments = relationship('MembershipPayment', back_populates='membership')
-
-
-def create_plan():
-    current_app.db_session.add(
-        Plan(
-            name = 'Anytime $150',
-            max_loan_amount = 150,
-            loan_frequency = 3,
-            interest_rate = 15,
-            interest_rate_description = '0% APR for 30 days and then $15 per $100 every month',
-            cost = 10,
-            rewards_description = 'Earn points for paying back in time'))
-    current_app.db_session.add(
-        Plan(
-            name = 'Anytime $300',
-            max_loan_amount = 300,
-            loan_frequency = 3,
-            interest_rate = 15,
-            interest_rate_description = '0% APR for 30 days and then $15 per $100 every month',
-            cost = 18,
-            rewards_description = 'Earn points for paying back in time'))
-    current_app.db_session.add(
-        Plan(
-            name = 'Anytime $500',
-            max_loan_amount = 500,
-            loan_frequency = 3,
-            interest_rate = 15,
-            interest_rate_description = '0% APR for 30 days and then $15 per $100 every month',
-            cost = 35,
-            rewards_description = 'Earn points for paying back in time'))
-    current_app.db_session.commit()
-
 
 def recreate_tables(engine):
     logging.info('******* recreating tables ********')
@@ -435,7 +312,6 @@ def recreate_tables(engine):
     logging.info('creating lending plans')
 
 def init_db():
-    # env = os.getenv('SERVER_SOFTWARE')
     if util.is_running_on_app_engine():
         engine = create_engine(current_app.config['SQLALCHEMY_DB_URL_APP_ENGINE'], echo=False)
     else:
@@ -473,9 +349,3 @@ def clear_institutions_table():
 
 def get_all_iav_supported_institutions():
     return current_app.db_session.query(IAVInstitutions).all()
-
-def get_all_plans():
-    return current_app.db_session.query(Plan).all()
-
-def get_plan_by_id(plan_id):
-    return current_app.db_session.query(Plan).filter(Plan.id == plan_id).one()

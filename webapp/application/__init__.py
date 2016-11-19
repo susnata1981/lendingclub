@@ -24,15 +24,6 @@ def format_datetime(value, format='%m-%d-%Y / %H:%M'):
         return constants.NOT_AVAILABLE
     return value.strftime(format)
 
-def format_membership_status(value):
-    if value == Membership.APPROVED:
-        return 'APPROVED'
-    elif value == Membership.PENDING:
-        return 'PENDING'
-    elif value == Membership.REJECTED:
-        return 'REJECTED'
-    return 'UNKNOWN'
-
 def format_transaction_status(value):
     if value == RequestMoneyTransaction.UNPAID:
         return 'UNPAID'
@@ -70,7 +61,6 @@ def format_percentage(value):
 def setup_jinja_filter(app):
     app.jinja_env.filters['format_datetime'] = format_datetime
     app.jinja_env.filters['format_value'] = format_value
-    app.jinja_env.filters['format_membership_status'] = format_membership_status
     app.jinja_env.filters['format_currency'] = format_currency
     app.jinja_env.filters['format_percentage'] = format_percentage
     app.jinja_env.filters['format_transaction_status'] = format_transaction_status
@@ -109,17 +99,9 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     from onboarding.account_controller import account_bp
     app.register_blueprint(account_bp)
 
-    # Membership
-    from onboarding.membership_controller import membership_bp
-    app.register_blueprint(membership_bp)
-
     # Lending
     from lending.controller import lending_bp
     app.register_blueprint(lending_bp)
-
-    #Bank
-    from bank.controller import bank_bp
-    app.register_blueprint(bank_bp)
 
     # Admin
     from admin.controller import admin_bp

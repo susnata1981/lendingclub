@@ -32,12 +32,11 @@
       </ul>
     </div>
     <div id="profile" class="col s12">
-      {% include 'onboarding/account-profile-section.html' with context %}
+      {% include 'account/account-profile-section.html' with context %}
 
-      {% include 'onboarding/account-membership-section.html' with context %}
     </div> <!-- end of profile page -->
 
-    {% include 'onboarding/account-bank-info-section.html' with context %}
+    {% include 'account/account-bank-info-section.html' with context %}
 
     {% if current_user.transaction|length > 0 %}
     <div id="transactions" class="col s12">

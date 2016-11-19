@@ -44,7 +44,7 @@ def reset_password():
                     flash(constants.RESET_PASSWORD_EMAIL_SEND_FAILURE_MESSAGE)
         except Exception:
             flash(constants.GENERIC_ERROR)
-    return render_template('lending/reset_password.html', data=data, form=form)
+    return render_template('account/reset_password.html', data=data, form=form)
 
 @lending_bp.route('/<id>/reset_password', methods=['GET','POST'])
 def reset_password_verify(id):
@@ -80,7 +80,7 @@ def reset_password_confirm():
             print 'ERROR: Database Exception: %s' % (de.message)
             flash(constants.GENERIC_ERROR)
     logging.info('reset_password_confirm exit')
-    return render_template('lending/reset_password_confirm.html', data=data, form=form)
+    return render_template('account/reset_password_confirm.html', data=data, form=form)
 
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
@@ -91,9 +91,9 @@ def dashboard():
         #no loans, show apply loans
         data['can_apply_for_loan'] = True
     data['loans'] = lendingBLI.get_loan_activity(current_user)
-    #data['loans'] = lendingBLI.fake_loan_summary(current_user)
+    # data['loans'] = lendingBLI.fake_loan_summary()
     #pprint(data)
-    return render_template('account/dashboard.html', data=data)
+    return render_template('lending/dashboard.html', data=data)
 
 @lending_bp.route('/loan_schedule', methods=['POST'])
 @login_required
@@ -108,7 +108,7 @@ def loan_schedule():
         logging.error('loan_schedule failed with exception: %s' % (e.message))
         flash(constants.GENERIC_ERROR)
     pprint(data)
-    return render_template('account/payment_schedule.html', data=data)
+    return render_template('lending/payment_schedule.html', data=data)
 
 @lending_bp.route('/complete_signup', methods=['GET','POST'])
 @login_required
@@ -117,10 +117,11 @@ def complete_signup():
     if 'enter_employer_information' in next:
         return redirect(url_for('.enter_employer_information'))
     elif 'add_bank' in next:
-        return redirect(url_for('bank_bp.add_bank'))
+        return redirect(url_for('account_bp.add_bank'))
     elif 'verify_bank' in next:
+        #TODO(vipin) -- use a form instead to the id.
         session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY]
-        return redirect(url_for('bank_bp.verify_random_deposit'))
+        return redirect(url_for('account_bp.verify_random_deposit'))
     return redirect(url_for('.dashboard'))
 
 @lending_bp.route('/enter_employer_information', methods=['GET', 'POST'])
@@ -148,12 +149,12 @@ def enter_employer_information():
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
             flash(constants.GENERIC_ERROR)
-            return render_template('account/enter_employer_information.html', form=form)
+            return render_template('onboarding/enter_employer_information.html', form=form)
         except Exception as e:
             print 'ERROR: General Exception: %s' % (e.message)
             flash(constants.GENERIC_ERROR)
-            return render_template('account/enter_employer_information.html', form=form)
-    return render_template('account/enter_employer_information.html', form=form)
+            return render_template('onboarding/enter_employer_information.html', form=form)
+    return render_template('onboarding/enter_employer_information.html', form=form)
 
 ############## /lending ###########
 @lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
@@ -163,7 +164,7 @@ def get_payment_plan_estimate():
 
     save_loan_request_to_session(loan_amount, loan_duration)
     result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
-    return render_template('lending/loan-info.html', data=result)
+    return render_template('lending/loan_info.html', data=result)
 
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
@@ -188,7 +189,7 @@ def loan_application():
             account_id = current_user.id,
             amount = loan_amount,
             duration = loan_duration,
-            status = RequestMoney.PENDING,
+            status = RequestMoney.IN_REVIEW,
             fi_id = selected_fi_id,
             time_updated = datetime.now(),
             time_created = datetime.now())
@@ -207,12 +208,12 @@ def loan_details():
     loan_id = int(request.form.get('loan_id'))
     try:
         data = lendingBLI.get_approved_loan_payment_plan(loan_id, current_user.id)
+        # pprint(data)
     except Exception as e:
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
         flash(constants.GENERIC_ERROR)
-    pprint(data)
-    return render_template('account/loan_details.html', data=data)
+    return render_template('lending/loan_details.html', data=data)
 
 @lending_bp.route('/loan_details_confirm', methods=['POST'])
 @login_required
@@ -221,7 +222,7 @@ def loan_details_confirm():
     loan_id = int(request.form.get('loan_id'))
     try:
         lendingBLI.process_loan_acceptance(loan_id, current_user.id)
-        return render_template('account/loan_accepted_success.html')
+        return render_template('lending/loan_accepted_success.html')
     except Exception as e:
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))

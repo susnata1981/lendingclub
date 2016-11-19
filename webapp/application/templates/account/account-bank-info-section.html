@@ -41,8 +41,8 @@
               <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
               {% if fi.verification_type == 1 and fi.status == 0 %}
               <td class="flow-text">
-                <form action="{{url_for('account_bp.verify_random_deposit')}}" method="post">
-                  <input type="hidden" name="id" value={{ fi.id }} />
+                <form action={{url_for('account_bp.start_random_deposit_verification')}} method="post">
+                  <input type="hidden" name="fi_id" value={{ fi.id }} />
                   <button class="btn">Verify</button>
                 </form>
               </td>

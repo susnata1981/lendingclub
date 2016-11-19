@@ -349,6 +349,16 @@ def add_random_deposit():
     else:
         return render_template('onboarding/add_random_deposit.html', form = form)
 
+@account_bp.route('/start_random_deposit_verification', methods=['POST'])
+@login_required
+def start_random_deposit_verification():
+    fi_id = request.form.get('fi_id')
+    if fi_id:
+        session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY] = fi_id
+        return redirect(url_for('.verify_random_deposit'))
+    flash('error')
+    return redirect(url_for('lending_bp.dashboard'))
+
 @account_bp.route('/verify_random_deposit', methods=['GET', 'POST'])
 @login_required
 def verify_random_deposit():

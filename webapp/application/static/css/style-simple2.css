@@ -93,12 +93,12 @@ h5 { font-family: 'Enriqueta', arial, serif; margin: 0 0 10px; font-size: 24px; 
   font-size: 1.4em;
 }
 
-.page-footer {
+/*.page-footer {
     background-color: #EF5350 !important;
     padding-top: 0 !important;
     margin: 0 0 0 0 !important;
     color: #333;
-}
+}*/
 
 .hidden {
   display: none;
@@ -305,26 +305,12 @@ div.nav-wrapper li a {
   font-family: 'Open Sans Condensed', sans-serif; font-size: 16px; color: #FFEF0D;
 }
 
-.loan-item {
-    margin: 20px 0;
-    height: 40px;
-}
-
 .dropdown button {
     height: 40px;
 }
 
-.loan-item h5 {
-  font-family: 'Open Sans', sans-serif; font-size: 16px; color: #555;
-  line-height: 40px;
-}
-
 .ui-slider {
   margin-top: 12px;
-}
-
-.slider-input {
-  border:0; color:#FF5722; font-weight:bold;
 }
 
 .bold {
@@ -792,13 +778,44 @@ form.user-input {
 
 
 /*********************** loan application page ***********************/
-#loan-application-form, #loan-application-info-section, #bank-info-section, #authorization-section {
-    background: #ffffff;
-    margin: 32px 0;
-    padding: 16px;
+
+.loan-application-section-div {
+  background: #f9f9f9;
+  padding: 12px;
 }
 
 #authorization-section {
   margin-bottom: 32px;
+}
+
+.loan-item {
+    margin: 20px 0;
+    height: 40px;
+}
+
+.loan-item select {
+  height: 40px;
+}
+
+.loan-item h5 {
+  font-family: 'Open Sans', sans-serif; font-size: 14px; color: #555;
+  line-height: 40px;
+}
+
+.slider-input {
+  border:0; font-weight:bold;
+  background: #f9f9f9;
+}
+
+.custom-select {
+  height: 40px;
+}
+
+ol  {
+    overflow: hidden;
+}
+
+ol li {
+  float: left;
 }
 </style>

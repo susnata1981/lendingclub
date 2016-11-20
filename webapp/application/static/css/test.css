@@ -2858,11 +2858,23 @@ a.text-gray-dark:focus, a.text-gray-dark:hover {
   .hidden-print {
     display: none !important; } }
 
+.primary-color {
+  color: #00BCD4; }
+
+.primary-color-dark-1 {
+  color: #00838F; }
+
+.primary-color-dark-2 {
+  color: #006064; }
+
+.accent-color {
+  color: #E91E63; }
+
 .primary-bg {
   background: #00BCD4;
   color: #fff; }
 
-.primary-bg-dark {
+.primary-bg-dark-1 {
   background: #00838F;
   color: #fff; }
 
@@ -2905,5 +2917,18 @@ p {
   border: none;
   line-height: 40px;
   vertical-align: middle; }
+
+.alert {
+  font-size: 0.9em; }
+
+.page-footer {
+  background-color: #00838F !important;
+  padding-top: 0 !important;
+  margin: 0 0 0 0 !important;
+  color: #333; }
+
+hr.title {
+  border-top: 3px solid #fff;
+  margin: 4px 0; }
 
 /*# sourceMappingURL=test.css.map */

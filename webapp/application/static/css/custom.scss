@@ -1,9 +1,25 @@
+.primary-color {
+  color: $primary-color;
+}
+
+.primary-color-dark-1 {
+  color: $primary-color-dark-1;
+}
+
+.primary-color-dark-2 {
+  color: $primary-color-dark-2;
+}
+
+.accent-color {
+  color: $accent-color;
+}
+
 .primary-bg {
   background: $primary-color;
   color: #fff;
 }
 
-.primary-bg-dark {
+.primary-bg-dark-1 {
   background: $primary-color-dark-1;
   color: #fff;
 }
@@ -59,4 +75,20 @@ p {
   border: none;
   line-height: 40px;
   vertical-align: middle;
+}
+
+.alert {
+  font-size: $alert-font-size;
+}
+
+.page-footer {
+    background-color: $primary-color-dark-1 !important;
+    padding-top: 0 !important;
+    margin: 0 0 0 0 !important;
+    color: #333;
+}
+
+hr.title {
+  border-top: 3px solid #fff;
+  margin: 4px 0;
 }

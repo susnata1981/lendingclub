@@ -327,4 +327,9 @@ form.user-input {
 }
 /*****************************************/
 
+/**************** loan-application *****************/
+loan-item.select {
+  height: 40px;
+}
+
 </style>

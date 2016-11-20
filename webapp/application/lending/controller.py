@@ -18,8 +18,10 @@ from dateutil.relativedelta import relativedelta
 from shared.bli import account as accountBLI
 from shared.bli import lending as lendingBLI
 from shared.util import error
+from shared.bli.viewmodel.notification import Notification
 import traceback
 
+DEBUG = True
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
 
@@ -105,8 +107,8 @@ def loan_schedule():
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
         flash(constants.GENERIC_ERROR)
-    pprint(data)
-    return render_template('lending/payment_schedule.html', data=data)
+    # pprint(data)
+    return render_template('lending/_payment_schedule.html', data=data)
 
 @lending_bp.route('/complete_signup', methods=['GET','POST'])
 @login_required
@@ -169,6 +171,17 @@ def get_payment_plan_estimate():
 def loan_application():
     if lendingBLI.get_all_open_loans(current_user):
         logging.info('User:%d has open loans.' % (current_user.id))
+        flash('User: %d has open loans.' % (current_user.id))
+        notification = Notification(
+        title='User: %d has open loans.' % (current_user.id),
+        notification_type=Notification.ERROR)
+        session['notifications'] = []
+        session['notifications'].append(notification.to_map())
+        # notifications = []
+        # notifications.append(notification.to_map())
+        print "*******************************"
+        pprint(session['notifications'])
+
         return redirect(url_for('.dashboard'))
 
     form = LoanApplicationForm()
@@ -195,6 +208,8 @@ def loan_application():
             req_money = lendingBLI.create_request(current_user, req_money)
             return render_template('lending/loan_application_completed.html')
         except Exception as e:
+            if DEBUG:
+                traceback.print_exc()
             logging.error('loan_application failed with exception %s' % e)
             data['error'] = True
             flash(constants.GENERIC_ERROR)

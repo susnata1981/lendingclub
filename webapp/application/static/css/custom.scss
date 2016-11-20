@@ -1,0 +1,62 @@
+.primary-bg {
+  background: $primary-color;
+  color: #fff;
+}
+
+.primary-bg-dark {
+  background: $primary-color-dark-1;
+  color: #fff;
+}
+
+.btn-accent {
+  background: $accent-color;
+  color: #fff;
+}
+
+.btn-primary-dark-1 {
+  @extend .btn;
+  background: $primary-color-dark-1;
+  color: #fff;
+}
+
+.btn-primary-dark-1:hover {
+  background: $primary-color-dark-2;
+  color: #fff;
+}
+
+h1 {
+  font-family: $font-family-header;
+  // font-size: $font-size-extra-large;
+}
+
+h2, h3, h4 {
+  color: $gray;
+  font-family: $font-family-sub-header;
+  // font-size: $font-size-large;
+}
+
+h5 {
+  color: $gray;
+  font-family: $font-family-text;
+  // font-size: $font-size-title;
+}
+
+h6 {
+  font-size: 13px;
+  color: $gray;
+  font-weight: 500;
+}
+
+p {
+  font-family: $font-family-text;
+  color: $gray;
+  font-weight: 300;
+  margin: 0;
+  font-size: 13px;
+}
+
+.table thead th {
+  border: none;
+  line-height: 40px;
+  vertical-align: middle;
+}

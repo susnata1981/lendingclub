@@ -1,0 +1,39 @@
+<div>
+  <h6 class="bg-primary text-white mb-0 p-1">Financial information</h6>
+  <table class="table table-bordered">
+    {% for fi in current_user.fis %}
+    <tr>
+      <td>
+        <h6>Bank Name</h6>
+      </td>
+      <td class="center">
+        <p>{{fi.institution}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <h6>Institution Type</h6>
+      </td>
+      <td class="center">
+        <p>{{fi.institution_type}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <h6>Status</h6>
+      </td>
+      <td class="center">
+        <p>{{fi.status | format_fi_status}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <h6>Account</h6>
+      </td>
+      <td class="center">
+        <p>xxxx-{{fi.account_number_last_4}}</p>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

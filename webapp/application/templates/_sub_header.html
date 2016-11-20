@@ -1,17 +1,24 @@
 <div class="p-2 bg-primary">
-  <div class="container">
+  <div class="container ml-0">
     <div class="row">
       <div class="col-md-6">
         <p class="text-white">
-          Welcome back <h2 class="white-text">{{current_user.first_name}} {{current_user.last_name}}</h2>
+          <h3 class="white-text">Welcome back {{current_user.first_name}} {{current_user.last_name}}!</h3>
         </p>
       </div>
+      {% if show_buttons %}
       <div class="offset-md-1 col-md-2">
         <a class="btn btn-lg btn-primary-dark-1" role="button" href={{url_for('lending_bp.loan_application')}}>Request money</a>
       </div>
       <div class="col-md-2 ml-1">
         <a class="btn btn-lg btn-accent btn-primary-dark-1" role="button" href={{url_for('lending_bp.loan_application')}}>Make payment</a>
       </div>
+      {% else %}
+      <div class="col-md-3">
+        <h3 class="text-white center">{{ title }}</h3>
+        <hr class="title"/>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>

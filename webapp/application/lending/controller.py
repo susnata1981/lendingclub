@@ -164,25 +164,20 @@ def get_payment_plan_estimate():
 
     save_loan_request_to_session(loan_amount, loan_duration)
     result = lendingBLI.get_payment_plan_estimate(loan_amount, loan_duration)
-    return render_template('lending/loan_info.html', data=result)
+    return render_template('lending/_loan_info.html', data=result)
 
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
-    if lendingBLI.get_all_open_loans(current_user):
-        logging.info('User:%d has open loans.' % (current_user.id))
-        flash('User: %d has open loans.' % (current_user.id))
-        notification = Notification(
-        title='User: %d has open loans.' % (current_user.id),
-        notification_type=Notification.ERROR)
-        session['notifications'] = []
-        session['notifications'].append(notification.to_map())
-        # notifications = []
-        # notifications.append(notification.to_map())
-        print "*******************************"
-        pprint(session['notifications'])
-
-        return redirect(url_for('.dashboard'))
+    # if lendingBLI.get_all_open_loans(current_user):
+    #     logging.info('User:%d has open loans.' % (current_user.id))
+    #     # flash('User: %d has open loans.' % (current_user.id))
+    #     notification = Notification(
+    #     title='You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id),
+    #     clazz='alert-warning',
+    #     notification_type=Notification.ERROR)
+    #     flash(notification.to_map())
+    #     return redirect(url_for('.dashboard'))
 
     form = LoanApplicationForm()
     data = {}

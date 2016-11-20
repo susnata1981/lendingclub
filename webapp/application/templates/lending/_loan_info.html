@@ -1,0 +1,74 @@
+<div>
+  <div class="col-md-5 p-0">
+    <p class="heading2">Loan Summary</p>
+    <table class="table table-striped table-bordered">
+      <tr>
+        <td>
+          <h6>Loan Amount</h6>
+        </td>
+        <td>
+          <p>{{data['summary']['loan_amount'] | format_currency}}</p>
+          </td>
+      </tr>
+      <tr>
+        <td>
+          <h6>Loan Duration</h6>
+        </td>
+        <td><p>{{data['summary']['loan_duration']}} months</p></td>
+      </tr>
+      <tr>
+        <td><h6>Minimum monthly payment</h6></td>
+        <td><p>{{data['summary']['monthly_payment_min'] | format_currency}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Maximum monthly payment</h6></td>
+        <td><p>{{data['summary']['monthly_payment_max'] | format_currency}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Expected monthly payment</h6></td>
+        <td><p>{{data['summary']['expected_monthly_payment'] | format_currency}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Expected interst charge</h6></td>
+        <td><p>{{data['summary']['expected_interest_charge'] | format_currency}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Minimum APR</h6></td>
+        <td><p>{{data['summary']['min_apr'] | format_percentage}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Maximum APR</h6></td>
+        <td><p>{{data['summary']['max_apr'] | format_percentage}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Minimum Interest</h6></td>
+        <td><p>{{data['summary']['min_interest'] | format_currency}}</p></td>
+      </tr>
+      <tr>
+        <td><h6>Maximum Interest</h6></td>
+        <td><p>{{data['summary']['max_interest'] | format_currency}}</p></td>
+      </tr>
+    </table>
+  </div>
+  <div class="offset-md-1 col-md-5">
+    <div class="heading2">Repayment Schedule</div>
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th><h6>Repayment date</h6></th>
+          <th><h6>Payment amount</h6></th>
+        </tr>
+      </thead>
+      {% for rp in data['repayment_schedule'] %}
+      <tr>
+        <td>
+          <p>{{rp.date | format_datetime(format='%m-%d-%Y')}}</p>
+        </td>
+        <td>
+          <p>{{rp.expected_amount | format_currency}}</p>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>

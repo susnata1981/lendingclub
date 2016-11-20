@@ -1,35 +1,46 @@
-{% extends 'base.html' %} {% block content %}
-<div class="container margin-top-large">
-  {% if data.show_notification %}
-  <div class="row">
-    <div class="col s12">
-      <p class="info">{{ data.notification_message }}
-        <a href={{url_for(data.notification_url)}}>Apply Now</a>
-      </p>
-    </div>
-  </div>
-  {% endif %}
+{% extends 'base.html' %} {% block content %} {% with show_buttons=False, title="Loan application" %} {% include "_sub_header.html" %} {% endwith %} {% include "_notification.html" %}
 
-  <section class="row">
-    <form id="loan-application-form" class="offset-md-1 col-md-10" action="{{url_for('lending_bp.loan_application')}}" method="post">
-      <h4 class="">Enter Loan Information</h4>
-      <div class="loan-item">
+<div class="row primary-bg-dark-1">
+  <div class="col-md-10 offset-md-1 pl-0">
+    <ol class="my-1">
+      <li class="mr-3">
+        <h6 class="white-text m-0">Enter loan information</h6>
+      </li>
+      <li class="mr-3">
+        <h6 class="white-text m-0">Review re-payment schedule</h6>
+      </li>
+      <li class="mr-3">
+        <h6 class="white-text m-0">Select bank</h6>
+      </li>
+      <li class="mr-3">
+        <h6 class="white-text m-0">Apply for loan</h6>
+      </li>
+    </ol>
+  </div>
+</div>
+
+<section class="row mt-2 mb-1 loan-application-section">
+  <div class="col-md-10 offset-md-1 loan-application-section-div">
+    <h5 class="my-1">1. Enter Loan Information</h5>
+    <form id="loan-application-form" class="p-0" action="{{url_for('lending_bp.loan_application')}}" method="post">
+      <div class="row loan-item">
         <h5 class="col-md-2 col-xs-6">I would like to</h5>
-        <select class="custom-select primary-accent-color" name="loan_request_reason">
-          {% for field in form %}
-          {% if field.name == 'loan_request_reason' %}
-          <option selected>borrow to</option>
-          {% for item in field.choices %}
-          <option value="{{item[0]}}" >{{item[1]}}</option>
-          {% endfor %} {% endif %} {% endfor %}
-        </select>
+        <div class="col-md-6 text-md-left col-xs-6">
+          <select class="custom-select accent-color" name="loan_request_reason">
+            {% for field in form %} {% if field.name == 'loan_request_reason' %}
+            <option selected>borrow to</option>
+            {% for item in field.choices %}
+            <option value="{{item[0]}}">{{item[1]}}</option>
+            {% endfor %} {% endif %} {% endfor %}
+          </select>
+        </div>
       </div>
       <div class="row loan-item">
         <h5 class="col-md-2 col-xs-6">Loan Amount</h5>
         <div class="col-md-6 text-md-left col-xs-6">
           <div class="loan-amount-slider"></div>
           <input name="loan_amount" class="slider-input hidden" type="text" id="loan_amount">
-          <input class="slider-input" type="text" id="loan_amount_2">
+          <input class="slider-input accent-color" type="text" id="loan_amount_2">
         </div>
       </div>
       <div class="row loan-item">
@@ -37,39 +48,68 @@
         <div class="col-md-6 text-md-left col-xs-6">
           <div class="loan-duration-slider"></div>
           <input name="loan_duration" class="slider-input hidden" type="text" id="loan_duration">
-          <input class="slider-input" type="text" id="loan_duration_2">
+          <input class="slider-input accent-color" type="text" id="loan_duration_2">
         </div>
       </div>
-  </section>
+      <div class="row mt-2">
+        <div class="col-md-4">
+          <button class="btn btn-accent next get-payment-plan-btn">Next</button>
+        </div>
+      </div>
+</section>
 
-  <section class="row" id="loan-application-info-section">
-  </section>
+<section class="row mt-2 mb-1 loan-application-section">
+  <div class="col-md-10 offset-md-1 loan-application-section-div">
+    <h5 class="my-1">2. Loan Summary</h5>
+    <div id="loan-application-info-section" class="clearfix">
+    </div>
+    <div class="clearfix">
+      <button class="btn btn-accent next">Next</button>
+    </div>
+  </div>
+  </div>
+</section>
 
-  <section class="row" id="bank-info-section">
-    <h5>Select your bank account for scheduling loan payments</h5>
-    <select class="custom-select" name="selected_fi_id">
+
+<section class="row mt-2 mb-1 loan-application-section">
+  <div class="col-md-10 offset-md-1 loan-application-section-div" id="bank-info-section">
+    <h5 class="my-1">3. Select your bank account for scheduling loan payments</h5>
+    <select class="custom-select my-1" name="selected_fi_id">
       {% for fi in data['fis'] %} {% if loop.index == 0 %}
       <option value={{fi.id}} selected>{{ fi.institution +"xxxx-xxxx-"+ fi.account_number_last_4|string }}</option>
       {% else %}
       <option value={{fi.id}}>{{ fi.institution +" xxxx-"+ fi.account_number_last_4|string }}</option>
       {% endif %} {% endfor %}
     </select>
-  </section>
+    <div class="row mt-2">
+      <div class="col-md-4">
+        <button class="btn btn-accent next">Next</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <section id="authorization-section">
-    <div class="form-check row">
+<section class="row mt-2 mb-1 loan-application-section">
+  <div class="col-md-10 offset-md-1 loan-application-section-div" id="authorization-section">
+    <h5 class="my-1">4. Authorization</h5>
+    <div class="form-check">
       <label class="form-check-label">
-        <input class="form-check-input" type="checkbox" value="">I authorize
+        <input class="form-check-input" type="checkbox" value="">
+         I authorize this payment schedule.
       </label>
     </div>
-    <div class="row text-md-right">
-      <button class="btn btn-orange">Confirm</button>
-      <a class="btn btn-outline-secondary" href={{url_for('.dashboard')}} role="button">Cancel</a>
+    <div class="row">
+      <div class="col-md-6">
+        <button class="btn btn-accent">Confirm</button>
+        <a class="btn btn-outline-secondary" href={{url_for('.dashboard')}} role="button">Cancel</a>
+      </div>
     </div>
-  </form>
-  </section>
+    </form>
+  </div>
+</section>
 
-  <script>
+<script>
+  $(function() {
     loanAppForm = new LoanApplicationForm(
       "#loan_amount", "#loan_amount_2", "#loan_duration", "#loan_duration_2", "#loan-application-info-section",
       ".loan-amount-slider", ".loan-duration-slider", 'get_payment_plan_estimate');
@@ -77,14 +117,38 @@
     function LoanApplicationFormListener() {
       this.update = function() {
         console.log('updated loan...');
-        $("#bank-info-section").show();
-        $("#authorization-section").show();
+        // $("#loan-application-info-section").fadeIn(500);
+        // $("#bank-info-section").fadeIn(500);
+        // $("#authorization-section").fadeIn(500);
       }
     };
+
+    $('.loan-application-section').hide();
+
+    $('.loan-application-section:first').show();
+
+    $('.get-payment-plan-btn').click(function(e) {
+      e.preventDefault();
+      loanAppForm.getPaymentPlan();
+    });
+
+    $('.next').click(function(e) {
+        console.log('clicked on '+$(this).attr('class'));
+        if (this == $('.loan-application-section:last')) {
+          return;
+        }
+
+        e.preventDefault();
+        $(this).parents('section.loan-application-section').next().fadeIn(500);
+        console.log('clicked next button '+$(this).parents('section').next().attr('class'));
+    });
+
     var listener = new LoanApplicationFormListener();
-    loanAppForm.addListener(listener);
+    // loanAppForm.addListener(listener);
     loanAppForm.bind();
-    $("#bank-info-section").hide();
-    $("#authorization-section").hide();
-  </script>
-  {% endblock %}
+    // $("#loan-application-info-section").hide();
+    // $("#bank-info-section").hide();
+    // $("#authorization-section").hide();
+  });
+</script>
+{% endblock %}

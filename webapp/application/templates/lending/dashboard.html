@@ -1,6 +1,8 @@
 {% extends 'base.html' %} {% block content %}
 
+{% with show_buttons=True, title="Dashboard" %}
 {% include "_sub_header.html" %}
+{% endwith %}
 
 {% include "_notification.html" %}
 
@@ -91,7 +93,7 @@
             <button class="btn btn-sm btn-primary">Accept Loan</button>
           </form>
         </td>
-        {% endif %} {% if loan['summary']['status'] != 0 and loan['summary']['status'] != 2 and loan['summary']['status'] != 3 %}
+        {% endif %} {% if loan['summary']['status'] != 0 and loan['summary']['status'] != 1 and loan['summary']['status'] != 2 and loan['summary']['status'] != 3 %}
         <td>
           <button class="btn btn-sm btn-primary payment-schedule">payment schedule</button>
         </td>

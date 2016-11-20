@@ -17,9 +17,7 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import account as accountBLI
 from shared.bli import lending as lendingBLI
-from shared.bli import bank as bankBLI
 from shared.util import error
-from application.bank import controller as bank_controller
 import traceback
 
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
@@ -120,7 +118,7 @@ def complete_signup():
         return redirect(url_for('account_bp.add_bank'))
     elif 'verify_bank' in next:
         #TODO(vipin) -- use a form instead to the id.
-        session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY]
+        session[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY]
         return redirect(url_for('account_bp.verify_random_deposit'))
     return redirect(url_for('.dashboard'))
 
@@ -206,6 +204,7 @@ def loan_application():
 @login_required
 def loan_details():
     loan_id = int(request.form.get('loan_id'))
+    data = {}
     try:
         data = lendingBLI.get_approved_loan_payment_plan(loan_id, current_user.id)
         # pprint(data)

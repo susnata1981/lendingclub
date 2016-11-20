@@ -334,9 +334,6 @@ def get_account_by_phone_number(phone_number):
 def get_account_by_email(email):
     return current_app.db_session.query(Account).filter(Account.email == email).one_or_none()
 
-def get_fi_by_plaid_account_id(id):
-    return current_app.db_session.query(Fi).filter(Fi.plaid_account_id == id).one_or_none()
-
 def get_fi_by_id(id):
     return current_app.db_session.query(Fi).filter(Fi.id == id).one_or_none()
 

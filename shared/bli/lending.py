@@ -8,7 +8,7 @@ MAX_APR = .99
 LOAN_AMOUNT_KEY = 'loan_amount'
 LOAN_DURATION_KEY = 'loan_duration'
 LOAN_REQUEST_KEY = 'loan_request'
-LOGGER = logger.getLogger('shared.bli.account')
+LOGGER = logger.getLogger('shared.bli.lending')
 
 def get_total_interest(amount, duration, apr):
     return (amount * apr * duration) / 12

@@ -169,15 +169,14 @@ def get_payment_plan_estimate():
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
-    # if lendingBLI.get_all_open_loans(current_user):
-    #     logging.info('User:%d has open loans.' % (current_user.id))
-    #     # flash('User: %d has open loans.' % (current_user.id))
-    #     notification = Notification(
-    #     title='You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id),
-    #     clazz='alert-warning',
-    #     notification_type=Notification.ERROR)
-    #     flash(notification.to_map())
-    #     return redirect(url_for('.dashboard'))
+    if lendingBLI.get_all_open_loans(current_user):
+        logging.info('User:%d has open loans.' % (current_user.id))
+        # flash('User: %d has open loans.' % (current_user.id))
+        notification = Notification(
+        title='You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id),
+        notification_type=Notification.ERROR)
+        flash(notification.to_map())
+        return redirect(url_for('.dashboard'))
 
     form = LoanApplicationForm()
     data = {}
@@ -252,6 +251,10 @@ def save_loan_request_to_session(loan_amount=None, loan_duration=None):
             session[lendingBLI.LOAN_REQUEST_KEY] = loan_request
 
 ############################
+
+@lending_bp.route('/loan_success')
+def loan_accepted_success():
+    return render_template('lending/loan_accepted_success.html')
 
 # @lending_bp.route('/memberships', methods=['GET'])
 # @login_required

@@ -1,26 +1,18 @@
-{% extends "base.html" %}
+{% extends 'base.html' %} {% block content %}
 
-{% block content %}
-<div id="circular-wait-section" class="preloader-wrapper big active">
-    <div class="spinner-layer spinner-blue-only">
-      <div class="circle-clipper left">
-        <div class="circle"></div>
-      </div><div class="gap-patch">
-        <div class="circle"></div>
-      </div><div class="circle-clipper right">
-        <div class="circle"></div>
-      </div>
-    </div>
-  </div>
+{% with show_buttons=False, title="Success" %}
+{% include "_sub_header.html" %}
+{% endwith %}
 
-<div id="success-div" class="row margin-top-large">
- <div class="col s12 center">
-  <h4 class="green-text">
+{% include "_notification.html" %}
+
+<div class="container">
+<div class="row">
+ <div class="col-md-12 p-3 center">
+  <h4>
     Congratulations {{ current_user.first_name }}, your application has been accepted!
   </h4>
 
-  <h4>You will receive the money in your account within 24 hours</h4>
-  <a class="btn btn-orange" role="button" href={{url_for('lending_bp.dashboard')}}>Continue</a>
-
-
+  <h5>You will receive the money in your account within 24 hours</h5>
+  <a class="btn btn-accent my-2" role="button" href={{url_for('lending_bp.dashboard')}}>Continue to Dashboard</a>
 {% endblock %}

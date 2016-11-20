@@ -1,0 +1,20 @@
+{
+  "name": "static",
+  "homepage": "https://github.com/susnata1981/lendingclub",
+  "authors": [
+    "susnata basak <susnata@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "4.0.0-alpha.5"
+  }
+}

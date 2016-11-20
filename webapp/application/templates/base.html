@@ -10,11 +10,12 @@
 
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" />
 
-  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css"> -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous"> -->
+
+  <!-- <link rel="stylesheet" href="{{url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css')}}" /> -->
+  <link rel="stylesheet" href={{url_for('static', filename='css/test.css')}} >
 
   <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script> -->
 
   <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
   <!-- <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'> -->
@@ -22,7 +23,7 @@
 
   <!-- <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}> -->
   <!-- <link rel="stylesheet" href={{url_for( 'static', filename='textanimation.css' )}}> {% block stylesheet %} -->
-  <link rel="stylesheet" href={{url_for('static', filename='style-simple2.css')}}> {% endblock %}
+  <!-- <link rel="stylesheet" href={{url_for('static', filename='css/style-simple2.css')}}> {% endblock %} -->
 
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>

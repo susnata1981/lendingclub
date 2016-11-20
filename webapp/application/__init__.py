@@ -1,5 +1,5 @@
 import logging
-from flask import current_app, Flask, redirect, url_for, request, g
+from flask import current_app, Flask, redirect, url_for, request, session, g
 from flask import current_app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -25,19 +25,23 @@ def format_datetime(value, format='%m-%d-%Y / %H:%M'):
     return value.strftime(format)
 
 def format_transaction_status(value):
-    if value == RequestMoneyTransaction.UNPAID:
-        return 'UNPAID'
-    elif value == RequestMoneyTransaction.PARTIALLY_PAID:
-        return 'PARTIALLY PAID'
-    elif value == RequestMoneyTransaction.PAID:
-        return 'PAID'
+    if value == Transaction.PENDING:
+        return 'PENDING'
+    elif value == Transaction.IN_PROGRESS:
+        return 'IN PROGRESS'
+    elif value == RequestMoney.CANCELED:
+        return 'CANCELED'
+    elif value == RequestMoney.FAILED:
+        return 'FAILED'
+    elif value == RequestMoney.COMPLETED:
+        return 'COMPLETED'
     return 'UNKNOWN'
 
-def format_transaction_type(value):
-    if value == RequestMoneyTransaction.BORROW:
-        return 'BORROW'
-    elif value == RequestMoneyTransaction.PAYMENT:
-        return 'PAYMENT'
+def format_fi_status(value):
+    if value == Fi.UNVERFIED:
+        return 'UNVERFIED'
+    elif value == Fi.VERIFIED:
+        return 'VERIFIED'
     return 'UNKNOWN'
 
 def format_value(value, default = constants.NOT_AVAILABLE):
@@ -58,13 +62,39 @@ def format_percentage(value):
     except ValueError:
         return value;
 
+def format_loan_status(value):
+    if value == RequestMoney.IN_REVIEW:
+        return 'IN REVIEW'
+    elif value == RequestMoney.APPROVED:
+        return 'APPROVED'
+    elif value == RequestMoney.CANCELED:
+        return 'CANCELED'
+    elif value == RequestMoney.DECLINED:
+        return 'DECLINED'
+    elif value == RequestMoney.ACCEPTED:
+        return 'ACCEPTED'
+    elif value == RequestMoney.TRANSFER_IN_PROGRESS:
+        return 'TRANSFER IN PROGRESS'
+    elif value == RequestMoney.ACTIVE:
+        return 'ACTIVE'
+    elif value == RequestMoney.PAID_OFF:
+        return 'PAID_OFF'
+    elif value == RequestMoney.DELINQUENT:
+        return 'DELINQUENT'
+    elif value == RequestMoney.IN_COLLECTION:
+        return 'IN COLLECTION'
+    elif value == RequestMoney.WRITE_OFF:
+        return 'WRITE OFF'
+    return 'UNKNOWN'
+
 def setup_jinja_filter(app):
     app.jinja_env.filters['format_datetime'] = format_datetime
     app.jinja_env.filters['format_value'] = format_value
     app.jinja_env.filters['format_currency'] = format_currency
     app.jinja_env.filters['format_percentage'] = format_percentage
     app.jinja_env.filters['format_transaction_status'] = format_transaction_status
-    app.jinja_env.filters['format_transaction_type'] = format_transaction_type
+    app.jinja_env.filters['format_fi_status'] = format_fi_status
+    app.jinja_env.filters['format_loan_status'] = format_loan_status
 
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
@@ -123,10 +153,11 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # @app.before_request
     # def before_request():
     #     print 'before request called for ',request
-    #
+    
     # @app.after_request
     # def after_request(response):
-    #     print 'after response called...',response
+    #     print '*********************************  after response called...',response
+    #     session['notifications'] = []
     #     return response
 
     @app.teardown_appcontext

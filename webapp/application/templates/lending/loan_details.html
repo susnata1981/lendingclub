@@ -10,7 +10,7 @@
 
 
     {% with data=data %}
-    {% include 'lending/payment_schedule.html' %}
+    {% include 'lending/_payment_schedule.html' %}
     {% endwith %}
 
     <form class="mt-2 row" action={{url_for('lending_bp.loan_details_confirm')}} method="post">

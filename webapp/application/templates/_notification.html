@@ -1,0 +1,16 @@
+{% if session['notifications'] %}
+<div class="p-1">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+          <!-- Welcome back <span class="">{{current_user.first_name}} {{current_user.last_name}}</span> -->
+          {% for n in session['notifications'] %}
+          <div class="alert alert-danger" role="alert">
+            <p>{{n['title']}}</p>
+          </div>
+          {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

@@ -1,0 +1,46 @@
+<div>
+  <h6 class="bg-primary text-white mb-0 p-1">Repayment Schedule</h6>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>
+          <h6>Amount</h6>
+        </th>
+        <th>
+          <h6>Status</h6>
+        </th>
+        <th>
+          <h6>Date</h6>
+        </th>
+      </tr>
+    </thead>
+    {% if not data %}
+  </table>
+  <p>No approved loans</p>
+  {% else %} {% for loan in data['schedule'] %}
+  <tr>
+    <td>
+      <p>
+        {{ loan['amount'] }}
+      </p>
+    </td>
+    <td>
+      <p>
+        {{ loan['status'] | format_transaction_status}}
+      </p>
+    </td>
+    <td>
+      <p>
+        {{ loan['date'] | format_datetime }}
+      </p>
+    </td>
+  </tr>
+  {% endfor %}
+  </table>
+  {% endif %}
+</div>
+<p><a href="">Back</a> to loan schedule</p>
+
+<script>
+
+</script>

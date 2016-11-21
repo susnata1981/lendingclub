@@ -4,113 +4,57 @@
 {% include "_sub_header.html" %}
 {% endwith %}
 
+{% if data['application_incomplete'] %}
+<div class="row primary-bg-dark-1">
+  <div class="col-md-10 offset-md-1 pl-0">
+    <ol class="my-1">
+      <li class="mr-3">
+        <h6 class="white-text m-0 bg-primary px-1">Enter personal information</h6>
+      </li>
+      <li class="mr-3">
+        <h6 class="white-text m-0">Enter employer information</h6>
+      </li>
+      <li class="mr-3">
+        <h6 class="white-text m-0">Connect your bank</h6>
+      </li>
+      <li class="mr-3">
+        <h6 class="white-text m-0">Apply for loan</h6>
+      </li>
+    </ol>
+  </div>
+</div>
+{% endif %}
+
 {% include "_notification.html" %}
 
-<div class="container mt-2">
+<div class="container mt-3">
   <div class="row mb-2">
-
-    {% if data['application_incomplete'] %}
-    <h4>Your application is partially complete. We need additional information</h4>
-    <form action={{url_for( 'lending_bp.complete_signup')}} method="get">
-      <button class="btn btn-orange btn-lg">Complete Application</button>
-    </form>
-    {% elif data['can_apply_for_loan'] %}
-    <form class="text-md-right col-md-6" action={{url_for('lending_bp.loan_application')}} method="get">
-      <button class="btn btn-primary">Apply for Loan</button>
-    </form>
-    {% endif %}
+    <div class="col-md-12 center">
+      {% if data['application_incomplete'] %}
+      <h5>Your application is partially complete, we need additional information.</h5>
+      <form action={{url_for( 'lending_bp.complete_signup')}} method="get">
+        <button class="btn btn-accent btn-lg">Complete Application</button>
+      </form>
+      {% elif data['can_apply_for_loan'] %}
+      <form class="text-md-right col-md-6" action={{url_for('lending_bp.loan_application')}} method="get">
+        <button class="btn btn-primary">Apply for Loan</button>
+      </form>
+      {% endif %}
+    </div>
   </div>
 
+  {% if not data['application_incomplete'] %}
   <div class="row">
     <div class="col-md-4">
       {% include "lending/_financial_information.html" %}
     </div>
 
     <div id="loan-history" class="col-md-8">
-      <h6 class="bg-primary text-white mb-0 p-1">Loan History</h6>
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>
-              <h6>Loan Amount</h6>
-            </th>
-            <th>
-              <h6>APR</h6>
-            </th>
-            <th>
-              <h6>Total interest</h6>
-            </th>
-            <th>
-              <h6>Status</h6>
-            </th>
-            <th>
-              <h6>Bank account</h6>
-            </th>
-            <th>
-              <h6>Application Date</h6>
-            </th>
-          </tr>
-        </thead>
-        {% if not data['loans'] %}
-      </table>
-      <p>No loans</p>
-      {% else %} {% for loan in data['loans'] %}
-      <tr loan-id={{loan['summary']['loan_id']}}>
-        <td>
-          <p>
-            {{ loan['summary']['amount'] | int | format_currency }}
-          </p>
-        </td>
-        <td>
-          <p>
-            {{ loan['summary']['apr'] | format_percentage }}
-          </p>
-        </td>
-        <td>
-          <p>
-            {{ loan['summary']['total_interest'] | format_currency }}
-          </p>
-        </td>
-        <td>
-          <p>
-            {{ loan['summary']['status'] | format_loan_status }}
-          </p>
-        </td>
-        <td>
-          <p>
-            {{ loan['summary']['bank_name'] }} {{ loan['summary']['bank_last_4']}}
-          </p>
-        </td>
-        <td>
-          <p>
-            {{ loan['summary']['date_applied'] | format_datetime(format='%m-%d-%Y') }}
-          </p>
-        </td>
-        {% if loan['summary']['status'] == 1 %}
-        <td>
-          <form action="{{url_for('lending_bp.loan_details')}}" method="post">
-            <input type="hidden" name="loan_id" value={{loan['summary']['loan_id']}}></input>
-            <button class="btn btn-sm btn-primary">Accept Loan</button>
-          </form>
-        </td>
-        {% endif %} {% if loan['summary']['status'] != 0 and loan['summary']['status'] != 1 and loan['summary']['status'] != 2 and loan['summary']['status'] != 3 %}
-        <td>
-          <button class="btn btn-sm btn-primary payment-schedule">payment schedule</button>
-        </td>
-        {% endif %}
-      </tr>
-      {% endfor %} {% endif %}
-      </table>
-
-      <div class="row">
-        <div class="col-md-12">
-          <div id="loan-schedule">
-          </div>
-        </div>
-      </div>
+      {% include "lending/_loan_history.html" %}
     </div>
-
   </div>
+  {% endif %}
+
 </div>
 
 <script>

@@ -1,21 +1,89 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} {% block content %} {% with show_buttons=False, title="Review loan" %} {% include "_sub_header.html" %} {% endwith %} {% include "_notification.html" %}
 
-<div class="container mt-2">
-    {% with data=data %}
-    {% include 'lending/_payment_schedule.html' %}
-    {% endwith %}
+<div class="container mt-3">
+  <div class="row">
+    <div class="col-md-8 m-0 p-0">
+      <h5 class="primary-color">Loan Summary</h5>
+      <table class="table table-hover table-bordered">
+        <tr>
+          <td>
+            <h6>Loan Amount</h6>
+          </td>
+          <td>
+            <p>
+              {{ data['summary']['amount'] | int | format_currency }}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h6>APR</h6>
+          </td>
+          <td>
+            <p>
+              {{ data['summary']['apr'] | format_percentage }}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h6>Total interest</h6>
+          </td>
+          <td>
+            <p>
+              {{ data['summary']['total_interest'] | format_currency }}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h6>Status</h6>
+          </td>
+          <td>
+            <p>
+              {{ data['summary']['status'] | format_loan_status }}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h6>Bank account</h6>
+          </td>
+          <td>
+            <p>
+              {{ data['summary']['bank_name'] }} {{ data['summary']['bank_last_4']}}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h6>Application Date</h6>
+          </td>
+          <td>
+            <p>
+              {{ data['summary']['date_applied'] | format_datetime(format='%m-%d-%Y') }}
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="row">
+      <div class="col-md-8 mt-2">
+        {% with data=data %} {% include 'lending/_payment_schedule.html' %} {% endwith %}
+      </div>
+    </div>
 
-    <form class="mt-2 row" action={{url_for('lending_bp.loan_details_confirm')}} method="post">
-      <div class="col-md-8">
+    <form class="row m-0 p-0" action={{url_for( 'lending_bp.loan_details_confirm')}} method="post">
+      <div class="col-md-8 m-0 p-0">
         <input type="hidden" name="loan_id" value="{{data['summary']['loan_id']}}" />
-        <div class="form-group row">
-          <div class="col-md-2">
-            <input class="form-control" type="checkbox">I agree</button>
-          </div>
-        </div>
+        <label class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" disabled>
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description">I agree</span>
+        </label>
         <div class="form-group row">
           <div class="col-md-4">
-            <button class="btn btn-orange">Accept Loan</button>
+            <button class="btn btn-accent">Accept Loan</button>
           </div>
         </div>
       </div>

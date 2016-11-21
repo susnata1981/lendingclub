@@ -167,6 +167,20 @@ def get_loan_schedule(loan):
     LOGGER.info('get_loan_schedule exit')
     return schedule
 
+def get_loan_summary_by_id(loan_id, account_id):
+    LOGGER.info('get_loan_schedule_by_id entry loan_id = '+str(loan_id)+' account_id:'+str(account_id))
+    try:
+        loan = current_app.db_session.query(RequestMoney).filter(
+        RequestMoney.id == loan_id, RequestMoney.account_id == account_id).one_or_none()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+    if not loan:
+        LOGGER.error('Loan(id=%s) not found for Account(id=%s)' % (loan_id, account_id))
+        raise error.LoanNotFoundError('Loan(id=%s) not found for Account(id=%s)' % (loan_id, account_id))
+    LOGGER.info('get_loan_schedule_by_id exit')
+    return get_loan_summary(loan)
+
 def get_loan_schedule_by_id(loan_id, account_id):
     LOGGER.info('get_loan_schedule_by_id entry loan_id = '+str(loan_id)+' account_id:'+str(account_id))
     try:

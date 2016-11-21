@@ -19,7 +19,7 @@ login_manager.login_view = "account_bp.login"
 def load_user(id):
     return get_account_by_id(id)
 
-def format_datetime(value, format='%m-%d-%Y / %H:%M'):
+def format_datetime(value, format='%m-%d-%Y'):
     if value is None:
         return constants.NOT_AVAILABLE
     return value.strftime(format)
@@ -153,7 +153,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # @app.before_request
     # def before_request():
     #     print 'before request called for ',request
-    
+
     # @app.after_request
     # def after_request(response):
     #     print '*********************************  after response called...',response

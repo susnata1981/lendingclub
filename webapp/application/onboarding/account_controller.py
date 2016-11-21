@@ -16,7 +16,9 @@ import json
 import logging
 import dateutil
 from dateutil.relativedelta import relativedelta
+from shared.bli.viewmodel.notification import Notification
 from shared.bli import bank as bankBLI
+
 
 account_bp = Blueprint('account_bp', __name__, url_prefix='/account')
 
@@ -227,27 +229,53 @@ def logout():
 @account_bp.route('/profile', methods=['GET'])
 @login_required
 def account():
-    # if current_user.status != Account.VERIFIED_PHONE:
-    #     flash({
-    #         'content':'Please verify your phone first',
-    #         'class': 'error'
-    #     })
-    #     return redirect(url_for('.verify_phone_number'))
+    return render_template('account/account.html')
 
-    data = {}
-    # eligible_for_membership_reapplication = True
-    # for membership in current_user.memberships:
-    #     if membership.is_active() or membership.is_pending():
-    #         eligible_for_membership_reapplication = False
-    # data['eligible_for_membership_reapplication'] = eligible_for_membership_reapplication
-    #
-    # if len(current_user.memberships) == 0:
-    #     data['show_notification'] = True
-    #     data['notification_message'] = 'You application is incomplete'
-    #     data['notification_url'] = 'onboarding_bp.apply_for_membership'
+@account_bp.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_account():
+    form = EditProfileForm(request.form)
+    if form.validate_on_submit():
+        current_user.first_name = form.first_name.data
+        current_user.last_name = form.last_name.data
+        # addr = get_current_address()
+        # if addr:
+        current_user.addresses[0].street1 = form.street1.data
+        current_user.addresses[0].street2 = form.street2.data
+        current_user.addresses[0].city = form.city.data
+        current_user.addresses[0].state = form.state.data
+        current_user.addresses[0].postal_code = form.postal_code.data
+        current_user.dob = form.dob.data
+        current_user.ssn = form.ssn.data
+        current_user.phone_number = form.phone_number.data
+        current_user.email = form.email.data
 
-    return render_template('account/account.html', data=data)
+        # current_app.db_session.update(current_user)
+        print "****************************************"
+        pprint(current_user.addresses[0])
+        # current_app.db_session.add(current_user.addresses[0])
+        current_app.db_session.commit()
 
+        notifiation = Notification(
+        title = 'Your account has been updated.',
+        notification_type = Notification.SUCCESS)
+        flash(notifiation.to_map())
+        return redirect(url_for('.account'))
+    elif request.method == 'GET':
+        form.first_name.data = current_user.first_name
+        form.last_name.data = current_user.last_name
+        addr = get_current_address()
+        if addr:
+            form.street1.data = addr.street1
+            form.street2.data = addr.street2
+            form.city.data = addr.city
+            form.state.data = addr.state
+            form.postal_code.data = addr.postal_code
+            form.dob.data = datetime.strptime(current_user.dob, "%Y-%m-%d %H:%M:%S")
+            form.ssn.data = current_user.ssn
+            form.phone_number.data = current_user.phone_number
+            form.email.data = current_user.email
+    return render_template('account/edit_profile.html', form=form)
 
 @account_bp.route('/add_bank', methods=['GET', 'POST'])
 @login_required
@@ -483,3 +511,8 @@ def mark_bank_as_verified(fi):
     #TODO: show success and show loan review page if needed
     #return redirect(url_for('.application_complete'))
     return redirect(url_for('lending_bp.dashboard'))
+
+def get_current_address():
+    if current_user.addresses:
+        return current_user.addresses[0]
+    return None

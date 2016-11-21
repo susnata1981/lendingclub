@@ -1,0 +1,84 @@
+{% extends 'base.html' %} {% block content %} {% with show_buttons=False, title="My Profile" %} {% include "_sub_header.html" %} {% endwith %} {% include "_notification.html" %}
+
+<div class="container my-3">
+  <div class="row">
+    {% if form.errors %}
+    <div class="row">
+      <div class="col-md-10">
+        {% for field in form %} {% for m in field.errors %}
+        <div class="alert alert-danger" role="alert">{{ m }}</div>
+        {% endfor %} {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="row">
+    <form class="col-md-10" action={{url_for( 'account_bp.edit_account')}} method="post">
+      {{ form.csrf_token }}
+      <div class="form-group row">
+        <label for="name" class="col-xs-2 col-form-label align-right">Name</label>
+        <div class="col-xs-4">
+          {{form.first_name(class="form-control")}}
+        </div>
+        <div class="col-xs-4">
+          {{form.last_name(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+          {{form.street1.label(class='col-xs-2 col-form-label align-right')}}
+        <div class="col-md-8">
+          {{form.street1(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        {{form.street2.label(class='col-xs-2 col-form-label align-right')}}
+        <div class="col-xs-8">
+          {{form.street2(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="location" class="col-xs-2 col-form-label align-right">Location</label>
+        <div class="col-md-3">
+          {{form.city(class="form-control", placeholder="city")}}
+        </div>
+        <div class="col-md-2">
+          {{form.state(class="form-control")}}
+        </div>
+        <div class="col-md-3">
+          {{form.postal_code(class="form-control")}}
+        </div>
+      </div>
+      <div class="form-group row">
+        {{form.dob.label(class="col-xs-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{form.dob(class="form-control dob")}}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{form.ssn.label(class="col-xs-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{form.ssn(class='ssn form-control')}}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{form.phone_number.label(class="col-xs-2 col-form-label align-right")}}
+        <div class="col-md-4">
+          {{ form.phone_number(class='phone_number form-control') }}
+        </div>
+      </div>
+      <div class="row form-group">
+        {{ form.email.label(class="col-xs-2 col-form-label align-right") }}
+        <div class="col-md-4">
+          {{ form.email(class="form-control") }}
+        </div>
+      </div>
+      <hr />
+      <div class="form-group row">
+        <div class="offset-md-2 col-md-4">
+          <button type="submit" class="btn btn-accent">Update</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

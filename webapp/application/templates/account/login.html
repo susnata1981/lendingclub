@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block pagetitle %} Login Form {% endblock %} {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col-md-8 root-content-div">
+    <div class="col-md-8">
       {% if get_flashed_messages() | length > 0 %}
       <div class="row">
         <div class="offset-md-2 col-md-8">
@@ -11,7 +11,7 @@
         </div>
       </div>
       {% endif %} {% if form.errors %}
-      <div class="row margin-top-medium">
+      <div class="row mt-2">
         <div class="offset-md-2 col-md-8">
           {% for field in form %} {% for m in field.errors %}
           <div class="alert alert-danger" role="alert">{{ m }}</div>
@@ -19,8 +19,13 @@
         </div>
       </div>
     {% endif %}
-    <form id="login_form" class="margin-top-medium" action={{url_for( 'account_bp.login')}} method="post">
+    <form id="login_form" class="mt-2" action={{url_for( 'account_bp.login')}} method="post">
       {{ form.csrf_token }}
+      <div class="row">
+        <div class="offset-md-2 col-md-4 align-left">
+          <h4 class="primary-color">Login Form</h4>
+        </div>
+      </div>
       <div class="row form-group">
         {{ form.email.label(class="col-md-2 col-form-label align-right") }}
         <div class="col-md-8">
@@ -40,12 +45,12 @@
       </div>
       <div class="row">
         <div class="offset-md-2 col-md-12">
-          <span class="login-option">Not a member, Signup&nbsp;&nbsp;<a href={{url_for('account_bp.signup')}}>Signup now</a> </span>
+          <p>Not a member, Signup&nbsp;&nbsp;<a href={{url_for('account_bp.signup')}}>Signup now</a> </p>
         </div>
       </div>
       <div class="row">
         <div class="offset-md-2 col-md-12">
-          <span class="login-option">Forgot your password&nbsp;&nbsp;<a href={{url_for('lending_bp.reset_password')}}>Reset now</a></span>
+          <p>Forgot your password&nbsp;&nbsp;<a href={{url_for('lending_bp.reset_password')}}>Reset now</a></p>
         </div>
       </div>
   </div>

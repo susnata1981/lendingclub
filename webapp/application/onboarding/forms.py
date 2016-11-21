@@ -41,6 +41,21 @@ class SignupForm(FlaskForm):
     consent = BooleanField('I consent', default=False)
     submit = SubmitField('Signup')
 
+class EditProfileForm(FlaskForm):
+    first_name = StringField('first_name', [Required('Please enter your firstname')], render_kw={"placeholder": "firstname"})
+    last_name = StringField('lastname', [Required('Please enter your lastname')], render_kw={"placeholder": "lastname"})
+    street1 = StringField('street1', [Required('Please enter your street address')])
+    street2 = StringField('street2')
+    city = StringField('city', [Required('Please enter your city')], render_kw={"placeholder": "city"})
+    state = StringField('state', [Required('Pleae enter your state')], render_kw={"placeholder": "state"})
+    postal_code = IntegerField('postal code', [Required('Please enter your postal code')], render_kw={"placeholder": "postal code"})
+    ssn = StringField('social security', [Required('Please enter your social security'), SSNValidator()])
+    dob = DateTimeField('date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
+    phone_number = StringField('phone number',
+        [Required('Please enter your phone number'), PhoneNumberValidator()])
+    email = StringField('email', [Required('Please enter your email'), Email()])
+    submit = SubmitField('Update')
+
 class LoginForm(FlaskForm):
     email = StringField('email', [Required('Please enter your email'), Email()])
     password = PasswordField('password', [Required('Password must be provided')])
@@ -77,4 +92,3 @@ class AddRandomDepositForm(FlaskForm):
 class VerifyRandomDepositForm(FlaskForm):
     deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')], default="32")
     deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')], default="45")
-    

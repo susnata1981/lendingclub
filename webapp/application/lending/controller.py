@@ -103,8 +103,11 @@ def loan_schedule():
     # print 'loan_id:', request.form.get('loan_id')
     loan_id = int(request.form.get('loan_id'))
     data = {}
+    data['show_back_button'] = True
     try:
         data['schedule'] = lendingBLI.get_loan_schedule_by_id(loan_id, current_user.id)
+        data['summary'] = lendingBLI.get_loan_summary_by_id(loan_id, current_user.id)
+        pprint(data['summary'])
     except Exception as e:
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
@@ -218,9 +221,9 @@ def loan_details():
     data = {}
     try:
         data = lendingBLI.get_approved_loan_payment_plan(loan_id, current_user.id)
-        # pprint(data)
+        pprint(data)
     except Exception as e:
-        traceback.print_exc()
+        # traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
         flash(constants.GENERIC_ERROR)
     return render_template('lending/loan_details.html', data=data)

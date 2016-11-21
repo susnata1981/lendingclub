@@ -309,7 +309,6 @@ def recreate_tables(engine):
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     logging.info('******* done recreating tables ********')
-    logging.info('creating lending plans')
 
 def init_db():
     if util.is_running_on_app_engine():

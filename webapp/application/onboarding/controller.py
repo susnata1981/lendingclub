@@ -17,9 +17,9 @@ from dateutil.relativedelta import relativedelta
 from shared.bli import bank as bankBLI
 from shared.bli.viewmodel.bank_data import *
 
-account_bp = Blueprint('account_bp', __name__, url_prefix='/account')
+onboarding_bp = Blueprint('onboarding_bp', __name__, url_prefix='/onboarding')
 
-@account_bp.route('/verify/resend', methods=['GET', 'POST'])
+@onboarding_bp.route('/verify/resend', methods=['GET', 'POST'])
 def resend_email_verification():
     form = ResendEmailVerificationForm(request.form)
     data = {}
@@ -42,20 +42,19 @@ def resend_email_verification():
                     data['show_email_verification_form'] = True
         except Exception:
             flash(constants.GENERIC_ERROR)
-
             data['show_email_verification_form'] = True
     else:
         data['show_email_verification_form'] = True
     return render_template('onboarding/verify_email.html', data=data, form=form)
 
-@account_bp.route('/<id>/verify', methods=['GET'])
+@onboarding_bp.route('/<id>/verify', methods=['GET'])
 def verify_email(id):
     form = ResendEmailVerificationForm(request.form)
     token = request.args.get(constants.VERIFICATION_TOKEN_NAME)
     data = {}
     try:
         accountBLI.verify_email(int(id), token)
-        return redirect(url_for('account_bp.account_verified'))
+        return redirect(url_for('onboarding_bp.account_verified'))
     except (error.AccountNotFoundError, error.EmailVerificationNotMatchError) as e:
         flash('Invalid verification code.')
         data['show_email_verification_form'] = True
@@ -67,14 +66,14 @@ def verify_email(id):
         data['show_email_verification_form'] = True
     return render_template('onboarding/verify_email.html', data=data, form=form)
 
-@account_bp.route('/account_verified', methods=['GET'])
+@onboarding_bp.route('/account_verified', methods=['GET'])
 def account_verified():
     return render_template('onboarding/account_verified.html')
 
-@account_bp.route('/', methods=['GET', 'POST'])
+@onboarding_bp.route('/', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
-        return redirect(url_for('.account'))
+        return redirect(url_for('account_bp.account'))
 
     form = SignupForm(request.form)
     print 'errors - ',form.errors
@@ -132,56 +131,7 @@ def signup():
 
     return render_template('onboarding/signup.html', form=form)
 
-
-@account_bp.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm(request.form)
-    if form.validate_on_submit():
-        try:
-            account = accountBLI.verify_login(form.email.data, form.password.data)
-            login_user(account)
-            next = request.args.get('next')
-            # next_is_valid should check if the user has valid
-            # permission to access the `next` url
-            # print 'Next page =',next,' is_valid_next =',next_is_valid(next)
-            # if not next_is_valid(next):
-            #     return flask.abort(404)
-            return redirect(next or url_for('lending_bp.dashboard'))
-        except error.DatabaseError as de:
-            print 'Database error:',de.orig_exp.message
-            flash(constants.GENERIC_ERROR)
-            return render_template('account/login.html', form=form)
-        except error.InvalidLoginCredentialsError:
-            # print 'Invalid credentials'
-            flash(constants.INVALID_CREDENTIALS)
-            return render_template('account/login.html', form=form)
-        except error.EmailVerificationRequiredError:
-            # print 'Email verification required'
-            flash(constants.ACCOUNT_NOT_VERIFIED)
-            # verify email message
-            data = {}
-            data['email_verification_required'] = True
-            email_form = ResendEmailVerificationForm(request.form)
-            return render_template('onboarding/verify_email.html', data=data, form=email_form)
-        except Exception as e:
-            print 'Exception::',e
-            print traceback.format_exc()
-            return render_template('404.html')
-    return render_template('account/login.html', form=form)
-
-@account_bp.route('/logout', methods=['GET', 'POST'])
-def logout():
-    logout_user()
-    return redirect(url_for('.login'))
-
-@account_bp.route('/profile', methods=['GET'])
-@login_required
-def account():
-    data = {}
-    return render_template('account/account.html', data=data)
-
-
-@account_bp.route('/add_bank', methods=['GET', 'POST'])
+@onboarding_bp.route('/add_bank', methods=['GET', 'POST'])
 @login_required
 def add_bank():
     if request.method == 'GET':
@@ -221,7 +171,7 @@ def add_bank():
             response['error'] = 'true'
             return jsonify(response)
 
-@account_bp.route('/add_random_deposit', methods=['GET', 'POST'])
+@onboarding_bp.route('/add_random_deposit', methods=['GET', 'POST'])
 @login_required
 def add_random_deposit():
     form = AddRandomDepositForm(request.form)
@@ -254,7 +204,7 @@ def add_random_deposit():
     else:
         return render_template('onboarding/add_random_deposit.html', form = form)
 
-@account_bp.route('/start_random_deposit_verification', methods=['POST'])
+@onboarding_bp.route('/start_random_deposit_verification', methods=['POST'])
 @login_required
 def start_random_deposit_verification():
     fi_id = request.form.get('fi_id')
@@ -264,7 +214,7 @@ def start_random_deposit_verification():
     flash('error')
     return redirect(url_for('lending_bp.dashboard'))
 
-@account_bp.route('/verify_random_deposit', methods=['GET', 'POST'])
+@onboarding_bp.route('/verify_random_deposit', methods=['GET', 'POST'])
 @login_required
 def verify_random_deposit():
     if not accountBLI.RANDOM_DEPOSIT_FI_ID_KEY in session:
@@ -299,15 +249,63 @@ def verify_random_deposit():
     else:
         return render_template('onboarding/verify_random_deposit.html', form=form)
 
-@account_bp.route('/verified', methods=['GET'])
+@onboarding_bp.route('/verified', methods=['GET'])
 @login_required
 def verified():
     return redirect(url_for('lending_bp.dashboard'))
 
-@account_bp.route('/add_bank_random_deposit_success', methods=['GET'])
+@onboarding_bp.route('/add_bank_random_deposit_success', methods=['GET'])
 @login_required
 def add_bank_random_deposit_success():
     return render_template('onboarding/add_bank_random_deposit_success.html')
+
+@onboarding_bp.route('/complete_signup', methods=['GET','POST'])
+@login_required
+def complete_signup():
+    next = accountBLI.signup_next_step(current_user)
+    if 'enter_employer_information' in next:
+        return redirect(url_for('.enter_employer_information'))
+    elif 'add_bank' in next:
+        return redirect(url_for('onboarding_bp.add_bank'))
+    elif 'verify_bank' in next:
+        #TODO(vipin) -- use a form instead to the id.
+        session[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY]
+        return redirect(url_for('onboarding_bp.verify_random_deposit'))
+    return redirect(url_for('.dashboard'))
+
+@onboarding_bp.route('/enter_employer_information', methods=['GET', 'POST'])
+@login_required
+def enter_employer_information():
+    form = EmployerInformationForm(request.form)
+    if form.validate_on_submit():
+        try:
+            now = datetime.now()
+            employer = Employer(
+                type = Employer.TYPE_FROM_NAME[form.employment_type.data],
+                name = form.employer_name.data,
+                phone_number = form.employer_phone_number.data,
+                street1 = form.street1.data,
+                street2 = form.street2.data,
+                city = form.city.data,
+                state = form.state.data,
+                postal_code = form.postal_code.data,
+                status = Employer.ACTIVE,
+                time_created = now,
+                time_updated = now
+            )
+            accountBLI.add_employer(current_user, employer)
+            return redirect(url_for('.complete_signup'))
+        except error.DatabaseError as de:
+            print 'ERROR: Database Exception: %s' % (de.message)
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/enter_employer_information.html', form=form)
+        except Exception as e:
+            print 'ERROR: General Exception: %s' % (e.message)
+            flash(constants.GENERIC_ERROR)
+            return render_template('onboarding/enter_employer_information.html', form=form)
+    return render_template('onboarding/enter_employer_information.html', form=form)
+
+
 
 ######## Phone verification ###########
 def generate_and_store_new_verification_code(account):
@@ -318,7 +316,7 @@ def generate_and_store_new_verification_code(account):
     current_app.db_session.commit()
     return verification_code
 
-@account_bp.route('/verify', methods=['GET', 'POST'])
+@onboarding_bp.route('/verify', methods=['GET', 'POST'])
 def verify_phone_number():
     form = PhoneVerificationForm(request.form)
     if form.validate_on_submit():
@@ -334,13 +332,13 @@ def verify_phone_number():
             account.time_updated = datetime.now()
             current_app.db_session.add(account)
             current_app.db_session.commit()
-            return redirect(url_for('account_bp.account_verified'))
+            return redirect(url_for('onboarding_bp.account_verified'))
         else:
             flash('Invalid verification code')
     return render_template('onboarding/verify_phone.html', form=form)
 
 # ajax
-@account_bp.route('/resend_verification', methods=['POST'])
+@onboarding_bp.route('/resend_verification', methods=['POST'])
 def resend_verification():
     if session['account_id'] is None:
         return jsonify({

@@ -74,7 +74,7 @@ class StripeClass(object):
                 self.LOGGER.error('from_function:{0} at_line:{1} type:{2} message:{3} user_id:{4}'.format(
                     stack[1][3],stack[1][2],e.__class__.__name__, e.message, user_id))
                 if e.message == StripeClass.INCORRECT_RANDOM_DEPOSIT_AMOUNTS_MSG:
-                    error.IncorrectRandomDepositAmountsError(e.message, e)
+                    raise error.IncorrectRandomDepositAmountsError(e.message, e)
                 else:
                     raise error.UserInputError(e.message, e.param, e)
             except Exception as e:

@@ -164,5 +164,5 @@ def verify_random_deposit(bank_deposit, account):
     except error.BankAlreadyVerifiedError:
         LOGGER.info('Stripe service raised BankAlreadyVerifiedError. Updating DB to mark bank with id:%s as verified.' % (fi.id))
 
-    LOGGER.info('Verified bank account, response = ',response)
+    LOGGER.info('Verified bank account, response = %s' % (response))
     mark_bank_as_verified(fi)

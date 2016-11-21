@@ -41,11 +41,6 @@ class SignupForm(FlaskForm):
     consent = BooleanField('I consent', default=False)
     submit = SubmitField('Signup')
 
-class LoginForm(FlaskForm):
-    email = StringField('email', [Required('Please enter your email'), Email()])
-    password = PasswordField('password', [Required('Password must be provided')])
-    submit = SubmitField('Login')
-
 class PhoneVerificationForm(FlaskForm):
     verification_code = IntegerField('enter verification code', [Required('Please enter the verification code')], default = 1111)
     submit = SubmitField('Verify')
@@ -55,13 +50,15 @@ class ResendEmailVerificationForm(FlaskForm):
     submit = SubmitField('Resend')
 
 class EmployerInformationForm(FlaskForm):
+    employment_type = SelectField('employment type',
+        choices = [('full-time', 'Full Time'), ('part-time', 'Part Time'), ('self-employed', 'Self Employed'), ('unemployed', 'Unemployed')], validators = [Required('Please enter your employment type')])
     employer_name = StringField('employer name', [Required('Please enter your employer name')])
-    employer_phone_number = StringField('* employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
+    employer_phone_number = StringField('employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
     street1 = StringField('street1', [Required('Please enter your street address')])
     street2 = StringField('street2')
-    city = StringField('city', [Required('Please enter your city')])
-    state = StringField('state', [Required('Pleae enter your state')])
-    postal_code = IntegerField('postal code', [Required('Please enter your postal code')])
+    city = StringField('city', [Required('Please enter your city')], render_kw={"placeholder": "city"})
+    state = StringField('state', [Required('Pleae enter your state')], render_kw={"placeholder": "state"})
+    postal_code = IntegerField('postal code', [Required('Please enter your postal code')], render_kw={"placeholder": "postal code"})
     submit = SubmitField('next')
 
 class GetBankVerificationMethods(FlaskForm):
@@ -77,4 +74,3 @@ class AddRandomDepositForm(FlaskForm):
 class VerifyRandomDepositForm(FlaskForm):
     deposit1 = StringField('deposit 1', [Required('Must enter deposit 1')], default="32")
     deposit2 = StringField('deposit 2', [Required('Must enter deposit 2')], default="45")
-    

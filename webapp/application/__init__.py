@@ -125,8 +125,12 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     from home.controller import home_blueprint
     app.register_blueprint(home_blueprint)
 
+    # Onboarding
+    from onboarding.controller import onboarding_bp
+    app.register_blueprint(onboarding_bp)
+
     # Account
-    from onboarding.account_controller import account_bp
+    from account.controller import account_bp
     app.register_blueprint(account_bp)
 
     # Lending
@@ -153,7 +157,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # @app.before_request
     # def before_request():
     #     print 'before request called for ',request
-    
+
     # @app.after_request
     # def after_request(response):
     #     print '*********************************  after response called...',response

@@ -1,47 +1,57 @@
 <div class="row"> <!-- profile section -->
-  <h5 class="bordered-header">Personal Information</h5>
-  <div class="col s12">
-    <table>
-      <tbody>
+  <h5 class="primary-color">
+    Personal Information
+    <span class="tiny-text"><a href={{url_for('account_bp.edit_account')}}>edit</a></span>
+  </h5>
+  <div class="col-md-12 p-0">
+    <table class="table">
         <tr>
-          <td class="flow-text">Name</p></td>
-          <td class="flow-text">
-            {{current_user.first_name}} {{current_user.last_name}}
+          <td><h6>Name</h6></td>
+          <td>
+            <p>{{current_user.first_name}} {{current_user.last_name}}</p>
           </td>
         </tr>
         <tr>
-          <td class="flow-text">Email</p></td>
-          <td class="flow-text">
-            {{current_user.email}}
+          <td>
+            <h6>Email</h6>
+          </td>
+          <td>
+            <p>{{current_user.email}}</p>
           </td>
         </tr>
         <tr>
-          <td class="flow-text">Phone Number</p></td>
-          <td class="flow-text">
-            {{current_user.phone_number}}
+          <td>
+            <h6>Phone Number</h6>
+          </td>
+          <td>
+            <p>{{current_user.phone_number}}</p>
           </td>
         </tr>
         <tr>
-          <td class="flow-text">Address</p></td>
+          <td>
+            <h6>Address</h6>
+          </td>
           {% if current_user.addresses | length > 0 %}
             {% for addr in current_user.addresses %}
-              {% if addr.address_type == 0 %}
-                <td class="flow-text">
+              {% if addr.address_type == 1 %}
+                <td>
                   {% if addr.street1 %}
-                  {{addr.street1}} &nbsp; {{addr.city}} &nbsp;
-                  {{addr.state}} &nbsp; {{addr.postal_code}}
+                  <p>
+                    {{addr.street1}} &nbsp; {{addr.city}} &nbsp;
+                    {{addr.state}} &nbsp; {{addr.postal_code}}
+                  </p>
                   {% endif %}
                 </td>
               {% endif %}
             {% endfor %}
-          {% else %}
-            <td class="flow-text">No Membership</td>
           {% endif %}
         </tr>
         <tr>
-          <td class="flow-text">Joining date</td>
-          <td class="flow-text">
-            {{ current_user.time_created | format_datetime }}
+          <td>
+            <h6>Joining date</h6>
+          </td>
+          <td>
+            <p>{{ current_user.time_created | format_datetime }}</p>
           </td>
         </tr>
       </table>

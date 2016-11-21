@@ -1,6 +1,41 @@
-<div>
-  <h6 class="bg-primary text-white mb-0 p-1">Repayment Schedule</h6>
-  <table class="table table-bordered">
+<div class="mb-3">
+  <h4 class="primary-color mb-0 py-1">Repayment Schedule</h4>
+  <div class="row">
+    <div class="col-md-6">
+      <ul>
+        <li>
+          <h6>Loan Amount</h6>
+          <p>{{data['summary']['amount'] | format_currency }}</p>
+        </li>
+        <li>
+          <h6>APR</h6>
+          <p>{{ data['summary']['apr'] | format_percentage}}</p>
+        </li>
+        <li>
+          <h6>Loan duration</h6>
+          <p>{{ data['summary']['duration'] }} months</p>
+        </li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <ul>
+        <li>
+          <h6>Total Interest</h6>
+          <p>{{ data['summary']['total_interest'] | format_currency }}</p>
+        </li>
+        <li>
+          <h6>Application date</h6>
+          <p>{{ data['summary']['date_applied'] | format_datetime }}</p>
+        </li>
+        <li>
+          <h6>Bank account</h6>
+          <p>xxxx-{{data['summary']['bank_last_4'] }}</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <table class="table table-hover table-bordered">
     <thead>
       <tr>
         <th>
@@ -21,7 +56,7 @@
   <tr>
     <td>
       <p>
-        {{ loan['amount'] }}
+        {{ loan['amount'] | format_currency }}
       </p>
     </td>
     <td>
@@ -37,10 +72,11 @@
   </tr>
   {% endfor %}
   </table>
+  {% endif %} {% if data['show_back_button'] %}
+  <p><a href="">Back</a> to loan history</p>
   {% endif %}
+
 </div>
-<p><a href="">Back</a> to loan schedule</p>
 
 <script>
-
 </script>

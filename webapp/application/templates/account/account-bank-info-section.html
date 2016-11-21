@@ -1,65 +1,69 @@
-<div id="bank-info" class="col s12">
-  <div class="row"> <!-- bank info section -->
-    <div class="col s10">
-      <h5>Bank information</h5>
-      <table>
-        <thead>
-          <tr>
-            <td>
-              <h6>Institution Name</h6>
-            </td>
-            <td>
-              <h6>Account Type</h6>
-            </td>
-            <td>
-              <h6>Status</h6>
-            </td>
-            <td>
-              <h6>Last 4</h6>
-            </td>
-            <td>
-              <h6>Date created</h6>
-            </td>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          {% if current_user.fis | length > 0 %}
-            {% for fi in current_user.fis %}
-            <tr>
-              <td class="flow-text">{{ fi.institution }}</td>
-              <td class="flow-text">{{ fi.institution_type }}</td>
-              <td class="flow-text">
-                {% if fi.status == 0 %}
-                  UNVERFIED
-                {% endif %}
-                {% if fi.status == 1 %}
-                  VERIFIED
-                {% endif %}
-              </td>
-              <td class="flow-text">xxxx-xxxx-xxxx-{{ fi.account_number_last_4 }}</td>
-              <td class="flow-text">{{ fi.time_created | format_datetime }}</td>
-              {% if fi.verification_type == 1 and fi.status == 0 %}
-              <td class="flow-text">
+<div class="row">
+  <!-- bank info section -->
+  <div class="col-md-12 p-0">
+    <h5 class="primary-color">Bank information</h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <td>
+            <h6>Institution Name</h6>
+          </td>
+          <td>
+            <h6>Account Type</h6>
+          </td>
+          <td>
+            <h6>Status</h6>
+          </td>
+          <td>
+            <h6>Last 4</h6>
+          </td>
+          <td>
+            <h6>Date created</h6>
+          </td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody>
+        {% if current_user.fis | length > 0 %} {% for fi in current_user.fis %}
+        <tr>
+          <td>
+            <p>{{ fi.institution }}</p>
+          </td>
+          <td>
+            <p>{{ fi.institution_type }}</p>
+          </td>
+          <td>
+            <p>
+              {{fi.status}}
+            </p>
+          </td>
+          <td>
+            <p>xxxx-{{ fi.account_number_last_4 }}</p>
+          </td>
+          <td>
+            <p>{{ fi.time_created | format_datetime }}</p>
+          </td>
+          {% if fi.verification_type == 1 and fi.status == 0 %}
+          <td>
                 <form action={{url_for('onboarding_bp.start_random_deposit_verification')}} method="post">
-                  <input type="hidden" name="fi_id" value={{ fi.id }} />
-                  <button class="btn">Verify</button>
-                </form>
-              </td>
-              {% endif %}
-            </tr>
-            {% endfor %}
+              <input type="hidden" name="fi_id" value={{ fi.id }} />
+              <button class="btn">Verify</button>
+            </form>
+          </td>
           {% endif %}
-        </tbody>
-      </table>
-      {% if current_user.fis | length == 0 %}
-      <div class="margin-top-medium">
+        </tr>
+        {% endfor %} {% endif %}
+      </tbody>
+    </table>
+    {% if current_user.fis | length == 0 %}
+    <div class="mt-2">
+      <p>No banks added to your account yet.</p>
       <span class="flow-text">No banks added to your account yet. <a href={{url_for('onboarding_bp.add_bank')}}>Add Bank Now</a>
-        </span>
-      </div>
-      {% else %}
-      <a class="btn" href={{url_for('onboarding_bp.add_bank')}}>Add another bank</a>
-      {% endif %}
+      </p>
     </div>
-  </div> <!-- end of bank info section -->
-</div> <!-- end of bank info page -->
+    {% else %}
+      <a class="btn" href={{url_for('onboarding_bp.add_bank')}}>Add another bank</a>
+    {% endif %}
+  </div>
+</div>
+<!-- end of bank info section -->

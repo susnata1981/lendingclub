@@ -2,24 +2,8 @@ import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, DateField, DateTimeField, FloatField, PasswordField, SubmitField, SelectField, BooleanField
 from wtforms.validators import Required, ValidationError, Email
-
-class PhoneNumberValidator:
-    patt = re.compile('\d{3}-\d{3}-\d{4}')
-    message = 'Invalid phone number format (xxx-xxx-xxxx)'
-
-    def __call__(self, form, field):
-        pn = field.data
-        if not PhoneNumberValidator.patt.match(pn):
-            raise ValidationError(PhoneNumberValidator.message)
-
-def SSNValidator():
-    message = 'Invalid SSN format (xxx-xx-xxxx)'
-    ssn_pattern = re.compile('\d{3}-\d{2}-\d{4}')
-
-    def validator(form, field):
-        if not ssn_pattern.match(field.data):
-            raise ValidationError(message)
-    return validator
+from shared.util import util
+from shared.util.util import PhoneNumberValidator
 
 class SignupForm(FlaskForm):
     first_name = StringField('first_name', [Required('Please enter your firstname')], render_kw={"placeholder": "firstname"})
@@ -29,7 +13,7 @@ class SignupForm(FlaskForm):
     city = StringField('city', [Required('Please enter your city')], render_kw={"placeholder": "city"})
     state = StringField('state', [Required('Pleae enter your state')], render_kw={"placeholder": "state"})
     postal_code = IntegerField('postal code', [Required('Please enter your postal code')], render_kw={"placeholder": "postal code"})
-    ssn = StringField('social security', [Required('Please enter your social security'), SSNValidator()])
+    ssn = StringField('social security', [Required('Please enter your social security'), util.SSNValidator()])
     dob = DateTimeField('date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
     # driver_license_number = StringField('driver license number',
     # [Required('Please enter your driver license number')])

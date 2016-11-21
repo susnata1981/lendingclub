@@ -19,7 +19,7 @@ login_manager.login_view = "account_bp.login"
 def load_user(id):
     return get_account_by_id(id)
 
-def format_datetime(value, format='%m-%d-%Y / %H:%M'):
+def format_datetime(value, format='%m-%d-%Y'):
     if value is None:
         return constants.NOT_AVAILABLE
     return value.strftime(format)

@@ -9,21 +9,13 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" />
-
-  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous"> -->
-
-  <!-- <link rel="stylesheet" href="{{url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css')}}" /> -->
-  <link rel="stylesheet" href={{url_for('static', filename='css/test.css')}} >
+  <link rel="stylesheet" href={{url_for( 'static', filename='css/test.css' )}}>
 
   <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
 
   <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
   <!-- <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'> -->
 
-
-  <!-- <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}> -->
-  <!-- <link rel="stylesheet" href={{url_for( 'static', filename='textanimation.css' )}}> {% block stylesheet %} -->
-  <!-- <link rel="stylesheet" href={{url_for('static', filename='css/style-simple2.css')}}> {% endblock %} -->
 
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
@@ -33,7 +25,6 @@
   <script type="text/javascript" src={{url_for( 'static', filename='widget.js' )}}></script>
   <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
 
-  <!-- <script type="text/javascript" src={{url_for( 'static', filename='main.js' )}}></script> -->
   <title>{% block title %} Ziplly {% endblock %}</title>
   {% block script %} {% endblock %}
 </head>
@@ -56,11 +47,29 @@
 
     <!-- Navbar Section -->
     <nav>
-      <div id="logo-section">
-       <a href="{{url_for('home_blueprint.index')}}"><span class="logo-heading white-text">Ziplly</span></a>
-       <span class="logo-subtext white-text">borrowing made affordable</span>
-     </div>
-     {% if show_navigation %}
+      <div class="row" id="logo-section">
+        <div class="col-md-4">
+          <a href="{{url_for('home_blueprint.index')}}"><span class="logo-heading white-text">Ziplly</span></a>
+          <span class="logo-subtext white-text">borrowing made affordable</span>
+        </div>
+        {% if current_user.is_authenticated %}
+        <div class="offset-md-5 col-md-3 text-md-right">
+          <ul>
+            <li class="ml-1">
+              <a href={{url_for( 'lending_bp.dashboard')}}>Dashboard</a>
+            </li>
+            <li class="ml-1">
+              <a href={{url_for( 'account_bp.account')}}>Account</a>
+            </li>
+            <li class="ml-1">
+              <a href={{url_for( 'account_bp.logout')}}>Logout</a>
+            </li>
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- {% if show_navigation %}
       <ul class="list-inline navigation">
         <li class="pull-left">
           <a href={{url_for('lending_bp.dashboard')}}>Ziplly</a>
@@ -89,12 +98,8 @@
       </span>
       {% endif %}
       </ul>
-      {% endif %}
-      <!-- <div class="pagetitle">
-        <div class="header">
-          {% block pagetitle %} {% endblock %}
-        </div>
-      </div> -->
+      {% endif %} -->
+
     </nav>
 
     <!-- Main Section -->
@@ -120,7 +125,7 @@
         <div class="container">
           <div class="float-md-right">
             <p class="white-text mb-1">email us at admin@ziplly.com &nbsp;&nbsp;
-            <span class="white-text">© Ziplly 2016</span></p>
+              <span class="white-text">© Ziplly 2016</span></p>
           </div>
         </div>
       </div>

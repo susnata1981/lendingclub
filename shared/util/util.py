@@ -5,6 +5,25 @@ import logging
 import random
 import string
 import traceback
+import re
+
+class PhoneNumberValidator:
+    patt = re.compile('\d{3}-\d{3}-\d{4}')
+    message = 'Invalid phone number format (xxx-xxx-xxxx)'
+
+    def __call__(self, form, field):
+        pn = field.data
+        if not PhoneNumberValidator.patt.match(pn):
+            raise ValidationError(PhoneNumberValidator.message)
+
+def SSNValidator():
+    message = 'Invalid SSN format (xxx-xx-xxxx)'
+    ssn_pattern = re.compile('\d{3}-\d{2}-\d{4}')
+
+    def validator(form, field):
+        if not ssn_pattern.match(field.data):
+            raise ValidationError(message)
+    return validator
 
 def is_running_on_app_engine():
     '''Returns true if the application is running on app engine. Keep in

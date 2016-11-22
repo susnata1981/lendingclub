@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, session, request, redirect, url_for, jsonify
 from plaid import Client
 from shared.services import stripe_client
 from forms import *
@@ -17,72 +17,12 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import account as accountBLI
 from shared.bli import lending as lendingBLI
-from shared.bli import bank as bankBLI
-from shared.util import error
-from application.bank import controller as bank_controller
-from shared.bli.viewmodel.notification import Notification
+from shared.util import error, util
 import traceback
 
 DEBUG = True
 lending_bp = Blueprint('lending_bp', __name__, url_prefix='/lending')
 PREVIOUS_STATE = 'prev_state'
-
-####### should be in account_bp ############
-@lending_bp.route('/reset_password', methods=['GET','POST'])
-def reset_password():
-    form = ResetPasswordForm(request.form)
-    data = {}
-    if form.validate_on_submit():
-        email = form.email.data
-        try:
-            account = get_account_by_email(email)
-            if not account:
-                flash('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
-            else:
-                try:
-                    accountBLI.initiate_reset_password(account)
-                    data['email_sent'] = True
-                except error.MailServiceError:
-                    flash(constants.RESET_PASSWORD_EMAIL_SEND_FAILURE_MESSAGE)
-        except Exception:
-            flash(constants.GENERIC_ERROR)
-    return render_template('account/reset_password.html', data=data, form=form)
-
-@lending_bp.route('/<id>/reset_password', methods=['GET','POST'])
-def reset_password_verify(id):
-    token = request.args.get(constants.VERIFICATION_TOKEN_NAME)
-    account = None
-    try:
-        account = accountBLI.verify_password_reset(int(id), token)
-    except error.DatabaseError as de:
-        logging.error('ERROR: Database Exception: %s' % (de.message))
-        flash(constants.GENERIC_ERROR)
-    except Exception as e:
-        logging.error(e.message)
-    if account:
-        session['password_account_id'] = account.id
-    return redirect(url_for('.reset_password_confirm'))
-
-@lending_bp.route('/reset_password_confirm', methods=['GET','POST'])
-def reset_password_confirm():
-    logging.info('reset_password_confirm entry')
-    form = ResetPasswordConfirmForm(request.form)
-    data = {}
-    if not 'password_account_id' in session or not session['password_account_id']:
-        data['unauthorized'] = True
-    elif form.validate_on_submit():
-        account = get_account_by_id(session['password_account_id'])
-        try:
-            accountBLI.reset_password(account, form.password.data)
-            session.pop('password_account_id', None)
-            login_user(account)
-            logging.info('reset_password_confirm - redirect exit')
-            return redirect(url_for('.dashboard'))
-        except error.DatabaseError as de:
-            print 'ERROR: Database Exception: %s' % (de.message)
-            flash(constants.GENERIC_ERROR)
-    logging.info('reset_password_confirm exit')
-    return render_template('account/reset_password_confirm.html', data=data, form=form)
 
 @lending_bp.route('/dashboard', methods=['GET'])
 @login_required
@@ -111,57 +51,10 @@ def loan_schedule():
     except Exception as e:
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
-        flash(constants.GENERIC_ERROR)
+        util.flash_error(constants.GENERIC_ERROR)
     # pprint(data)
     return render_template('lending/_payment_schedule.html', data=data)
 
-@lending_bp.route('/complete_signup', methods=['GET','POST'])
-@login_required
-def complete_signup():
-    next = accountBLI.signup_next_step(current_user)
-    if 'enter_employer_information' in next:
-        return redirect(url_for('.enter_employer_information'))
-    elif 'add_bank' in next:
-        return redirect(url_for('account_bp.add_bank'))
-    elif 'verify_bank' in next:
-        #TODO(vipin) -- use a form instead to the id.
-        session[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[bankBLI.RANDOM_DEPOSIT_FI_ID_KEY]
-        return redirect(url_for('account_bp.verify_random_deposit'))
-    return redirect(url_for('.dashboard'))
-
-@lending_bp.route('/enter_employer_information', methods=['GET', 'POST'])
-@login_required
-def enter_employer_information():
-    form = EmployerInformationForm(request.form)
-    if form.validate_on_submit():
-        try:
-            now = datetime.now()
-            employer = Employer(
-                type = Employer.TYPE_FROM_NAME[form.employment_type.data],
-                name = form.employer_name.data,
-                phone_number = form.employer_phone_number.data,
-                street1 = form.street1.data,
-                street2 = form.street2.data,
-                city = form.city.data,
-                state = form.state.data,
-                postal_code = form.postal_code.data,
-                status = Employer.ACTIVE,
-                time_created = now,
-                time_updated = now
-            )
-            accountBLI.add_employer(current_user, employer)
-            return redirect(url_for('.complete_signup'))
-        except error.DatabaseError as de:
-            print 'ERROR: Database Exception: %s' % (de.message)
-            flash(constants.GENERIC_ERROR)
-            return render_template('onboarding/enter_employer_information.html', form=form)
-        except Exception as e:
-            print 'ERROR: General Exception: %s' % (e.message)
-            flash(constants.GENERIC_ERROR)
-            return render_template('onboarding/enter_employer_information.html', form=form)
-    return render_template('onboarding/enter_employer_information.html', form=form)
-
-############## /lending ###########
 @lending_bp.route('/get_payment_plan_estimate', methods=['POST'])
 def get_payment_plan_estimate():
     loan_amount = float(request.form.get('loan_amount'))
@@ -176,11 +69,11 @@ def get_payment_plan_estimate():
 def loan_application():
     if lendingBLI.get_all_open_loans(current_user):
         logging.info('User:%d has open loans.' % (current_user.id))
-        # flash('User: %d has open loans.' % (current_user.id))
-        notification = Notification(
-        title='You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id),
-        notification_type=Notification.ERROR)
-        flash(notification.to_map())
+        util.flash_error('You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id))
+        return redirect(url_for('.dashboard'))
+    if not accountBLI.is_signup_complete(current_user):
+        logging.info('User:%d application is not complete.' % (current_user.id))
+        util.flash_error('Please complete your signup before requesting a loan.')
         return redirect(url_for('.dashboard'))
 
     form = LoanApplicationForm()
@@ -211,7 +104,7 @@ def loan_application():
                 traceback.print_exc()
             logging.error('loan_application failed with exception %s' % e)
             data['error'] = True
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('lending/loan_application.html', data=data, form=form)
 
 @lending_bp.route('/loan_details', methods=['POST'])
@@ -225,7 +118,7 @@ def loan_details():
     except Exception as e:
         # traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
-        flash(constants.GENERIC_ERROR)
+        util.flash_error(constants.GENERIC_ERROR)
     return render_template('lending/loan_details.html', data=data)
 
 @lending_bp.route('/loan_details_confirm', methods=['POST'])
@@ -257,24 +150,6 @@ def save_loan_request_to_session(loan_amount=None, loan_duration=None):
 
 ############################
 
-@lending_bp.route('/loan_success')
-def loan_accepted_success():
-    return render_template('lending/loan_accepted_success.html')
-
-# @lending_bp.route('/memberships', methods=['GET'])
-# @login_required
-# def get_membership_info():
-#     data = create_notifications()
-#     for t in current_user.request_money_list:
-#         if t.status != RequestMoney.PAYMENT_COMPLETED:
-#             if request.method == 'GET':
-#                 data['show_notification'] = True
-#                 data['notification_class'] = 'info'
-#                 data['notification_message_description'] = 'You currently owe ${0} before {1}'.format(t.amount, t.payment_date.strftime("%d/%m/%Y"))
-#                 request_money_enabled = False
-#
-#     return render_template('onboarding/account-membership-section.html', data=data)
-
 @lending_bp.route('/make_payment', methods=['GET', 'POST'])
 @login_required
 def make_payment():
@@ -286,7 +161,7 @@ def make_payment():
             data['request_money'] = request_money
 
     if not owes_money:
-        flash('Currently you do not owe any money.')
+        util.flash_error('Currently you do not owe any money.')
         return render_template('lending/make_payment.html', data=data)
 
     form = MakePaymentForm(request.form)
@@ -304,7 +179,7 @@ def make_payment():
 def confirm_payment():
     print 'confirm_payment previous payment_amount = '
     if session[PREVIOUS_STATE] != 'make_payment':
-        flash('Currently you do not owe any money.')
+        util.flash_error('Currently you do not owe any money.')
         return redirect(url_for('.dashboard'))
 
     data = {}

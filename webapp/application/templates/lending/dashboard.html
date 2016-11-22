@@ -32,7 +32,7 @@
     <div class="col-md-12 center">
       {% if data['application_incomplete'] %}
       <h5>Your application is partially complete, we need additional information.</h5>
-      <form action={{url_for( 'lending_bp.complete_signup')}} method="get">
+    <form action={{url_for( 'onboarding_bp.complete_signup')}} method="get">
         <button class="btn btn-accent btn-lg">Complete Application</button>
       </form>
       {% elif data['can_apply_for_loan'] %}

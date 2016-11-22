@@ -46,7 +46,7 @@
             <p class="normal-text">We will debit and credit amounts less than $1 to your bank account. In 3-5 business
               days they'll appear in your bank statement. You'll have to come back and enter the amoun
               to verify your account</p>
-              <form action="{{url_for('account_bp.add_random_deposit')}}" method="get">
+              <form action="{{url_for('onboarding_bp.add_random_deposit')}}" method="get">
                 <button id="random-deposit-button" class="btn btn-orange" role="button">Initiate random deposit</button>
               </form>
         </div>
@@ -78,7 +78,7 @@
     $("#progress-bar").show();
 
     $.post(
-      '{{url_for('account_bp.add_bank')}}',
+      '{{url_for('onboarding_bp.add_bank')}}',
       {
         public_token: public_token,
         bank_account_id: metadata.account_id,
@@ -99,7 +99,7 @@
           $('div.error-item').addClass('alert-success');
           $('div.error-item').html('Bank account added', 1500);
           $('div.error-block').show();
-          window.location.replace('{{url_for('account_bp.verified')}}');
+          window.location.replace('{{url_for('onboarding_bp.verified')}}');
         }
       }
     )}

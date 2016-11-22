@@ -45,7 +45,7 @@
           </td>
           {% if fi.verification_type == 1 and fi.status == 0 %}
           <td>
-            <form action={{url_for('account_bp.start_random_deposit_verification')}} method="post">
+                <form action={{url_for('onboarding_bp.start_random_deposit_verification')}} method="post">
               <input type="hidden" name="fi_id" value={{ fi.id }} />
               <button class="btn">Verify</button>
             </form>
@@ -58,11 +58,11 @@
     {% if current_user.fis | length == 0 %}
     <div class="mt-2">
       <p>No banks added to your account yet.</p>
-        <a class="btn btn-accent mt-1" href={{url_for( 'account_bp.add_bank')}} role="button">Add bank now</a>
+      <span class="flow-text">No banks added to your account yet. <a href={{url_for('onboarding_bp.add_bank')}}>Add Bank Now</a>
       </p>
     </div>
     {% else %}
-    <a class="btn btn-accent mt-1" href={{url_for( 'account_bp.add_bank')}} role="button">Add another bank</a>
+      <a class="btn" href={{url_for('onboarding_bp.add_bank')}}>Add another bank</a>
     {% endif %}
   </div>
 </div>

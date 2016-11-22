@@ -309,7 +309,6 @@ def recreate_tables(engine):
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     logging.info('******* done recreating tables ********')
-    logging.info('creating lending plans')
 
 def init_db():
     if util.is_running_on_app_engine():
@@ -333,9 +332,6 @@ def get_account_by_phone_number(phone_number):
 
 def get_account_by_email(email):
     return current_app.db_session.query(Account).filter(Account.email == email).one_or_none()
-
-def get_fi_by_plaid_account_id(id):
-    return current_app.db_session.query(Fi).filter(Fi.plaid_account_id == id).one_or_none()
 
 def get_fi_by_id(id):
     return current_app.db_session.query(Fi).filter(Fi.id == id).one_or_none()

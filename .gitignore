@@ -6,3 +6,4 @@ webapp/lib/*
 .DS_Store
 **/venv/*
 **/config.py
+webapp/application/.sass-cache

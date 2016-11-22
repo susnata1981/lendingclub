@@ -1,123 +1,119 @@
 {% extends 'base.html' %} {% block pagetitle %} Signup Form {% endblock %} {% block content %}
+
+{% include "_notification.html" %}
+
 <div class="container mt-2">
-  <div class="row">
-    <div class="offset-md-2 col-md-8 p-0">
-      {% if get_flashed_messages() | length > 0 %}
-      <div class="row margin-top-medium">
-        <div class="col-md-12">
-          {% for message in get_flashed_messages() %}
-          <div class="alert alert-danger" role="alert">{{ message }}</div>
-          {% endfor %}
+    <div class="row">
+        <div class="offset-md-2 col-md-8 p-0">
+            {% if form.errors %}
+            <div class="row">
+                <div class="col-md-12">
+                    {% for field in form %} {% for m in field.errors %}
+                    <div class="alert alert-danger" role="alert">{{ m }}</div>
+                    {% endfor %} {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
-      </div>
-      {% endif %} {% if form.errors %}
-      <div class="row">
-        <div class="col-md-12">
-          {% for field in form %} {% for m in field.errors %}
-          <div class="alert alert-danger" role="alert">{{ m }}</div>
-          {% endfor %} {% endfor %}
-        </div>
-      </div>
     </div>
-    {% endif %}
-  </div>
-    <form id="signup-form" class="col-md-10" action={{url_for('onboarding_bp.signup')}} method="post">
-      {{ form.csrf_token }}
-      <div class="row">
-        <div class="offset-md-2 col-md-4 align-left">
-          <h4 class="primary-color">Signup Form</h4>
+    <form id="signup-form" class="col-md-10" action={{url_for( 'onboarding_bp.signup')}} method="post">
+        {{ form.csrf_token }}
+        <div class="row">
+            <div class="offset-md-2 col-md-4 align-left">
+                <h4 class="primary-color">Signup Form</h4>
+            </div>
         </div>
-      </div>
-      <div class="form-group row">
-        <label for="name" class="col-md-2 col-form-label align-right">Name</label>
-        <div class="col-md-4">
-          {{form.first_name(class="form-control")}}
+        <div class="form-group row">
+            <label for="name" class="col-md-2 col-form-label align-right">Name</label>
+            <div class="col-md-4">
+                {{form.first_name(class="form-control")}}
+            </div>
+            <div class="col-md-4">
+                {{form.last_name(class="form-control")}}
+            </div>
         </div>
-        <div class="col-md-4">
-          {{form.last_name(class="form-control")}}
+        <div class="form-group row">
+            {{form.street1.label(class='col-md-2 col-form-label align-right')}}
+            <div class="col-md-8">
+                {{form.street1(class="form-control")}}
+            </div>
         </div>
-      </div>
-      <div class="form-group row">
-        {{form.street1.label(class='col-md-2 col-form-label align-right')}}
-        <div class="col-md-8">
-          {{form.street1(class="form-control")}}
+        <div class="form-group row">
+            {{form.street2.label(class='col-md-2 col-form-label align-right')}}
+            <div class="col-xs-8">
+                {{form.street2(class="form-control")}}
+            </div>
         </div>
-      </div>
-      <div class="form-group row">
-        {{form.street2.label(class='col-md-2 col-form-label align-right')}}
-        <div class="col-xs-8">
-          {{form.street2(class="form-control")}}
+        <div class="form-group row">
+            <label for="location" class="col-xs-2 col-form-label align-right">Location</label>
+            <div class="col-md-3">
+                {{form.city(class="form-control", placeholder="city")}}
+            </div>
+            <div class="col-md-2">
+                {{form.state(class="form-control")}}
+            </div>
+            <div class="col-md-3">
+                {{form.postal_code(class="form-control")}}
+            </div>
         </div>
-      </div>
-      <div class="form-group row">
-        <label for="location" class="col-xs-2 col-form-label align-right">Location</label>
-        <div class="col-md-3">
-          {{form.city(class="form-control", placeholder="city")}}
+        <div class="form-group row">
+            {{form.dob.label(class="col-md-2 col-form-label align-right")}}
+            <div class="col-md-4">
+                {{form.dob(class="form-control dob")}}
+            </div>
         </div>
-        <div class="col-md-2">
-          {{form.state(class="form-control")}}
+        <div class="row form-group">
+            {{form.ssn.label(class="col-xs-2 col-form-label align-right")}}
+            <div class="col-md-4">
+                {{form.ssn(class='ssn form-control')}}
+            </div>
         </div>
-        <div class="col-md-3">
-          {{form.postal_code(class="form-control")}}
+        <div class="row form-group">
+            {{form.phone_number.label(class="col-md-2 col-form-label align-right")}}
+            <div class="col-md-4">
+                {{ form.phone_number(class='phone_number form-control') }}
+            </div>
         </div>
-      </div>
-      <div class="form-group row">
-        {{form.dob.label(class="col-md-2 col-form-label align-right")}}
-        <div class="col-md-4">
-          {{form.dob(class="form-control dob")}}
+        <div class="row form-group">
+            {{form.promotion_code.label(class="col-md-2 col-form-label align-right")}}
+            <div class="col-md-4">
+                {{ form.promotion_code(class="form-control") }}
+            </div>
         </div>
-      </div>
-      <div class="row form-group">
-        {{form.ssn.label(class="col-xs-2 col-form-label align-right")}}
-        <div class="col-md-4">
-          {{form.ssn(class='ssn form-control')}}
+        <div class="row form-group">
+            {{ form.email.label(class="col-md-2 col-form-label align-right") }}
+            <div class="col-md-4">
+                {{ form.email(class="form-control") }}
+            </div>
         </div>
-      </div>
-      <div class="row form-group">
-        {{form.phone_number.label(class="col-md-2 col-form-label align-right")}}
-        <div class="col-md-4">
-          {{ form.phone_number(class='phone_number form-control') }}
+        <div class="row form-group">
+            {{ form.password.label(class="col-md-2 col-form-label align-right") }}
+            <div class="col-md-4">
+                {{ form.password(class="form-control") }}
+            </div>
         </div>
-      </div>
-      <div class="row form-group">
-        {{form.promotion_code.label(class="col-md-2 col-form-label align-right")}}
-        <div class="col-md-4">
-          {{ form.promotion_code(class="form-control") }}
+        <hr />
+        <div class="row">
+            <div class="offset-md-2 col-md-2">
+                {{ form.consent(class="form-control user-agreement-checkbox") }}
+            </div>
+            <div class="col-md-8">
+                <p class="user-agreement-content">I consent to this user agreement</p>
+            </div>
         </div>
-      </div>
-      <div class="row form-group">
-        {{ form.email.label(class="col-md-2 col-form-label align-right") }}
-        <div class="col-md-4">
-          {{ form.email(class="form-control") }}
+        <div class="form-group row">
+            <div class="offset-md-2 col-md-4 margin-top-medium">
+                <button type="submit" class="btn btn-orange">Sign up</button>
+            </div>
         </div>
-      </div>
-      <div class="row form-group">
-        {{ form.password.label(class="col-md-2 col-form-label align-right") }}
-        <div class="col-md-4">
-          {{ form.password(class="form-control") }}
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <span class="login-option">Already a member&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a></span>
+            </div>
         </div>
-      </div>
-      <hr />
-      <div class="row">
-        <div class="offset-md-2 col-md-2">
-          {{ form.consent(class="form-control user-agreement-checkbox") }}
-        </div>
-        <div class="col-md-8">
-          <p class="user-agreement-content">I consent to this user agreement</p>
-        </div>
-      </div>
-      <div class="form-group row">
-        <div class="offset-md-2 col-md-4 margin-top-medium">
-          <button type="submit" class="btn btn-orange">Sign up</button>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-8 offset-md-2">
-          <span class="login-option">Already a member&nbsp;&nbsp;<a href={{url_for('account_bp.login')}}>Login now</a></span>
-        </div>
-      </div>
-  </div>
+    </form>
+<!-- </div>
 </div>
-</form>
+</form> -->
 </div>
 {% endblock %}

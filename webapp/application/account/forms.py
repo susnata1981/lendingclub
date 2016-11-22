@@ -2,7 +2,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, IntegerField, DateField, DateTimeField
 from wtforms.validators import Required, ValidationError, Email, EqualTo
 from shared.util import util
-from shared.util.util import PhoneNumberValidator
 
 class LoginForm(FlaskForm):
     email = StringField('email', [Required('Please enter your email'), Email()])
@@ -29,6 +28,6 @@ class EditProfileForm(FlaskForm):
     ssn = StringField('social security', [Required('Please enter your social security'), util.SSNValidator()])
     dob = DateTimeField('date of birth (mm/dd/yyyy)', [Required('Please enter your date of birth')], format="%m/%d/%Y")
     phone_number = StringField('phone number',
-        [Required('Please enter your phone number'), PhoneNumberValidator()])
+        [Required('Please enter your phone number'), util.PhoneNumberValidator()])
     email = StringField('email', [Required('Please enter your email'), Email()])
     submit = SubmitField('Update')

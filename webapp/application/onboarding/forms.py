@@ -3,7 +3,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, DateField, DateTimeField, FloatField, PasswordField, SubmitField, SelectField, BooleanField
 from wtforms.validators import Required, ValidationError, Email
 from shared.util import util
-from shared.util.util import PhoneNumberValidator
 
 class SignupForm(FlaskForm):
     first_name = StringField('first_name', [Required('Please enter your firstname')], render_kw={"placeholder": "firstname"})
@@ -18,7 +17,7 @@ class SignupForm(FlaskForm):
     # driver_license_number = StringField('driver license number',
     # [Required('Please enter your driver license number')])
     phone_number = StringField('phone number',
-        [Required('Please enter your phone number'), PhoneNumberValidator()])
+        [Required('Please enter your phone number'), util.PhoneNumberValidator()])
     promotion_code = StringField('promotion code')
     email = StringField('email', [Required('Please enter your email'), Email()])
     password = PasswordField('password', validators=[Required('Please enter a password')])
@@ -37,7 +36,7 @@ class EmployerInformationForm(FlaskForm):
     employment_type = SelectField('employment type',
         choices = [('full-time', 'Full Time'), ('part-time', 'Part Time'), ('self-employed', 'Self Employed'), ('unemployed', 'Unemployed')], validators = [Required('Please enter your employment type')])
     employer_name = StringField('employer name', [Required('Please enter your employer name')])
-    employer_phone_number = StringField('employer phone number', [Required('Please enter your phone number'), PhoneNumberValidator()])
+    employer_phone_number = StringField('employer phone number', [Required('Please enter your phone number'), util.PhoneNumberValidator()])
     street1 = StringField('street1', [Required('Please enter your street address')])
     street2 = StringField('street2')
     city = StringField('city', [Required('Please enter your city')], render_kw={"placeholder": "city"})

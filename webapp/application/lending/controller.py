@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, session, request, redirect, url_for, jsonify
 from plaid import Client
 from shared.services import stripe_client
 from forms import *
@@ -17,8 +17,7 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import account as accountBLI
 from shared.bli import lending as lendingBLI
-from shared.util import error
-from shared.bli.viewmodel.notification import Notification
+from shared.util import error, util
 import traceback
 
 DEBUG = True
@@ -52,7 +51,7 @@ def loan_schedule():
     except Exception as e:
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
-        flash(constants.GENERIC_ERROR)
+        util.flash_error(constants.GENERIC_ERROR)
     # pprint(data)
     return render_template('lending/_payment_schedule.html', data=data)
 
@@ -70,19 +69,11 @@ def get_payment_plan_estimate():
 def loan_application():
     if lendingBLI.get_all_open_loans(current_user):
         logging.info('User:%d has open loans.' % (current_user.id))
-        # flash('User: %d has open loans.' % (current_user.id))
-        notification = Notification(
-        title='You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id),
-        notification_type=Notification.ERROR)
-        flash(notification.to_map())
+        util.flash_error('You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id))
         return redirect(url_for('.dashboard'))
     if not accountBLI.is_signup_complete(current_user):
         logging.info('User:%d application is not complete.' % (current_user.id))
-        # flash('User: %d has open loans.' % (current_user.id))
-        notification = Notification(
-        title='Please complete your signup before requesting a loan.',
-        notification_type=Notification.ERROR)
-        flash(notification.to_map())
+        util.flash_error('Please complete your signup before requesting a loan.')
         return redirect(url_for('.dashboard'))
 
     form = LoanApplicationForm()
@@ -113,7 +104,7 @@ def loan_application():
                 traceback.print_exc()
             logging.error('loan_application failed with exception %s' % e)
             data['error'] = True
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('lending/loan_application.html', data=data, form=form)
 
 @lending_bp.route('/loan_details', methods=['POST'])
@@ -127,7 +118,7 @@ def loan_details():
     except Exception as e:
         # traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
-        flash(constants.GENERIC_ERROR)
+        util.flash_error(constants.GENERIC_ERROR)
     return render_template('lending/loan_details.html', data=data)
 
 @lending_bp.route('/loan_details_confirm', methods=['POST'])
@@ -170,7 +161,7 @@ def make_payment():
             data['request_money'] = request_money
 
     if not owes_money:
-        flash('Currently you do not owe any money.')
+        util.flash_error('Currently you do not owe any money.')
         return render_template('lending/make_payment.html', data=data)
 
     form = MakePaymentForm(request.form)
@@ -188,7 +179,7 @@ def make_payment():
 def confirm_payment():
     print 'confirm_payment previous payment_amount = '
     if session[PREVIOUS_STATE] != 'make_payment':
-        flash('Currently you do not owe any money.')
+        util.flash_error('Currently you do not owe any money.')
         return redirect(url_for('.dashboard'))
 
     data = {}

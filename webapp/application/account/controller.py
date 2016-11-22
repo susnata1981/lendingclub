@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, session, request, redirect, url_for, jsonify
 from shared.services import stripe_client
 from forms import *
 from shared.db.model import *
@@ -16,7 +16,6 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import bank as bankBLI
 from shared.bli.viewmodel.bank_data import *
-from shared.bli.viewmodel.notification import Notification
 from application.onboarding.forms import ResendEmailVerificationForm
 
 account_bp = Blueprint('account_bp', __name__, url_prefix='/account')
@@ -37,15 +36,15 @@ def login():
             return redirect(next or url_for('lending_bp.dashboard'))
         except error.DatabaseError as de:
             print 'Database error:',de.orig_exp.message
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('account/login.html', form=form)
         except error.InvalidLoginCredentialsError:
             # print 'Invalid credentials'
-            flash(constants.INVALID_CREDENTIALS)
+            util.flash_error(constants.INVALID_CREDENTIALS)
             return render_template('account/login.html', form=form)
         except error.EmailVerificationRequiredError:
             # print 'Email verification required'
-            flash(constants.ACCOUNT_NOT_VERIFIED)
+            util.flash_error(constants.ACCOUNT_NOT_VERIFIED)
             # verify email message
             data = {}
             data['email_verification_required'] = True
@@ -92,10 +91,7 @@ def edit_account():
         # current_app.db_session.add(current_user.addresses[0])
         current_app.db_session.commit()
 
-        notifiation = Notification(
-        title = 'Your account has been updated.',
-        notification_type = Notification.SUCCESS)
-        flash(notifiation.to_map())
+        util.flash_success('Your account has been updated.')
         return redirect(url_for('.account'))
     elif request.method == 'GET':
         form.first_name.data = current_user.first_name
@@ -122,15 +118,15 @@ def reset_password():
         try:
             account = get_account_by_email(email)
             if not account:
-                flash('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
+                util.flash_error('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
             else:
                 try:
                     accountBLI.initiate_reset_password(account)
                     data['email_sent'] = True
                 except error.MailServiceError:
-                    flash(constants.RESET_PASSWORD_EMAIL_SEND_FAILURE_MESSAGE)
+                    util.flash_error(constants.RESET_PASSWORD_EMAIL_SEND_FAILURE_MESSAGE)
         except Exception:
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
     return render_template('account/reset_password.html', data=data, form=form)
 
 @account_bp.route('/<id>/reset_password', methods=['GET','POST'])
@@ -141,7 +137,7 @@ def reset_password_verify(id):
         account = accountBLI.verify_password_reset(int(id), token)
     except error.DatabaseError as de:
         logging.error('ERROR: Database Exception: %s' % (de.message))
-        flash(constants.GENERIC_ERROR)
+        util.flash_error(constants.GENERIC_ERROR)
     except Exception as e:
         logging.error(e.message)
     if account:
@@ -165,7 +161,7 @@ def reset_password_confirm():
             return redirect(url_for('lending_bp.dashboard'))
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
     logging.info('reset_password_confirm exit')
     return render_template('account/reset_password_confirm.html', data=data, form=form)
 

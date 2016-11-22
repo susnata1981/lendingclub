@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, session, request, redirect, url_for, jsonify
 from shared.services import stripe_client
 from forms import *
 from shared.db.model import *
@@ -6,7 +6,7 @@ import traceback
 import random
 from datetime import datetime
 from flask.ext.login import current_user, login_required, login_user, logout_user
-from shared.util import constants, error
+from shared.util import constants, error, util
 from shared import services
 from shared.bli import account as accountBLI
 from pprint import pprint
@@ -28,20 +28,20 @@ def resend_email_verification():
         try:
             account = get_account_by_email(email)
             if not account:
-                flash('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
+                util.flash_error('Account for this email(%s) doesn\'t exist at Ziplly.' % (email))
                 data['show_email_verification_form'] = True
             elif accountBLI.is_email_verified(account):
-                flash('Email already verified.')
+                util.flash_error('Email already verified.')
                 data['email_already_verified'] = True
             else:
                 try:
                     accountBLI.initiate_email_verification(account)
                     data['email_sent'] = True
                 except error.EmailVerificationSendingError:
-                    flash(constants.EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE)
+                    util.flash_error(constants.EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE)
                     data['show_email_verification_form'] = True
         except Exception:
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             data['show_email_verification_form'] = True
     else:
         data['show_email_verification_form'] = True
@@ -56,13 +56,13 @@ def verify_email(id):
         accountBLI.verify_email(int(id), token)
         return redirect(url_for('onboarding_bp.account_verified'))
     except (error.AccountNotFoundError, error.EmailVerificationNotMatchError) as e:
-        flash('Invalid verification code.')
+        util.flash_error('Invalid verification code.')
         data['show_email_verification_form'] = True
     except error.AccountEmailAlreadyVerifiedError:
-        flash('Email already verified.')
+        util.flash_error('Email already verified.')
         data['email_already_verified'] = True
     except error.DatabaseError:
-        flash(constants.GENERIC_ERROR)
+        util.flash_error(constants.GENERIC_ERROR)
         data['show_email_verification_form'] = True
     return render_template('onboarding/verify_email.html', data=data, form=form)
 
@@ -106,21 +106,21 @@ def signup():
 
             accountBLI.signup(account)
         except error.AccountExistsError:
-            flash(constants.ACCOUNT_WITH_EMAIL_ALREADT_EXISTS)
+            util.flash_error(constants.ACCOUNT_WITH_EMAIL_ALREADT_EXISTS)
             return render_template('onboarding/signup.html', form=form)
         except error.EmailVerificationSendingError:
-            flash(constants.ACCOUNT_CREATED_BUT_EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE)
+            util.flash_error(constants.ACCOUNT_CREATED_BUT_EMAIL_VERIFICATION_SEND_FAILURE_MESSAGE)
             data = {}
             data['show_email_verification_form'] = True
             email_form = ResendEmailVerificationForm(request.form)
             return render_template('onboarding/verify_email.html', data=data, form=email_form)
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/signup.html', form=form)
         except Exception as e:
             print 'ERROR: General Exception: %s' % (e.message)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/signup.html', form=form)
 
         # verify email sent message
@@ -191,15 +191,15 @@ def add_random_deposit():
             bankBLI.save_random_deposit_bank(bank, current_user)
             return redirect(url_for('.add_bank_random_deposit_success'))
         except error.UserInputError as e:
-            flash(e.message)
+            util.flash_error(e.message)
             return render_template('onboarding/add_random_deposit.html', form = form)
         except error.StripeError as e:
-            flash(e.message)
+            util.flash_error(e.message)
             return render_template('onboarding/add_random_deposit.html', form = form)
         except Exception as e:
             #TODO: should we handle if bank already exists for customer?
             logging.error('add_random_deposit::received exception %s' % e)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/add_random_deposit.html', form = form)
     else:
         return render_template('onboarding/add_random_deposit.html', form = form)
@@ -211,7 +211,7 @@ def start_random_deposit_verification():
     if fi_id:
         session[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY] = fi_id
         return redirect(url_for('.verify_random_deposit'))
-    flash('error')
+    util.flash_error(constants.GENERIC_ERROR)
     return redirect(url_for('lending_bp.dashboard'))
 
 @onboarding_bp.route('/verify_random_deposit', methods=['GET', 'POST'])
@@ -237,14 +237,14 @@ def verify_random_deposit():
             return redirect(url_for('lending_bp.dashboard'))
         except error.IncorrectRandomDepositAmountsError as e:
             logging.info('Stripe service raised IncorrectRandomDepositAmountsError')
-            flash(e.message)
+            util.flash_error(e.message)
             return render_template('onboarding/verify_random_deposit.html', form=form)
         except error.UserInputError as e:
-            flash(e.message)
+            util.flash_error(e.message)
             return render_template('onboarding/verify_random_deposit.html', form=form)
         except Exception as e:
             logging.error('failed to verify_account_random_deposit, exception %s' % e)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/verify_random_deposit.html', form=form)
     else:
         return render_template('onboarding/verify_random_deposit.html', form=form)
@@ -297,11 +297,11 @@ def enter_employer_information():
             return redirect(url_for('.complete_signup'))
         except error.DatabaseError as de:
             print 'ERROR: Database Exception: %s' % (de.message)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/enter_employer_information.html', form=form)
         except Exception as e:
             print 'ERROR: General Exception: %s' % (e.message)
-            flash(constants.GENERIC_ERROR)
+            util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/enter_employer_information.html', form=form)
     return render_template('onboarding/enter_employer_information.html', form=form)
 
@@ -334,7 +334,7 @@ def verify_phone_number():
             current_app.db_session.commit()
             return redirect(url_for('onboarding_bp.account_verified'))
         else:
-            flash('Invalid verification code')
+            util.flash_error('Invalid verification code')
     return render_template('onboarding/verify_phone.html', form=form)
 
 # ajax

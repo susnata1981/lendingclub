@@ -1,0 +1,51 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-md-12 my-3">
+    {{ data['accounts']}}
+
+    <table class="table table-bordered">
+      <tr>
+        <th>
+          <h6>Name</h6>
+        </th>
+        <th>
+          <h6>Phone</h6>
+        </th>
+        <th>
+          <h6>SSN</h6>
+        </th>
+        <th>
+          <h6>Total loans</h6>
+        </th>
+        <th>
+          <h6>Date created</h6>
+        </th>
+      </tr>
+      {% for a in data['accounts'] %}
+        <tr>
+          <td>
+            <p>{{a.first_name}} {{a.last_name}}</p>
+          </td>
+          <td>
+            <p>{{a.phone_number}}</p>
+          </td>
+          <td>
+            <p>{{a.ssn}}</p>
+          </td>
+          <td>
+            <p>{{a.request_money_list | length }}</p>
+          </td>
+          <td>
+            <p>{{a.time_created | format_datetime}}</p>
+          </td>
+          <td>
+            <form action="{{url_for('account_bp.get_loans')}}" method="post">
+              <input type="hidden" value="{{a.id}}" />
+              <button class="btn btn-accent">Loans</button>
+            </form>
+        </tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

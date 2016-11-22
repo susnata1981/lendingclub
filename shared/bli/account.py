@@ -5,6 +5,7 @@ from shared.util import util, logger, error, constants
 from shared.db.model import *
 from shared.services import mail
 import random, string
+from shared.bli.viewmodel.signup_steps import SignupSteps
 
 LOGGER = logger.getLogger('shared.bli.account')
 RANDOM_DEPOSIT_FI_ID_KEY = 'random_deposit_fi_id'
@@ -146,23 +147,22 @@ def is_signup_complete(account):
     LOGGER.info('is_application_complete:True exit')
     return True
 
-def signup_next_step(account):
+def signup_steps(account):
     LOGGER.info('application_next_step entry')
-    next = {}
+    steps = SignupSteps()
     if not account.employers:
-        next['enter_employer_information'] = True
-    elif not account.get_usable_fis():
-        next['add_bank'] = True
-    elif not account.is_active_primary_bank_verified():
+        steps.employer_information = False
+    if not account.get_usable_fis():
+        steps.add_bank = False
+    if not account.is_active_primary_bank_verified():
         primary_bank = account.get_active_primary_bank()
-        #TODO: currently if the account has active banks atleast  one of them is primary_bank
+        #TODO: currently if the account has active banks atleast one of them is primary_bank
         # not checking if primary_bank == None
-        next['verify_bank'] = True
-        next[RANDOM_DEPOSIT_FI_ID_KEY] = primary_bank.id
-    else:
-        next['application_complete'] = True
-    LOGGER.info('application_next_step exit')
-    return next
+        steps.verify_bank = False
+        steps.verify_bank_id = primary_bank.id
+    if not account.get_open_loans():
+        steps.apply_loan = False
+    return steps
 
 def add_employer(account, employer):
     LOGGER.info('add_employer entry')

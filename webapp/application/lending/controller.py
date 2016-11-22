@@ -29,7 +29,7 @@ PREVIOUS_STATE = 'prev_state'
 def dashboard():
     data = {}
     data['application_incomplete'] = not accountBLI.is_signup_complete(current_user)
-    if not lendingBLI.get_all_open_loans(current_user):
+    if not current_user.get_open_loans():
         #no loans, show apply loans
         data['can_apply_for_loan'] = True
     data['loans'] = lendingBLI.get_loan_activity(current_user)
@@ -67,7 +67,7 @@ def get_payment_plan_estimate():
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
-    if lendingBLI.get_all_open_loans(current_user):
+    if current_user.get_open_loans():
         logging.info('User:%d has open loans.' % (current_user.id))
         util.flash_error('You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id))
         return redirect(url_for('.dashboard'))

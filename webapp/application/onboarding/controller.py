@@ -262,16 +262,24 @@ def add_bank_random_deposit_success():
 @onboarding_bp.route('/complete_signup', methods=['GET','POST'])
 @login_required
 def complete_signup():
-    next = accountBLI.signup_next_step(current_user)
-    if 'enter_employer_information' in next:
+    steps = accountBLI.signup_steps(current_user)
+    # pprint(steps.__dict__)
+    # pprint(steps.to_map())
+    if not steps.employer_information:
         return redirect(url_for('.enter_employer_information'))
-    elif 'add_bank' in next:
+    elif not steps.add_bank:
         return redirect(url_for('onboarding_bp.add_bank'))
-    elif 'verify_bank' in next:
-        #TODO(vipin) -- use a form instead to the id.
-        session[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY] = next[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY]
+    elif not steps.verify_bank:
+        session[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY] = steps.verify_bank_id
         return redirect(url_for('onboarding_bp.verify_random_deposit'))
     return redirect(url_for('.dashboard'))
+
+@onboarding_bp.route('/steps', methods=['GET','POST'])
+@login_required
+def steps():
+    steps = accountBLI.signup_steps(current_user)
+    # TODO: return the template after Shaan adds the html template
+    return jsonify(steps.to_map())
 
 @onboarding_bp.route('/enter_employer_information', methods=['GET', 'POST'])
 @login_required

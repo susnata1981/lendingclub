@@ -1,6 +1,5 @@
 from flask import current_app
 from datetime import datetime
-
 from shared.util import util, logger, error, constants
 from shared.db.model import *
 from shared.services import mail
@@ -148,20 +147,21 @@ def is_signup_complete(account):
     return True
 
 def signup_steps(account):
-    LOGGER.info('application_next_step entry')
+    LOGGER.info('application_next_step for entry')
+    LOGGER.info('application_next_step for user:%s' % (account.id))
     steps = SignupSteps()
     if not account.employers:
         steps.employer_information = False
     if not account.get_usable_fis():
         steps.add_bank = False
+    active_primary_bank = account.get_active_primary_bank()
     if not account.is_active_primary_bank_verified():
-        primary_bank = account.get_active_primary_bank()
-        #TODO: currently if the account has active banks atleast one of them is primary_bank
-        # not checking if primary_bank == None
         steps.verify_bank = False
-        steps.verify_bank_id = primary_bank.id
+        if active_primary_bank:
+            steps.verify_bank_id = active_primary_bank.id
     if not account.get_open_loans():
         steps.apply_loan = False
+    LOGGER.info('application_next_step for exit')
     return steps
 
 def add_employer(account, employer):

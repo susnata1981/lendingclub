@@ -327,6 +327,9 @@ def byTime_key(obj):
 def get_account_by_id(account_id):
     return current_app.db_session.query(Account).filter(Account.id == account_id).one_or_none()
 
+def get_accounts():
+    return current_app.db_session.query(Account).all()
+
 def get_account_by_phone_number(phone_number):
     return current_app.db_session.query(Account).filter(Account.phone_number == phone_number).one_or_none()
 

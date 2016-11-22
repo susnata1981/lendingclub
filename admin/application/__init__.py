@@ -4,12 +4,10 @@ from flask import current_app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from shared.services import phone
 from shared.util import constants
 from flask.ext.login import LoginManager
 from shared.db.model import *
 from shared.services import stripe_client
-import admin
 import traceback
 
 login_manager = LoginManager()
@@ -31,9 +29,9 @@ def format_transaction_status(value):
         return 'IN PROGRESS'
     elif value == RequestMoney.CANCELED:
         return 'CANCELED'
-    elif value == RequestMoney.FAILED:
+    elif value == Transaction.FAILED:
         return 'FAILED'
-    elif value == RequestMoney.COMPLETED:
+    elif value == Transaction.COMPLETED:
         return 'COMPLETED'
     return 'UNKNOWN'
 
@@ -117,37 +115,17 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # Setup the data model.
     with app.app_context():
         init_db()
-        phone.init()
         constants.init()
         stripe_client.init()
-
-    # Register the blueprints
-    from home.controller import home_blueprint
-    app.register_blueprint(home_blueprint)
-
-    # Onboarding
-    from onboarding.controller import onboarding_bp
-    app.register_blueprint(onboarding_bp)
 
     # Account
     from account.controller import account_bp
     app.register_blueprint(account_bp)
 
-    # Lending
-    from lending.controller import lending_bp
-    app.register_blueprint(lending_bp)
-
-    # Admin
-    from admin.controller import admin_bp
-    app.register_blueprint(admin_bp)
-
-    # from onboarding.signup_controller import signup_bp
-    # app.register_blueprint(signup_bp)
-
     # Add a default root route.
     @app.route("/")
     def index():
-        return redirect(url_for('home_blueprint.dashboard'))
+        return redirect(url_for('account_bp.dashboard'))
 
     @app.errorhandler(Exception)
     def log_unhandled_exceptions(error):

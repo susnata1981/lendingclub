@@ -1,0 +1,73 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 my-3">
+      <table class="table table-bordered">
+        <tr>
+          <th>
+            <h6>Amount</h6>
+          </th>
+          <th>
+            <h6>Apr</h6>
+          </th>
+          <th>
+            <h6>Status</h6>
+          </th>
+          <th>
+            <h6>Date created</h6>
+          </th>
+        </tr>
+        {% for l in data['loans'] %}
+        <tr>
+          <td>
+            <p>{{l['loan']['amount'] | format_currency}}</p>
+          </td>
+          <td>
+            <p>{{l['loan']['apr']}}</p>
+          </td>
+          <td>
+            <p>{{l['loan']['status'] | format_transaction_status }}</p>
+          </td>
+          <td>
+            <p>{{l['loan']['time_created'] | format_datetime}}</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12 my-3">
+      <table class="table table-bordered">
+        <tr>
+          <th>
+            <h6>Amount</h6>
+          </th>
+          <th>
+            <h6>Status</h6>
+          </th>
+          <th>
+            <h6>Due date</h6>
+          </th>
+        </tr>
+        {% for l in data['loans'] %}
+        {% for t in l['transactions'] %}
+        <tr>
+          <td>
+            <p>{{t['amount'] | format_currency}}</p>
+          </td>
+          <td>
+            <p>{{t['status'] | format_transaction_status }}</p>
+          </td>
+          <td>
+            <p>{{t['date'] | format_datetime}}</p>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

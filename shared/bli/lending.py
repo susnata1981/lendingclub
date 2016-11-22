@@ -53,7 +53,7 @@ def get_payment_plan_estimate(loan_amount, loan_duration):
 
 def create_request(account, req_money):
     LOGGER.info('create_request entry')
-    if get_all_open_loans(account):
+    if account.get_open_loans():
         LOGGER.error('User:%s has open loans. Cannot create a new loan' % (account.id))
         raise error.AccountHasOpenLoanError('User:%s has open loans. Cannot create a new loan' % (account.id))
 
@@ -68,18 +68,6 @@ def create_request(account, req_money):
         LOGGER.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
     LOGGER.info('create_request exit')
-
-def get_all_open_loans(account):
-    LOGGER.info('get_all_open_loans entry')
-    try:
-        open_loans = current_app.db_session.query(RequestMoney).filter(
-        RequestMoney.account_id == account.id, RequestMoney.status.in_([RequestMoney.IN_REVIEW, RequestMoney.APPROVED, RequestMoney.ACCEPTED, RequestMoney.TRANSFER_IN_PROGRESS, RequestMoney.ACTIVE, RequestMoney.DELINQUENT, RequestMoney.IN_COLLECTION])
-        ).all()
-        return open_loans
-    except Exception as e:
-        LOGGER.error(e.message)
-        raise error.DatabaseError(constants.GENERIC_ERROR,e)
-    LOGGER.info('get_all_open_loans exit')
 
 def fake_loan_summary():
     data = [{'schedule': [{'amount': 166.56,

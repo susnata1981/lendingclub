@@ -112,6 +112,16 @@ class Account(Base):
             return True
         return False
 
+    def get_open_loans(self):
+        try:
+            open_loans = current_app.db_session.query(RequestMoney).filter(
+            RequestMoney.account_id == id, RequestMoney.status.in_([RequestMoney.IN_REVIEW, RequestMoney.APPROVED, RequestMoney.ACCEPTED, RequestMoney.TRANSFER_IN_PROGRESS, RequestMoney.ACTIVE, RequestMoney.DELINQUENT, RequestMoney.IN_COLLECTION])
+            ).all()
+            return open_loans
+        except Exception as e:
+            LOGGER.error(e.message)
+            raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
     def get_open_request(self):
         for req in self.request_money_list:
             if req.status != RequestMoney.CANCELED and \

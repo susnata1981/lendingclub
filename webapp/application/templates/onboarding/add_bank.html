@@ -1,159 +1,138 @@
-{% extends 'base.html' %} {% block content %}
-
-{% with show_buttons=False, title="Connect bank" %}
+{% extends 'base.html' %}
+{% block content %}
+{% with show_buttons=False, title="Link bank" %}
 {% include "_sub_header.html" %}
 {% endwith %}
 
 <div class="container">
-  <div class="error-block">
--    <div class="error-item alert">
--    </div>
--  </div>
-  {% if get_flashed_messages() | length > 0 %}
-    <div class="row">
-      <div class="col-md-6">
-        {% for message in get_flashed_messages() %}
-           <div class="alert alert-danger">{{ message }}</div>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
-
-<div class="row">
-  <div class="col-md-8">
-    <div class="row">
-      <div class="form-group col-md-12 margin-top-large">
-        <h5>Select your bank<br/><span class="help-text">(Choose Wells Fargo, the most trusted bank :-))</h5>
-        <select>
-          <option value="" disabled selected>Pick your bank</option>
-          {% for b in institutions %}
-          <option value="{{ b.institution_type }}">{{ b.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+  <div class="row">
+    <div class="col-md-10 my-2">
+      {% include "_notification.html" %} {% with data=data %} {% include 'onboarding/_onboarding_breadcrumb.html' %} {% endwith %}
     </div>
   </div>
-</div>
 
-<div id="bank-verification-methods-section">
-  <h5 class="margin-left-12 margin-top-medium">Add your bank</h5>
-  <p class="margin-left-12">You can choose one of the following methods to add your bank account</p>
-    <div class="row margin-12">
-      <div class="col-md-5 white-bg padding-medium">
-        <div class="verification-method-box" id="random-deposit-section">
+  <div class="row">
+    <div class="col-md-4">
+      <h5>Select your bank<br/><span class="help-text">(Choose Wells Fargo, the most trusted bank :-))</h5>
+      <select class="form-control">
+        <option value="" disabled selected>Pick your bank</option>
+        {% for b in data['institutions'] %}
+        <option value="{{ b.institution_type }}">{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="row my-2" id="bank-verification-methods-section">
+    <div class="col-md-8">
+      <h5>Add your bank</h5>
+      <p>You can choose one of the following methods to add your bank account</p>
+      <div class="row my-2">
+        <div class="col-md-5">
+          <div class="verification-method-box py-1" id="random-deposit-section">
             <h5>Random deposit</h5>
             <hr/>
-            <p class="normal-text">We will debit and credit amounts less than $1 to your bank account. In 3-5 business
-              days they'll appear in your bank statement. You'll have to come back and enter the amoun
-              to verify your account</p>
-              <form action="{{url_for('onboarding_bp.add_random_deposit')}}" method="get">
-                <button id="random-deposit-button" class="btn btn-orange" role="button">Initiate random deposit</button>
-              </form>
+            <p class="normal-text">We will debit and credit amounts less than $1 to your bank account. In 3-5 business days they'll appear in your bank statement. You'll have to come back and enter the amoun to verify your account</p>
+            <form action="{{url_for('onboarding_bp.add_random_deposit')}}" method="get">
+              <button id="random-deposit-button" class="btn btn-accent" role="button">Initiate random deposit</button>
+            </form>
+          </div>
         </div>
-      </div>
-      <div class="offset-md-1 col-md-5 white-bg padding-medium">
-        <div class="verification-method-box" id="instant-verification-section">
+        <div class="offset-md-2 col-md-5">
+          <div class="verification-method-box py-1" id="instant-verification-section">
             <h5>Instant Bank Verification</h5>
             <hr/>
             <p class="normal-text">You will need to login to your bank account using secure connection</p>
             <p class="help-text">(username: plaid_test, password:plaid_good)</p>
-            <button class="btn btn-orange instant-verification-button" id='linkButton'>Instant Bank Verification</button>
+            <button class="btn btn-accent instant-verification-button" id='linkButton'>Instant Bank Verification</button>
+          </div>
         </div>
       </div>
     </div>
-</div>
+  </div>
 
- <script src="https://cdn.plaid.com/link/stable/link-initialize.js"></script>
- <script>
-  $('div.error-block').hide();
-  var linkHandler = Plaid.create({
-   env: 'tartan',
-   clientName: 'Ziplly',
-   key: 'ec0b65435507226851894edaf18afe',
-   product: 'auth',
-   selectAccount: true,
-   onSuccess: function(public_token, metadata) {
-    $('div.error-item').html('');
-    $('div.error-block').hide();
-    $("#progress-bar").show();
+  <script src="https://cdn.plaid.com/link/stable/link-initialize.js"></script>
+  <script>
+    $(function() {
+      $('div.error-block').hide();
+      var linkHandler = Plaid.create({
+        env: 'tartan',
+        clientName: 'Ziplly',
+        key: 'ec0b65435507226851894edaf18afe',
+        product: 'auth',
+        selectAccount: true,
+        onSuccess: function(public_token, metadata) {
+          $('div.error-item').html('');
+          $('div.error-block').hide();
+          $("#progress-bar").show();
 
-    $.post(
-      '{{url_for('onboarding_bp.add_bank')}}',
-      {
-        public_token: public_token,
-        bank_account_id: metadata.account_id,
-        bank_account_name: metadata.account.name,
-        institution: metadata.institution.name,
-        institution_type: metadata.institution.type,
-      },
-      function(data) {
-        $("#progress-bar").hide();
-        $('btn').removeAttr('disabled');
-        if (data.error) {
-          // Materialize.toast('Could not add your bank account: ', 1500);
-          $('div.error-item').addClass('alert-danger');
-          $('div.error-item').html('Could not add your bank account');
-          $('div.error-block').show();
-        } else {
-          // Materialize.toast('Bank account added', 1500);
-          $('div.error-item').addClass('alert-success');
-          $('div.error-item').html('Bank account added', 1500);
-          $('div.error-block').show();
-          window.location.replace('{{url_for('onboarding_bp.verified')}}');
+          $.post(
+            $HOST + 'onboarding_bp/add_bank', {
+              public_token: public_token,
+              bank_account_id: metadata.account_id,
+              bank_account_name: metadata.account.name,
+              institution: metadata.institution.name,
+              institution_type: metadata.institution.type,
+            },
+            function(data) {
+              $("#progress-bar").hide();
+              $('btn').removeAttr('disabled');
+              if (data.error) {
+                // Materialize.toast('Could not add your bank account: ', 1500);
+                $('div.error-item').addClass('alert-danger');
+                $('div.error-item').html('Could not add your bank account');
+                $('div.error-block').show();
+              } else {
+                // Materialize.toast('Bank account added', 1500);
+                $('div.error-item').addClass('alert-success');
+                $('div.error-item').html('Bank account added', 1500);
+                $('div.error-block').show();
+                window.location.replace($HOST + 'onboarding/verified');
+              }
+            }
+          )
         }
-      }
-    )}
-  });
+      });
 
-  $("#bank-verification-methods-section").hide();
+      $("#bank-verification-methods-section").hide();
 
-  // $("input[name='other']").change(function() {
-  //   if ($(this).is(':checked')) {
-  //       $("#bank-verification-methods-section").show();
-  //       $("#instant-verification-section").hide();
-  //       $('#random-deposit-section').show();
-  //   } else {
-  //     var cs = $('select').val();
-  //     if (cs === 'Other') {
-  //       $('#random-deposit-section').hide();
-  //     }
-  //   }
-  // });
+      $('select').change(function() {
+        var cs = $('select').val();
+        $("#bank-verification-methods-section").show();
 
-  $('select').change(function() {
-    var cs = $('select').val();
-    $("#bank-verification-methods-section").show();
+        if (cs.toUpperCase() === 'Other'.toUpperCase()) {
+          $(".instant-verification-button").attr('disabled', 'disabled');
+        } else {
+          $(".instant-verification-button").removeAttr('disabled');
+        }
+      });
 
-    if (cs.toUpperCase() === 'Other'.toUpperCase()) {
-      $(".instant-verification-button").attr('disabled', 'disabled');
-    } else {
-      $(".instant-verification-button").removeAttr('disabled');
-    }
-  });
+      $('select').prop('selectedIndex', 0);
 
-  $('select').prop('selectedIndex', 0);
+      // Trigger the Link UI
+      document.getElementById('linkButton').onclick = function() {
+        var cs = $('select').val();
+        $('btn').attr('disabled', 'disabled');
+        linkHandler.open(cs);
+      };
+    });
+  </script>
 
-  // Trigger the Link UI
-  document.getElementById('linkButton').onclick = function() {
-    var cs = $('select').val();
-    $('btn').attr('disabled','disabled');
-    linkHandler.open(cs);
-  };
- </script>
-
- <div id="progress-bar">
-   <div class="preloader-wrapper big active">
-     <div class="spinner-layer spinner-blue-only">
-       <div class="circle-clipper left">
-         <div class="circle"></div>
-       </div><div class="gap-patch">
-         <div class="circle"></div>
-       </div><div class="circle-clipper right">
-         <div class="circle"></div>
-       </div>
-     </div>
-   </div>
- </div>
+  <div id="progress-bar">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
 {% endblock %}

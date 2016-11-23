@@ -765,7 +765,7 @@ form.user-input {
 }
 
 .verification-method-box {
-  height: 220px;
+  height: 266px;
   position: relative;
 }
 
@@ -773,6 +773,7 @@ form.user-input {
   display: inline-block;
   position: absolute;
   bottom: 10px;
+  left: 0;
 }
 /***********************************************************************/
 
@@ -818,4 +819,48 @@ ol  {
 ol li {
   float: left;
 }
+/***********************************************************************/
+
+
+/*********************** dashboard page ***********************/
+
+ul li {
+  float: left;
+}
+
+ul {
+  list-style: none;
+}
+/***********************************************************************/
+
+/*********************** enter employer information ***********************/
+/*.breadcrumb-ul {
+  height: 44px;
+  background: #eee;
+}
+
+.breadcrumb-ul li::after {
+  content: " ";
+  display: inline-block;
+  background: #eee;
+  border-top: 1px solid #000;
+  border-right: 1px solid #000;
+  width: 40px;
+  height: 40px;
+  -webkit-transform: rotate(45deg);
+}
+
+.breadcrumb-ul li span {
+  display: inline-block;
+  line-height: 44px;
+  vertical-align: top;
+}*/
+
+/*
+	 CSS-Tricks Example
+	 by Chris Coyier
+	 http://css-tricks.com
+*/
+
+
 </style>

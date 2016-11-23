@@ -4,7 +4,7 @@ from shared.util import util, logger, error, constants
 from shared.db.model import *
 from shared.services import mail
 import random, string
-from shared.bli.viewmodel.signup_steps import SignupSteps
+from shared.bli.viewmodel.onboarding_step_vm import OnboardingStepVM
 
 LOGGER = logger.getLogger('shared.bli.account')
 RANDOM_DEPOSIT_FI_ID_KEY = 'random_deposit_fi_id'
@@ -149,18 +149,19 @@ def is_signup_complete(account):
 def signup_steps(account):
     LOGGER.info('application_next_step for entry')
     LOGGER.info('application_next_step for user:%s' % (account.id))
-    steps = SignupSteps()
-    if not account.employers:
-        steps.employer_information = False
-    if not account.get_usable_fis():
-        steps.add_bank = False
-    active_primary_bank = account.get_active_primary_bank()
-    if not account.is_active_primary_bank_verified():
-        steps.verify_bank = False
-        if active_primary_bank:
-            steps.verify_bank_id = active_primary_bank.id
-    if not account.get_open_loans():
-        steps.apply_loan = False
+    steps = OnboardingStepVM()
+    steps.set_signup_state(OnboardingStepVM.PERSONAL_INFORMATION, True)
+    if account.employers:
+        steps.set_signup_state(OnboardingStepVM.ENTER_EMPLOYER_INFORMATION, True)
+    if account.get_usable_fis():
+        steps.set_signup_state(OnboardingStepVM.LINK_BANK_ACCOUNT, True)
+    # active_primary_bank = account.get_active_primary_bank()
+    if account.is_active_primary_bank_verified():
+        steps.set_signup_state(OnboardingStepVM.VERIFY_BANK_ACCOUNT, True)
+        # if active_primary_bank:
+        #     steps.verify_bank_id = active_primary_bank.id
+    if account.get_open_loans():
+        steps.set_signup_state(OnboardingStepVM.APPLY_LOAN, True)
     LOGGER.info('application_next_step for exit')
     return steps
 

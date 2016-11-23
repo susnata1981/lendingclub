@@ -1,28 +1,10 @@
 {% extends 'base.html' %} {% block content %}
-
 {% with show_buttons=True, title="Dashboard" %}
 {% include "_sub_header.html" %}
 {% endwith %}
 
 {% if data['application_incomplete'] %}
-<div class="row primary-bg-dark-1">
-  <div class="col-md-10 offset-md-1 pl-0">
-    <ol class="my-1">
-      <li class="mr-3">
-        <h6 class="white-text m-0 bg-primary px-1">Enter personal information</h6>
-      </li>
-      <li class="mr-3">
-        <h6 class="white-text m-0">Enter employer information</h6>
-      </li>
-      <li class="mr-3">
-        <h6 class="white-text m-0">Connect your bank</h6>
-      </li>
-      <li class="mr-3">
-        <h6 class="white-text m-0">Apply for loan</h6>
-      </li>
-    </ol>
-  </div>
-</div>
+<div class="onboarding_steps"></div>
 {% endif %}
 
 {% include "_notification.html" %}
@@ -57,20 +39,26 @@
 
 </div>
 
-<script>
-  $(".payment-schedule").click(function() {
-    var loanId = $(this).parent().parent().attr('loan-id');
-    $.post(
-      '/lending/loan_schedule', {
-        'loan_id': loanId
-      },
-      function(data) {
-        // $("#loan-schedule").html("");
-        $("#loan-history").html(data);
-      }
-    );
-  });
-</script>
+<script type="text/javascript">
+  $(function() {
+    $.post($HOST + "onboarding/steps",
+    function(response) {
+      $('.onboarding_steps').html(response);
+    });
 
+    $(".payment-schedule").click(function() {
+      var loanId = $(this).parent().parent().attr('loan-id');
+      $.post(
+        $HOST + '/lending/loan_schedule',
+        {
+          'loan_id': loanId
+        },
+        function(data) {
+          $("#loan-history").html(data);
+        }
+      );
+    });
+  })
+</script>
 
 {% endblock %}

@@ -1,0 +1,17 @@
+<div class="row primary-bg-dark-1">
+  <div class="col-md-10 offset-md-1 pl-0">
+    <ul class="p-1">
+      {% for step in data['steps'] %}
+      <li class="mr-3">
+        {% if step.completed %}
+        <p class="white-text m-0">
+          <img src="{{url_for('static', filename='checkbox.png')}}" /> {{ step.name }}
+        </p>
+        {% else %}
+        <p class="white-text m-0">{{ step.name }}</p>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

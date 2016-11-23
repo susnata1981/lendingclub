@@ -16,6 +16,7 @@ import dateutil
 from dateutil.relativedelta import relativedelta
 from shared.bli import bank as bankBLI
 from shared.bli.viewmodel.bank_data import *
+from shared.bli.viewmodel.onboarding_step_vm import *
 
 onboarding_bp = Blueprint('onboarding_bp', __name__, url_prefix='/onboarding')
 
@@ -135,9 +136,12 @@ def signup():
 @login_required
 def add_bank():
     if request.method == 'GET':
-        institutions = get_all_iav_supported_institutions()
-        return render_template('onboarding/add_bank.html',
-        institutions = institutions)
+        data = {}
+        onboardingStepVM = OnboardingStepVM()
+        onboardingStepVM.set_onboarding_state(OnboardingStepVM.LINK_BANK_ACCOUNT, True)
+        data['onboarding_steps'] = onboardingStepVM.get_onboarding_steps()
+        data['institutions'] = get_all_iav_supported_institutions()
+        return render_template('onboarding/add_bank.html', data=data)
     else:
         result = {}
         try:
@@ -175,6 +179,11 @@ def add_bank():
 @login_required
 def add_random_deposit():
     form = AddRandomDepositForm(request.form)
+    data = {}
+    onboardingStepVM = OnboardingStepVM()
+    onboardingStepVM.set_onboarding_state(OnboardingStepVM.LINK_BANK_ACCOUNT, True)
+    data['onboarding_steps'] = onboardingStepVM.get_onboarding_steps()
+    data['institutions'] = get_all_iav_supported_institutions()
     if form.validate_on_submit():
         try:
             bank = BankData(
@@ -202,7 +211,7 @@ def add_random_deposit():
             util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/add_random_deposit.html', form = form)
     else:
-        return render_template('onboarding/add_random_deposit.html', form = form)
+        return render_template('onboarding/add_random_deposit.html', form = form, data = data)
 
 @onboarding_bp.route('/start_random_deposit_verification', methods=['POST'])
 @login_required
@@ -252,7 +261,11 @@ def verify_random_deposit():
 @onboarding_bp.route('/verified', methods=['GET'])
 @login_required
 def verified():
-    return redirect(url_for('lending_bp.dashboard'))
+    data = {}
+    onboardingStepVM = OnboardingStepVM()
+    onboardingStepVM.set_onboarding_state(OnboardingStepVM.APPLY_LOAN, True)
+    data['onboarding_steps'] = onboardingStepVM.get_onboarding_steps()
+    return render_template('onboarding/onboarding_complete.html', data=data)
 
 @onboarding_bp.route('/add_bank_random_deposit_success', methods=['GET'])
 @login_required
@@ -263,13 +276,11 @@ def add_bank_random_deposit_success():
 @login_required
 def complete_signup():
     steps = accountBLI.signup_steps(current_user)
-    # pprint(steps.__dict__)
-    # pprint(steps.to_map())
-    if not steps.employer_information:
+    if not steps.is_complete(OnboardingStepVM.ENTER_EMPLOYER_INFORMATION):
         return redirect(url_for('.enter_employer_information'))
-    elif not steps.add_bank:
+    elif not steps.is_complete(OnboardingStepVM.LINK_BANK_ACCOUNT):
         return redirect(url_for('onboarding_bp.add_bank'))
-    elif not steps.verify_bank:
+    elif not steps.is_complete(OnboardingStepVM.VERIFY_BANK_ACCOUNT):
         session[accountBLI.RANDOM_DEPOSIT_FI_ID_KEY] = steps.verify_bank_id
         return redirect(url_for('onboarding_bp.verify_random_deposit'))
     return redirect(url_for('.dashboard'))
@@ -278,12 +289,17 @@ def complete_signup():
 @login_required
 def steps():
     steps = accountBLI.signup_steps(current_user)
-    # TODO: return the template after Shaan adds the html template
-    return jsonify(steps.to_map())
+    data = {}
+    data['steps'] = steps.get_signup_steps()
+    return render_template('lending/_onboarding_state.html', data=data)
 
 @onboarding_bp.route('/enter_employer_information', methods=['GET', 'POST'])
 @login_required
 def enter_employer_information():
+    onboardingStepVM = OnboardingStepVM()
+    onboardingStepVM.set_onboarding_state(OnboardingStepVM.ENTER_EMPLOYER_INFORMATION, True)
+    data = {}
+    data['onboarding_steps'] = onboardingStepVM.get_onboarding_steps()
     form = EmployerInformationForm(request.form)
     if form.validate_on_submit():
         try:
@@ -299,8 +315,7 @@ def enter_employer_information():
                 postal_code = form.postal_code.data,
                 status = Employer.ACTIVE,
                 time_created = now,
-                time_updated = now
-            )
+                time_updated = now)
             accountBLI.add_employer(current_user, employer)
             return redirect(url_for('.complete_signup'))
         except error.DatabaseError as de:
@@ -311,8 +326,7 @@ def enter_employer_information():
             print 'ERROR: General Exception: %s' % (e.message)
             util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/enter_employer_information.html', form=form)
-    return render_template('onboarding/enter_employer_information.html', form=form)
-
+    return render_template('onboarding/enter_employer_information.html', form=form, data=data)
 
 
 ######## Phone verification ###########

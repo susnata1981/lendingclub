@@ -92,3 +92,81 @@ hr.title {
   border-top: 3px solid #fff;
   margin: 4px 0;
 }
+
+.p-half {
+  padding: .5rem;
+}
+
+/************** breadkcumb ****************/
+
+.breadcrumb {
+	list-style: none;
+	overflow: hidden;
+}
+.breadcrumb li {
+	float: left;
+}
+.breadcrumb li h6 {
+	color: white;
+	text-decoration: none;
+	padding: 10px 0 10px 65px;
+	background: brown;                   /* fallback color */
+	background: $primary-color-dark-2;
+	position: relative;
+	display: block;
+	float: left;
+}
+
+.breadcrumb li h6:after {
+	content: " ";
+	display: block;
+	width: 0;
+	height: 0;
+	border-top: 50px solid transparent;           /* Go big on the size, and let overflow hide */
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid $primary-color-dark-2;
+	position: absolute;
+	top: 50%;
+	margin-top: -50px;
+	left: 100%;
+	z-index: 2;
+}
+
+.breadcrumb li h6.breadcrumb-active-item:after {
+	content: " ";
+	display: block;
+	width: 0;
+	height: 0;
+	border-top: 50px solid transparent;           /* Go big on the size, and let overflow hide */
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid $primary-color;
+	position: absolute;
+	top: 50%;
+	margin-top: -50px;
+	left: 100%;
+	z-index: 2;
+}
+
+.breadcrumb li h6:before {
+	content: " ";
+	display: block;
+	width: 0;
+	height: 0;
+	border-top: 50px solid transparent;
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid white;
+	position: absolute;
+	top: 50%;
+	margin-top: -50px;
+	margin-left: 1px;
+	left: 100%;
+	z-index: 1;
+}
+
+.breadcrumb li:first-child h6 {
+	padding-left: 10px;
+}
+
+.breadcrumb-active-item {
+  background: $primary-color !important;
+}

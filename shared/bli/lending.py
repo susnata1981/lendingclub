@@ -2,6 +2,7 @@ from flask import current_app
 from datetime import datetime, timedelta
 from shared.db.model import *
 from shared.util import util, logger, error, constants
+from shared.bli.viewmodel.transaction import TransactionView, TransactionDetailView
 
 MIN_APR = .36
 MAX_APR = .99
@@ -10,14 +11,21 @@ LOAN_DURATION_KEY = 'loan_duration'
 LOAN_REQUEST_KEY = 'loan_request'
 LOGGER = logger.getLogger('shared.bli.lending')
 
-def get_total_interest(amount, duration, apr):
-    return (amount * apr * duration) / 12
+def get_interest(amount, duration, apr):
+    LOGGER.info('get_interest - amount:%s, duration:%s, apr:%s' % (amount, duration, apr))
+    return (amount * apr * duration) / 12.0
+
+def get_balance_for_each_interval(amount, duration):
+    if duration > 0:
+        return (float(amount)/duration)
+    else:
+        return 0
 
 def get_total_payment(amount, duration, apr):
-    return amount + get_total_interest(amount, duration, apr)
+    return amount + get_interest(amount, duration, apr)
 
 def get_monthly_payment(amount, duration, apr):
-    return get_total_payment(amount, duration, apr) / duration
+    return get_balance_for_each_interval(amount, duration) + get_interest(amount, 1, apr)
 
 def get_payment_plan_estimate(loan_amount, loan_duration):
     result = {}
@@ -136,7 +144,7 @@ def get_loan_summary(loan):
         summary['apr'] = 'N/A'
     if not loan.status in [RequestMoney.IN_REVIEW, RequestMoney.DECLINED] and loan.apr:
         summary['monthly_payment'] = get_monthly_payment(loan.amount, loan.duration, loan.apr)
-        summary['total_interest'] = get_total_interest(loan.amount, loan.duration, loan.apr)
+        summary['total_interest'] = get_interest(loan.amount, loan.duration, loan.apr)
     else:
         summary['total_interest'] = 'N/A'
         summary['monthly_payment'] = 'N/A'
@@ -197,19 +205,64 @@ def get_loan_activity(account):
     LOGGER.info('get_loan_activity exit')
     return activity
 
+def generate_schedule_item(amount, interest, date):
+    td1 = TransactionDetailView(
+        type = TransactionDetail.PRINCIPAL,
+        amount = amount
+    )
+    td2 = TransactionDetailView(
+        type = TransactionDetail.INTEREST,
+        amount = interest
+    )
+    trans = TransactionView(
+        type = Transaction.INSTALLMENT,
+        status = Transaction.PENDING,
+        amount = amount + interest,
+        date = date,
+        details = [td1, td2]
+    )
+    return trans
+
 def calculate_loan_schedule(loan):
     LOGGER.info('calculate_loan_schedule Enter')
-    monthly_payment = get_monthly_payment(loan.amount, loan.duration, loan.apr)
-    start_time = datetime.now()
+    monthly_balance = get_balance_for_each_interval(loan.amount, loan.duration)
+    monthly_interest = get_interest(loan.amount, 1, loan.apr)
+    # monthly_payment = get_monthly_payment(loan.amount, loan.duration, loan.apr)
     schedule = []
+    start_time = datetime.now()
     for t in range(loan.duration):
-        schedule.append({
-            'amount': monthly_payment,
-            'date': start_time + timedelta(days=30*(t+1)),
-            'status': Transaction.PENDING
-        })
+        trans = generate_schedule_item(amount=monthly_balance, \
+            interest=monthly_interest, date=(start_time + timedelta(days=30*(t+1))))
+        schedule.append(trans.to_map())
     LOGGER.info('calculate_loan_schedule Exit')
     return schedule
+
+def create_loan_schedule_transactions(loan, date):
+    LOGGER.info('create_loan_schedule_transactions Enter')
+    monthly_balance = get_balance_for_each_interval(loan.amount, loan.duration)
+    monthly_interest = get_interest(loan.amount, 1, loan.apr)
+    now = datetime.now()
+    for i in range(loan.duration):
+        s = generate_schedule_item(amount=monthly_balance, \
+            interest=monthly_interest, date=(date + timedelta(days=30*(i+1))))
+        trans = Transaction(
+            transaction_type = s.type,
+            status = s.status,
+            amount = s.amount,
+            due_date = s.date,
+            time_created = now,
+            time_updated = now
+        )
+        for td in s.details:
+            trans_detail = TransactionDetail(
+                type = td.type,
+                amount = td.amount,
+                time_created = now,
+                time_updated = now
+            )
+            trans.details.append(trans_detail)
+        loan.transactions.append(trans)
+    LOGGER.info('create_loan_schedule_transactions Exit')
 
 def get_approved_loan_payment_plan(loan_id, account_id):
     LOGGER.info('get_payment_plan loan_id = '+str(loan_id)+' account_id:'+str(account_id)+' : Enter')
@@ -249,20 +302,52 @@ def process_loan_acceptance(loan_id, account_id):
     now = datetime.now()
     loan.status = RequestMoney.ACCEPTED
     loan.time_updated = now
-    data = calculate_loan_schedule(loan)
-    for schedule in data:
-        print ''
-        loan.transactions.append(Transaction(
-            transaction_type = Transaction.FULL,
-            status = Transaction.PENDING,
-            amount = float(schedule['amount']),
-            due_date = schedule['date'],
-            time_created = now,
-            time_updated = now
-        ))
     try:
+        create_loan_schedule_transactions(loan, now)
         current_app.db_session.add(loan)
         current_app.db_session.commit()
     except Exception as e:
         LOGGER.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+def calculate_payoff(account):
+    # TODO: method not correct
+    if not account.get_open_loans():
+        LOGGER.error('No open loans found for user:%s' % (account.id))
+        raise error.NoOpenLoanFoundError('No open loans found for user:%s' % (account.id))
+
+    # get loan amount
+    loan = account.get_open_loans()[0]
+    schedule = get_loan_schedule(loan)
+    # get total amount paid so far
+    amount_so_far = 0.0
+    for tran in loan.transactions:
+        if tran.status == Transaction.COMPLETED:
+            amount_so_far = amount_so_far + tran.amount
+    #TODO: This should be from the date loan was accepted instead of create (Have a loan accept/transfer date in DB)
+    # get total duration so far in months (30 day increment)
+
+    days_so_far = (datetime.now() - loan.time_created).days
+    duration_so_far = days_so_far/30
+    days_after_last_month = days_so_far%30
+    duration_after_last_month = days_after_last_month/30.0
+    interest_accumulated_so_far = (get_interest(loan.amount, loan.duration, loan.apr)/loan.duration) * duration_so_far
+    # duration_so_far = ((datetime.now() - loan.time_created).days)/30
+    # payoff = Payoff()
+    # payoff.loan_id = loan.id
+    # # get interest paid so far = total interest - (monthly interest * duration_so_far)
+    # payoff.interest_paid_so_far = (get_interest(loan.amount, loan.duration, loan.apr)/loan.duration) * duration_so_far
+    # # get balance left
+    # payoff.balance_paid_so_far = amount_so_far - payoff.interest_paid_so_far
+    # payoff.balance_owed = loan.amount - payoff.balance_paid_so_far
+    # #TODO: This should be from the date loan was accepted instead of create (Have a loan accept/transfer date in DB)
+    # # get interest since the last whole month = get_interest(amount, ((float(days from loan create mod 30 ))/30), apr)
+    # duration_days = (datetime.now() - loan.time_created).days
+    # mod_duration_days = duration_days%30
+    # mod_duration = mod_duration_days/30.0
+    # LOGGER.info('duration_days:%s, mod_duration_days%s, mod_duration %s' % (duration_days, mod_duration_days, mod_duration))
+    # payoff.interest_owed = get_interest(loan.amount, (((datetime.now() - loan.time_created).days)%30)/30.0, loan.apr)
+    # return payoff
+
+def payoff(loan_id, account):
+    pass

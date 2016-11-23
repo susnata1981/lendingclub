@@ -124,7 +124,6 @@ def loan_details():
 @lending_bp.route('/loan_details_confirm', methods=['POST'])
 @login_required
 def loan_details_confirm():
-    print 'VD: ******** loan_id:%s' % (request.form.get('loan_id'))
     loan_id = int(request.form.get('loan_id'))
     try:
         lendingBLI.process_loan_acceptance(loan_id, current_user.id)
@@ -132,9 +131,46 @@ def loan_details_confirm():
     except Exception as e:
         traceback.print_exc()
         logging.error('loan_schedule failed with exception: %s' % (e.message))
+        util.flash_error(constants.GENERIC_ERROR)
+        return redirect(url_for('.dashboard'))
+
+@lending_bp.route('/start_payoff', methods=['GET'])
+@login_required
+def start_payoff():
+    try:
+        payoff = lendingBLI.calculate_payoff(current_user)
+        session['payoff_loan_id'] = payoff.loan_id
+        #return render_template('lending/loan_payoff.html', data=payoff.to_map())
+        return jsonify(payoff.__dict__)
+    except error.NoOpenLoanFoundError as e:
+        logging.error('user:%s doesn\'t have any open loans.' % current_user.id)
+        util.flash_error('user doesn\'t have any open loans.')
+        return redirect(url_for('.dashboard'))
+    except Exception as e:
+        traceback.print_exc()
+        logging.error('start_payoff failed with exception: %s' % (e.message))
         #TODO: handle notification
         return redirect(url_for('.dashboard'))
 
+@lending_bp.route('/payoff', methods=['POST'])
+@login_required
+def payoff():
+    if not 'payoff_loan_id' in session or not session['payoff_loan_id']:
+        data['unauthorized'] = True
+    loan_id = session['payoff_loan_id']
+    session.pop('payoff_loan_id', None)
+    try:
+        #TODO: not getting the form data of the amounts teh user saw might result
+        # in slightly more interest on day change between view and submit
+        lendingBLI.payoff(loan_id, current_user)
+        return render_template('lending/loan_payoff_success.html')
+    except Exception as e:
+        traceback.print_exc()
+        logging.error('payoff failed with exception: %s' % (e.message))
+        #TODO: handle notification
+        return redirect(url_for('.dashboard'))
+
+##### helper functions ############
 def save_loan_request_to_session(loan_amount=None, loan_duration=None):
     if current_user and current_user.is_authenticated:
         if lendingBLI.LOAN_REQUEST_KEY in session and session[lendingBLI.LOAN_REQUEST_KEY]:
@@ -150,6 +186,7 @@ def save_loan_request_to_session(loan_amount=None, loan_duration=None):
 
 ############################
 
+##### OLD
 @lending_bp.route('/make_payment', methods=['GET', 'POST'])
 @login_required
 def make_payment():

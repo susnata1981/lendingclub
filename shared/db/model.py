@@ -115,7 +115,7 @@ class Account(Base):
     def get_open_loans(self):
         try:
             open_loans = current_app.db_session.query(RequestMoney).filter(
-            RequestMoney.account_id == id, RequestMoney.status.in_([RequestMoney.IN_REVIEW, RequestMoney.APPROVED, RequestMoney.ACCEPTED, RequestMoney.TRANSFER_IN_PROGRESS, RequestMoney.ACTIVE, RequestMoney.DELINQUENT, RequestMoney.IN_COLLECTION])
+            RequestMoney.account_id == self.id, RequestMoney.status.in_([RequestMoney.IN_REVIEW, RequestMoney.APPROVED, RequestMoney.ACCEPTED, RequestMoney.TRANSFER_IN_PROGRESS, RequestMoney.ACTIVE, RequestMoney.DELINQUENT, RequestMoney.IN_COLLECTION])
             ).all()
             return open_loans
         except Exception as e:
@@ -275,7 +275,8 @@ class Transaction(Base):
     #status
     PENDING, IN_PROGRESS, CANCELED, FAILED, COMPLETED = range(5)
     #transaction_type
-    FULL, PARTIAL = range(2)
+    INSTALLMENT, LATE_PAYMENT, PAYOFF = range(3)
+
     #initiated_by
     USER, AUTOMATIC, MANUAL = range(3)
 
@@ -305,6 +306,21 @@ class TransactionHistory(Base):
         {},
     )
 
+class TransactionDetail(Base):
+    __tablename__ = 'transaction_detail'
+
+    # taransaction details types are:
+    PRINCIPAL, INTEREST, LATE_FEE, LATE_INTEREST, LATE_AMOUNT = range(5)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    transaction_id = Column(Integer, ForeignKey('transaction.id'))
+    transaction = relationship('Transaction', back_populates="details")
+    type = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
+    memo = Column(Text, nullable=True)
+    time_created = Column(DateTime)
+    time_updated = Column(DateTime)
+
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.employers = relationship('Employer', back_populates='account')
@@ -312,6 +328,7 @@ Account.request_money_list = relationship('RequestMoney', back_populates='accoun
 Fi.request_money_list = relationship('RequestMoney', back_populates='fi', order_by='desc(RequestMoney.id)')
 RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
 RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='desc(RequestMoneyHistory.time_created)')
+Transaction.details = relationship('TransactionDetail', back_populates='transaction')
 Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='desc(TransactionHistory.time_created)')
 
 def recreate_tables(engine):

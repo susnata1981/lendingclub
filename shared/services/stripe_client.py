@@ -240,8 +240,8 @@ class StripeClass(object):
         func_args['amount'] = amount
         func_args['currency'] = currency
         func_args['source'] = bank_id
-        if not notes:
-            funct_arg['description'] = description
+        if description:
+            func_args['description'] = description
 
         return stripe.Charge.create(**func_args)
 

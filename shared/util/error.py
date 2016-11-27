@@ -89,6 +89,14 @@ class NoOpenLoanFoundError(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
         super(NoOpenLoanFoundError, self).__init__(message=message, orig_exp=orig_exp)
 
+class NoPayoffLoanFoundError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(NoPayoffLoanFoundError, self).__init__(message=message, orig_exp=orig_exp)
+
+class HasInProgressTransactionError(ZipllyError):
+    def __init__(self, message=None, orig_exp=None):
+        super(HasInProgressTransactionError, self).__init__(message=message, orig_exp=orig_exp)
+
 class LoanNotInApprovedStatus(ZipllyError):
     def __init__(self, message=None, orig_exp=None):
         super(LoanNotInApprovedStatus, self).__init__(message=message, orig_exp=orig_exp)

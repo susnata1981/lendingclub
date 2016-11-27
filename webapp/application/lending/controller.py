@@ -138,18 +138,23 @@ def loan_details_confirm():
 @login_required
 def start_payoff():
     try:
-        payoff = lendingBLI.calculate_payoff(current_user)
+        payoff = lendingBLI.get_payoff_information(current_user)
         session['payoff_loan_id'] = payoff.loan_id
-        #return render_template('lending/loan_payoff.html', data=payoff.to_map())
-        return jsonify(payoff.__dict__)
+        pprint(payoff.to_map())
+        return render_template('lending/loan_payoff_details.html', data=payoff.to_map())
+        #return jsonify(payoff.to_map())
     except error.NoOpenLoanFoundError as e:
-        logging.error('user:%s doesn\'t have any open loans.' % current_user.id)
-        util.flash_error('user doesn\'t have any open loans.')
+        logging.error('start_payoff failed with NoOpenLoanFoundError: %s' % (e.message))
+        util.flash_error('You don\'t have any loans taht are eligible for payoff.')
+        return redirect(url_for('.dashboard'))
+    except error.HasInProgressTransactionError as e:
+        logging.error('start_payoff failed with HasInProgressTransactionError: %s' % (e.message))
+        util.flash_error('Currently you have one or more payments in progress on the open loan. Please try again after all the transactions have been processed.')
         return redirect(url_for('.dashboard'))
     except Exception as e:
         traceback.print_exc()
         logging.error('start_payoff failed with exception: %s' % (e.message))
-        #TODO: handle notification
+        util.flash_error(constants.GENERIC_ERROR)
         return redirect(url_for('.dashboard'))
 
 @lending_bp.route('/payoff', methods=['POST'])
@@ -160,8 +165,9 @@ def payoff():
     loan_id = session['payoff_loan_id']
     session.pop('payoff_loan_id', None)
     try:
-        #TODO: not getting the form data of the amounts teh user saw might result
+        #TODO: not getting the form data of the amounts th euser saw might result
         # in slightly more interest on day change between view and submit
+        # Pass the payoof calculation instead
         lendingBLI.payoff(loan_id, current_user)
         return render_template('lending/loan_payoff_success.html')
     except Exception as e:

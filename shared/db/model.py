@@ -114,10 +114,18 @@ class Account(Base):
 
     def get_open_loans(self):
         try:
-            open_loans = current_app.db_session.query(RequestMoney).filter(
+            return current_app.db_session.query(RequestMoney).filter(
             RequestMoney.account_id == self.id, RequestMoney.status.in_([RequestMoney.IN_REVIEW, RequestMoney.APPROVED, RequestMoney.ACCEPTED, RequestMoney.TRANSFER_IN_PROGRESS, RequestMoney.ACTIVE, RequestMoney.DELINQUENT, RequestMoney.IN_COLLECTION])
             ).all()
-            return open_loans
+        except Exception as e:
+            LOGGER.error(e.message)
+            raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+    def get_payoff_eligible_loan(self):
+        try:
+            return current_app.db_session.query(RequestMoney).filter(
+            RequestMoney.account_id == self.id, RequestMoney.status.in_([RequestMoney.ACTIVE, RequestMoney.DELINQUENT, RequestMoney.IN_COLLECTION])
+            ).one_or_none()
         except Exception as e:
             LOGGER.error(e.message)
             raise error.DatabaseError(constants.GENERIC_ERROR,e)
@@ -253,6 +261,15 @@ class RequestMoney(Base):
     time_updated = Column(DateTime)
     time_created = Column(DateTime)
 
+    def get_in_progress_transaction(self):
+        try:
+            return current_app.db_session.query(Transaction).filter(
+            Transaction.request_id == self.id, Transaction.status == Transaction.IN_PROGRESS
+            ).all()
+        except Exception as e:
+            LOGGER.error(e.message)
+            raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
 class RequestMoneyHistory(Base):
     __tablename__ = "request_money_history"
 
@@ -281,6 +298,7 @@ class Transaction(Base):
     USER, AUTOMATIC, MANUAL = range(3)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    parent_id = Column(Integer, ForeignKey('transaction.id'))
     request_id = Column(Integer, ForeignKey('request_money.id'))
     request = relationship('RequestMoney', back_populates="transactions")
     transaction_type = Column(Integer, nullable=False)
@@ -292,6 +310,15 @@ class Transaction(Base):
     memo = Column(Text, nullable=True)
     time_created = Column(DateTime)
     time_updated = Column(DateTime)
+
+    def get_completed_child_transactions(self):
+        try:
+            return current_app.db_session.query(Transaction).filter(
+            Transaction.parent_id == self.id, Transaction.status == Transaction.COMPLETED
+            ).all()
+        except Exception as e:
+            LOGGER.error(e.message)
+            raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
 class TransactionHistory(Base):
     __tablename__ = 'transaction_history'
@@ -310,7 +337,8 @@ class TransactionDetail(Base):
     __tablename__ = 'transaction_detail'
 
     # taransaction details types are:
-    PRINCIPAL, INTEREST, LATE_FEE, LATE_INTEREST, LATE_AMOUNT = range(5)
+    # LATE_INTEREST amount is caculated on the ()(principal+interest)*apr*duration)/12
+    PRINCIPAL, INTEREST, LATE_FEE, LATE_INTEREST = range(4)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(Integer, ForeignKey('transaction.id'))
@@ -324,9 +352,9 @@ class TransactionDetail(Base):
 Account.fis = relationship('Fi', order_by=Fi.id, back_populates='account')
 Account.addresses = relationship('Address', back_populates='account')
 Account.employers = relationship('Employer', back_populates='account')
-Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.id)')
-Fi.request_money_list = relationship('RequestMoney', back_populates='fi', order_by='desc(RequestMoney.id)')
-RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='desc(Transaction.id)')
+Account.request_money_list = relationship('RequestMoney', back_populates='account', order_by='desc(RequestMoney.time_created)')
+Fi.request_money_list = relationship('RequestMoney', back_populates='fi', order_by='desc(RequestMoney.time_created)')
+RequestMoney.transactions = relationship('Transaction', back_populates='request', order_by='asc(Transaction.due_date)')
 RequestMoney.history = relationship('RequestMoneyHistory', back_populates='request', order_by='desc(RequestMoneyHistory.time_created)')
 Transaction.details = relationship('TransactionDetail', back_populates='transaction')
 Transaction.history = relationship('TransactionHistory', back_populates='transaction', order_by='desc(TransactionHistory.time_created)')

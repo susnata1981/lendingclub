@@ -1,0 +1,59 @@
+{% extends 'base.html' %} {% block content %} {% with show_buttons=False, title="Payoff your loan" %} {% include "_sub_header.html" %} {% endwith %} {% include "_notification.html" %}
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-8 m-0 p-0">
+            <h5 class="primary-color">Payoff Summary</h5>
+            <table class="table table-hover table-bordered">
+                <tr>
+                    <td>
+                        <h6>Amount</h6>
+                    </td>
+                    <td>
+                        <p>
+                            {{ data['amount'] | float | format_currency }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-8 mt-2">
+                <div class="mb-3">
+                    <h4 class="primary-color mb-0 py-1">Payoff details</h4>
+                    <table class="table table-hover table-bordered">
+                        {% for detail in data['details'] %}
+                        <tr>
+                            <td>
+                                <h6>
+                                    {{ detail['type'] }}
+                                </h6>
+                            </td>
+                            <td>
+                                <p>
+                                    {{ detail['amount']  | format_currency}}
+                                </p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <form class="row m-0 p-0" action={{url_for( 'lending_bp.payoff')}} method="post">
+            <div class="col-md-8 m-0 p-0">
+                <label class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" disabled>
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description">I agree</span>
+        </label>
+                <div class="form-group row">
+                    <div class="col-md-4">
+                        <button class="btn btn-accent">Payoff</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endblock %}

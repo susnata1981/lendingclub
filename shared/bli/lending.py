@@ -6,6 +6,7 @@ from shared.bli.viewmodel.transaction import TransactionView, TransactionDetailV
 
 MIN_APR = .36
 MAX_APR = .99
+DAYS_IN_LOAN_MONTH = 30
 LOAN_AMOUNT_KEY = 'loan_amount'
 LOAN_DURATION_KEY = 'loan_duration'
 LOAN_REQUEST_KEY = 'loan_request'
@@ -55,7 +56,7 @@ def get_payment_plan_estimate(loan_amount, loan_duration):
     for t in range(loan_duration):
         result['repayment_schedule'].append({
             'expected_amount': expected_monthly_payment,
-            'date': start_time + timedelta(days=30*(t+1))
+            'date': start_time + timedelta(days=DAYS_IN_LOAN_MONTH*(t+1))
         })
     return result
 
@@ -232,7 +233,7 @@ def calculate_loan_schedule(loan):
     start_time = datetime.now()
     for t in range(loan.duration):
         trans = generate_schedule_item(amount=monthly_balance, \
-            interest=monthly_interest, date=(start_time + timedelta(days=30*(t+1))))
+            interest=monthly_interest, date=(start_time + timedelta(days=DAYS_IN_LOAN_MONTH*(t+1))))
         schedule.append(trans.to_map())
     LOGGER.info('calculate_loan_schedule Exit')
     return schedule
@@ -244,7 +245,7 @@ def create_loan_schedule_transactions(loan, date):
     now = datetime.now()
     for i in range(loan.duration):
         s = generate_schedule_item(amount=monthly_balance, \
-            interest=monthly_interest, date=(date + timedelta(days=30*(i+1))))
+            interest=monthly_interest, date=(date + timedelta(days=DAYS_IN_LOAN_MONTH*(i+1))))
         trans = Transaction(
             transaction_type = s.type,
             status = s.status,
@@ -310,44 +311,170 @@ def process_loan_acceptance(loan_id, account_id):
         LOGGER.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
-def calculate_payoff(account):
-    # TODO: method not correct
-    if not account.get_open_loans():
-        LOGGER.error('No open loans found for user:%s' % (account.id))
-        raise error.NoOpenLoanFoundError('No open loans found for user:%s' % (account.id))
+def get_late_payment_transaction(trans, apr, till_date):
+    principal = 0.0
+    interest = 0.0
+    for trans_detail in trans.details:
+        if trans_detail.type == TransactionDetail.PRINCIPAL:
+            principal = trans_detail.amount
+        elif trans_detail.type == TransactionDetail.INTEREST:
+            interest = trans_detail.amount
+    now = datetime.now()
+    td_principal = TransactionDetail(
+        transaction_id = trans.id,
+        type = TransactionDetail.PRINCIPAL,
+        amount = principal,
+        time_created = now,
+        time_updated = now
+    )
+    td_interest = TransactionDetail(
+        transaction_id = trans.id,
+        type = TransactionDetail.INTEREST,
+        amount = interest,
+        time_created = now,
+        time_updated = now
+    )
+    td_late_fee = TransactionDetail(
+        transaction_id = trans.id,
+        type = TransactionDetail.LATE_FEE,
+        amount = LATE_FEE,
+        time_created = now,
+        time_updated = now
+    )
+    duration = float((till_date - trans.due_date).days) / DAYS_IN_LOAN_MONTH
+    td_late_interest = TransactionDetail(
+        transaction_id = trans.id,
+        type = TransactionDetail.LATE_INTEREST,
+        amount = get_interest(principal+interest, duration, apr),
+        time_created = now,
+        time_updated = now
+    )
+    details = [td_principal,td_interest,td_late_fee,td_late_interest]
+    late_payment = Transaction(
+        transaction_type = Transaction.LATE_PAYMENT,
+        parent_id = trans.id,
+        request_id = trans.request_id,
+        status = Transaction.PENDING,
+        amoount = td_principal.amount + td_interest.amount + td_late_fee.amount + td_late_interest.amount,
+        due_date = till_date,
+        initiated_by = Transaction.MANUAL,
+        details = details,
+        time_created = now,
+        time_updated = now
+    )
+    return late_payment
 
-    # get loan amount
-    loan = account.get_open_loans()[0]
-    schedule = get_loan_schedule(loan)
-    # get total amount paid so far
-    amount_so_far = 0.0
-    for tran in loan.transactions:
-        if tran.status == Transaction.COMPLETED:
-            amount_so_far = amount_so_far + tran.amount
-    #TODO: This should be from the date loan was accepted instead of create (Have a loan accept/transfer date in DB)
-    # get total duration so far in months (30 day increment)
+def get_payoff_information(account):
+    loan = account.get_payoff_eligible_loan()
+    if not loan:
+        LOGGER.error('No payoff eligible loan found for user:%s' % (account.id))
+        raise error.NoPayoffLoanFoundError('No open loans found for user:%s' % (account.id))
 
-    days_so_far = (datetime.now() - loan.time_created).days
-    duration_so_far = days_so_far/30
-    days_after_last_month = days_so_far%30
-    duration_after_last_month = days_after_last_month/30.0
-    interest_accumulated_so_far = (get_interest(loan.amount, loan.duration, loan.apr)/loan.duration) * duration_so_far
-    # duration_so_far = ((datetime.now() - loan.time_created).days)/30
-    # payoff = Payoff()
-    # payoff.loan_id = loan.id
-    # # get interest paid so far = total interest - (monthly interest * duration_so_far)
-    # payoff.interest_paid_so_far = (get_interest(loan.amount, loan.duration, loan.apr)/loan.duration) * duration_so_far
-    # # get balance left
-    # payoff.balance_paid_so_far = amount_so_far - payoff.interest_paid_so_far
-    # payoff.balance_owed = loan.amount - payoff.balance_paid_so_far
-    # #TODO: This should be from the date loan was accepted instead of create (Have a loan accept/transfer date in DB)
-    # # get interest since the last whole month = get_interest(amount, ((float(days from loan create mod 30 ))/30), apr)
-    # duration_days = (datetime.now() - loan.time_created).days
-    # mod_duration_days = duration_days%30
-    # mod_duration = mod_duration_days/30.0
-    # LOGGER.info('duration_days:%s, mod_duration_days%s, mod_duration %s' % (duration_days, mod_duration_days, mod_duration))
-    # payoff.interest_owed = get_interest(loan.amount, (((datetime.now() - loan.time_created).days)%30)/30.0, loan.apr)
-    # return payoff
+    in_progress_trans = loan.get_in_progress_transaction()
+    if in_progress_trans:
+        LOGGER.error('loan:%s has an in progress transactions(%s total)' % (loan.id, len(in_progress_trans)))
+        raise error.HasInProgressTransactionError('loan:%s has one or more progress transactions(count=%s)' % (loan.id, len(in_progress_trans)))
+
+    pd_principal = TransactionDetailView(
+        type=TransactionDetail.PRINCIPAL,
+        amount=loan.amount)
+    pd_interest = TransactionDetailView(
+        type=TransactionDetail.INTEREST,
+        amount=0.0)
+    pd_late_fee = TransactionDetailView(
+        type=TransactionDetail.LATE_FEE,
+        amount=0.0)
+    pd_late_interest = TransactionDetailView(
+        type=TransactionDetail.LATE_INTEREST,
+        amount=0.0)
+
+    payoff_int_start_date = None
+    trans_list = sorted(loan.transactions, key=lambda x: x.due_date)
+    #ASSUMPTION: Transactions will be completed in the order of their due date
+    now = datetime.now()
+    for trans in trans_list:
+        if trans.transaction_type == Transaction.INSTALLMENT:
+            if trans.status == Transaction.COMPLETED or trans.status == Transaction.FAILED:
+                payoff_int_start_date = trans.due_date
+                #ASSUMPTION: partial child payments not allowed, it has to be full principal of the parent
+                children = trans.get_completed_child_transactions()
+                if trans.status == Transaction.COMPLETED or \
+                    (trans.status == Transaction.FAILED and children):
+                    for trans_detail in trans.details:
+                        if trans_detail.type == TransactionDetail.PRINCIPAL:
+                            pd_principal.amount = pd_principal.amount - trans_detail.amount
+                        #TODO: add code for other detail type, to show addl info like total interest paid so far...
+                elif trans.status == Transaction.FAILED:
+                    #this means no completed children
+                    late_payment = get_late_payment_transaction(trans, loan.apr, now)
+                    for trans_detail in late_payment.details:
+                        #They still owe the principal for that installment, not subtracting from the pd_principal.amount
+                        if trans_detail.type == TransactionDetail.INTEREST:
+                            pd_interest.amount = pd_interest.amount + trans_detail.amount
+                        elif trans_detail.type == TransactionDetail.LATE_FEE:
+                            pd_late_fee.amount = pd_late_fee.amount + trans_detail.amount
+                        elif trans_detail.type == TransactionDetail.LATE_INTEREST:
+                            pd_late_interest.amount = pd_late_interest.amount + trans_detail.amount
+    if not payoff_int_start_date:
+        #This is when the user doesn't have atleast one completed or failed transaction
+        payoff_int_start_date = loan.time_created
+    duration = float((now - payoff_int_start_date).days) / DAYS_IN_LOAN_MONTH
+    pd_interest.amount = pd_interest.amount + get_interest(loan.amount, duration, loan.apr)
+    payoff_details = [pd_principal, pd_interest]
+    if pd_late_fee.amount > 0:
+        payoff_details.append(pd_late_fee)
+    if pd_late_interest.amount > 0:
+        payoff_details.append(pd_late_interest)
+    payoff = TransactionView(
+        loan_id = loan.id,
+        type = Transaction.PAYOFF,
+        status = Transaction.PENDING,
+        amount = pd_principal.amount + pd_interest.amount + pd_late_fee.amount + pd_late_interest.amount,
+        date = now,
+        details = payoff_details
+    )
+    return payoff
 
 def payoff(loan_id, account):
+    loan = account.get_payoff_eligible_loan()
+    if not loan:
+        LOGGER.error('No payoff eligible loan found for user:%s' % (account.id))
+        raise error.NoPayoffLoanFoundError('No open loans found for user:%s' % (account.id))
+    now = datetime.now()
+    for tran in loan.transactions:
+        if tran.status == Transaction.PENDING:
+            tran.status = Transaction.CANCELED
+            tran.time_updated = now
+    payoff = get_payoff_information(account)
+    trans = Transaction(
+        transaction_type = payoff.type,
+        status = Transaction.IN_PROGRESS,
+        amount = payoff.amount,
+        due_date = payoff.date,
+        time_created = now,
+        time_updated = now
+    )
+    for td in payoff.details:
+        trans_detail = TransactionDetail(
+            type = td.type,
+            amount = td.amount,
+            time_created = now,
+            time_updated = now
+        )
+        trans.details.append(trans_detail)
+    loan.transactions.append(trans)
+    # TODO: handle if stripe succeeds but DB write fails
+    try:
+        current_app.stripe_client.create_customer_charge(loan.account.stripe_customer_id,
+        loan.fi.stripe_bank_account_token, (int)(payoff.amount*100), 'usd', 'payoff')
+        current_app.db_session.add(loan)
+        current_app.db_session.commit()
+    except error.StripeError as e:
+        LOGGER.error(e.message)
+        raise e
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
+
+def create_late_payment(loan, transaction):
     pass

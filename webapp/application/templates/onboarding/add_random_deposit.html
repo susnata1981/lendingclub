@@ -1,66 +1,63 @@
-{% extends 'base.html' %} {% block content %}
-<div class="container margin-top-large">
-  {% if get_flashed_messages() | length > 0 %}
-   <div class="row">
-       <div class="col s6 error-block">
-           {% for message in get_flashed_messages() %}
-           <div class="error-item">{{ message }}</div>
-           {% endfor %}
-       </div>
-     </div>
-   {% endif %}
-   {% if form.errors %}
-   <div class="row">
-      <div class="col s6 error-block">
-          {% for field in form %}
-            {% for m in field.errors %}
-             <div class="error-item">{{ m }}</div>
-            {% endfor %}
-          {% endfor %}
-       </div>
-     </div>
-     {% endif %}
- <div class="row">
-  <form id="random_deposit_form" class="col s6 user-input" action={{url_for('onboarding_bp.add_random_deposit')}} method="post">
-   <h4>Add bank through random deposit</h4> {{ form.csrf_token }}
-   <div class="row">
-    <div class="input-field col s12">
-     {{ form.name.label }} {{ form.name }}
+{% extends 'base.html' %} {% block content %} {% with show_buttons=False, title="Link bank" %} {% include "_sub_header.html" %} {% endwith %}
+
+<div class="container">
+  {% if form.errors %}
+  <div class="row">
+    <div class="offset-md-2 col-md-8 p-0">
+      {% if form.errors %}
+      <div class="row">
+        <div class="col-md-12">
+          {% for field in form %} {% for m in field.errors %}
+          <div class="alert alert-danger" role="alert">{{ m }}</div>
+          {% endfor %} {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
-   </div>
-   <div class="row">
-    <div class="input-field col s12">
-      {{ form.country.label }}
-    </div>
-   </div>
-   <div class="row">
-    <div class="input-field col s12">
-      {{ form.country }}
-    </div>
-   </div>
-   <div class="row">
-    <div class="input-field col s12">
-     {{ form.currency }}
-    </div>
-   </div>
-   <div class="row">
-    <div class="input-field col s5">
-     {{ form.routing_number.label }} {{ form.routing_number }}
-    </div>
-    <div class="input-field col s5">
-     {{ form.account_number.label }} {{ form.account_number }}
-    </div>
-   </div>
-   <div class="row">
-    <div class="col s4">
-     <button class="btn">Add Bank</button>
-    </div>
-    <div class="col s4">
-      <a class="link" href={{ url_for('lending_bp.dashboard') }}>Cancel</a>
-    </div>
-   </div>
- </div>
- </form>
+  </div>
+  {% endif %}
+
+  <div class="row my-2">
+    <form id="random_deposit_form" class="col-md-8" action={{url_for( 'onboarding_bp.add_random_deposit')}} method="post">
+      <h5 class="offset-md-2">Add bank through random deposit</h5> {{ form.csrf_token }}
+      <div class="form-group row my-2">
+          <label for="name" class="col-md-2 col-form-label align-right">Name</label>
+          <div class="col-md-4 p-0">
+              {{form.name(class="form-control")}}
+          </div>
+      </div>
+      <div class="form-group row">
+          <label for="name" class="col-md-2 col-form-label align-right">Country</label>
+          <div class="col-md-4 p-0">
+              {{form.country(class="form-control")}}
+          </div>
+      </div>
+      <div class="form-group row">
+          <label for="name" class="col-md-2 col-form-label align-right">Currency</label>
+          <div class="col-md-4 p-0">
+              {{form.currency(class="form-control")}}
+          </div>
+      </div>
+      <div class="form-group row">
+          <label for="name" class="col-md-2 col-form-label align-right">Routing number</label>
+          <div class="col-md-4 p-0">
+              {{form.routing_number(class="form-control")}}
+          </div>
+      </div>
+      <div class="form-group row">
+          <label for="name" class="col-md-2 col-form-label align-right">Account number</label>
+          <div class="col-md-4 p-0">
+              {{form.account_number(class="form-control")}}
+          </div>
+      </div>
+      <div class="row">
+        <div class="offset-md-2 p-0">
+          <button class="btn btn-accent">Add Bank</button>
+          <a class="link ml-2" href={{ url_for('lending_bp.dashboard') }}>Cancel</a>
+        </div>
+      </div>
+  </div>
+  </form>
 </div>
 </div>
 

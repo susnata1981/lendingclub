@@ -12,7 +12,6 @@
   <link rel="stylesheet" href={{url_for( 'static', filename='css/test.css' )}}>
 
   <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
-
   <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
   <!-- <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'> -->
 
@@ -24,17 +23,17 @@
   <link href="https://fonts.googleapis.com/css?family=Chewy" rel="stylesheet">
   <script type="text/javascript" src={{url_for( 'static', filename='widget.js' )}}></script>
   <script type="text/javascript" src={{url_for( 'static', filename='script.js' )}}></script>
-
+  <script type="text/javascript">
+    var $HOST = {{ request.host_url |tojson|safe }};
+  </script>
   <title>{% block title %} Ziplly {% endblock %}</title>
   {% block script %} {% endblock %}
 </head>
 
 <body>
-  {% if not config['ENABLE_PRODUCTION_MODE'] %}
-  <!-- <div id="demo-tag"></div> -->
-  {% endif %} {% macro build_breadcrum(breadcrumItems) %}
-  <div class="row margin-top-medium breadcrum-row">
-    {% for item in breadcrumItems %} {% if item['active'] %}
+  <!-- {% macro build_breadcrum(breadcrumItems) %} -->
+  <!-- <div class="row margin-top-medium breadcrum-row"> -->
+    <!-- {% for item in breadcrumItems %} {% if item['active'] %}
     <div class="breadcrum-item breadcrum-active">
       {% else %}
       <div class="breadcrum-item breadcrum-inactive">
@@ -43,7 +42,7 @@
       </div>
       {% endfor %}
     </div>
-    {% endmacro %}
+    {% endmacro %} -->
 
     <!-- Navbar Section -->
     <nav>
@@ -68,38 +67,6 @@
         </div>
         {% endif %}
       </div>
-
-      <!-- {% if show_navigation %}
-      <ul class="list-inline navigation">
-        <li class="pull-left">
-          <a href={{url_for('lending_bp.dashboard')}}>Ziplly</a>
-        </li>
-        {% if current_user.is_authenticated %}
-        <span class="float-md-right">
-       <li>
-         <a href={{url_for('lending_bp.dashboard')}}>Dashboard</a>
-       </li>
-       <li><a href={{url_for('account_bp.account')}}>Account</a></li>
-       <li>
-         <a href={{url_for('account_bp.logout')}}>Logout</a>
-       </li>
-     </span>
-     {% else %}
-        <span class="float-md-right">
-        <li>
-          <a href={{url_for('home_blueprint.index')}}>Home</a>
-        </li>
-        <li>
-          <a href={{url_for('account_bp.login')}}>Login</a>
-        </li>
-        <li>
-          <a href="#">About</a>
-        </li>
-      </span>
-      {% endif %}
-      </ul>
-      {% endif %} -->
-
     </nav>
 
     <!-- Main Section -->
@@ -131,5 +98,4 @@
       </div>
     </footer>
 </body>
-
 </html>

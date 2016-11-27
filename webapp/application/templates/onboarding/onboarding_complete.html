@@ -1,0 +1,20 @@
+{% extends 'base.html' %} {% block content %}
+{% with show_buttons=False, title="Onboarding" %}
+{% include "_sub_header.html" %}
+{% endwith %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-10 my-2">
+      {% with data=data %} {% include 'onboarding/_onboarding_breadcrumb.html' %} {% endwith %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      You've successfully completed signup. You can now apply for loan.
+    </div>
+  </div>
+  <a href="{{url_for('lending_bp.dashboard')}}" class="btn btn-accent my-1" role="button">Proceed</a>
+</div>
+{% endblock %}

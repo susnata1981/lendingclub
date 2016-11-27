@@ -1,0 +1,13 @@
+<div class="row">
+  <div class="col-md-10">
+    <ul class="breadcrumb p-0">
+      {% for os in data['onboarding_steps'] %}
+      {% if os.is_active == True %}
+        <li><h6 class="breadcrumb-active-item py-1 m-0">{{ os.name }}</h6></li>
+      {% else %}
+        <li><h6 class="py-1 m-0">{{ os.name }}</h6></li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</div>

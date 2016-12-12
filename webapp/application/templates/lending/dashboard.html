@@ -49,7 +49,7 @@
     $(".payment-schedule").click(function() {
       var loanId = $(this).parent().parent().attr('loan-id');
       $.post(
-        $HOST + '/lending/loan_schedule',
+        $HOST + 'lending/loan_schedule',
         {
           'loan_id': loanId
         },

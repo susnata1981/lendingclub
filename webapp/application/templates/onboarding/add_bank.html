@@ -58,7 +58,7 @@
       var linkHandler = Plaid.create({
         env: 'tartan',
         clientName: 'Ziplly',
-        key: 'ec0b65435507226851894edaf18afe',
+        key: '{{ config.PLAID_PUBLIC_KEY }}',
         product: 'auth',
         selectAccount: true,
         onSuccess: function(public_token, metadata) {
@@ -67,7 +67,7 @@
           $("#progress-bar").show();
 
           $.post(
-            $HOST + 'onboarding_bp/add_bank', {
+            $HOST + 'onboarding/add_bank', {
               public_token: public_token,
               bank_account_id: metadata.account_id,
               bank_account_name: metadata.account.name,

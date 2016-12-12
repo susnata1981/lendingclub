@@ -14,6 +14,9 @@ LOGGER = logger.getLogger('shared.bli.bank')
 def get_fi_by_plaid_account_id(id):
     return current_app.db_session.query(Fi).filter(Fi.plaid_account_id == id).one_or_none()
 
+def get_plaid_fi_for_account(plaid_id, account_id):
+    return current_app.db_session.query(Fi).filter(Fi.plaid_account_id == plaid_id, Fi.account_id == account_id).one_or_none()
+
 def plaid_exchange_token(public_token, account_id):
     payload = {
         'client_id':current_app.config['CLIENT_ID'],
@@ -84,7 +87,7 @@ def mark_bank_as_verified(fi):
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
 
 def save_instant_verified_bank(fi, plaid_public_token, account):
-    test_fi = get_fi_by_plaid_account_id(fi.plaid_account_id)
+    test_fi = get_plaid_fi_for_account(fi.plaid_account_id, account.id)
     if test_fi:
         message = 'Bank account(fi_id:%s) with plaid_account_id:%s already present for account:%s' % (test_fi.id, test_fi.plaid_account_id, account.id)
         LOGGER.error(message)
@@ -103,6 +106,9 @@ def save_instant_verified_bank(fi, plaid_public_token, account):
     fetch_financial_information_from_plaid(fi)
     LOGGER.info('received financial information...')
     try:
+        LOGGER.info('Linking stripe token:%s for stripe customer:%s' % (fi.stripe_bank_account_token, account.stripe_customer_id))
+        current_app.stripe_client.add_customer_bank(account.stripe_customer_id, fi.stripe_bank_account_token)
+        LOGGER.info('Done linking stripe token:%s for stripe customer:%s' % (fi.stripe_bank_account_token, account.stripe_customer_id))
         current_app.db_session.add(account)
         current_app.db_session.commit()
     except Exception as e:

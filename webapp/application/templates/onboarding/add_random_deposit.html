@@ -1,4 +1,5 @@
 {% extends 'base.html' %} {% block content %} {% with show_buttons=False, title="Link bank" %} {% include "_sub_header.html" %} {% endwith %}
+{% include "_notification.html" %}
 
 <div class="container">
   {% if form.errors %}

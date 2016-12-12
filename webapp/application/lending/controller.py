@@ -67,9 +67,10 @@ def get_payment_plan_estimate():
 @lending_bp.route('/loan_application', methods=['GET','POST'])
 @login_required
 def loan_application():
-    if current_user.get_open_loans():
-        logging.info('User:%d has open loans.' % (current_user.id))
-        util.flash_error('You already have %d open loans. You cannot take out more than 1 loan' % (current_user.id))
+    open_loans = current_user.get_open_loans()
+    if open_loans:
+        logging.info('User:%d has open loans:%d.' % (current_user.id, len(open_loans)))
+        util.flash_error('You already have %d open loan(s). You cannot take out more than 1 loan' % (len(open_loans)))
         return redirect(url_for('.dashboard'))
     if not accountBLI.is_signup_complete(current_user):
         logging.info('User:%d application is not complete.' % (current_user.id))
@@ -78,7 +79,7 @@ def loan_application():
 
     form = LoanApplicationForm()
     data = {}
-    data['fis'] = current_user.fis
+    data['fis'] = current_user.get_usable_fis(Fi.VERIFIED)
     if request.method == 'GET':
         return render_template('lending/loan_application.html', data=data, form=form)
     else:
@@ -98,6 +99,12 @@ def loan_application():
             time_created = datetime.now())
         try:
             req_money = lendingBLI.create_request(current_user, req_money)
+            ### FOR DEMO ONLY #####
+            req_money.status = RequestMoney.APPROVED
+            req_money.apr = 0.55
+            current_app.db_session.add(req_money)
+            current_app.db_session.commit()
+            ### END DEMO ONLY #####
             return render_template('lending/loan_application_completed.html')
         except Exception as e:
             if DEBUG:
@@ -113,11 +120,12 @@ def loan_details():
     loan_id = int(request.form.get('loan_id'))
     data = {}
     try:
+        logging.info('loan_details start')
         data = lendingBLI.get_approved_loan_payment_plan(loan_id, current_user.id)
         pprint(data)
     except Exception as e:
         # traceback.print_exc()
-        logging.error('loan_schedule failed with exception: %s' % (e.message))
+        logging.error('loan_details failed with exception: %s' % (e.message))
         util.flash_error(constants.GENERIC_ERROR)
     return render_template('lending/loan_details.html', data=data)
 
@@ -127,6 +135,12 @@ def loan_details_confirm():
     loan_id = int(request.form.get('loan_id'))
     try:
         lendingBLI.process_loan_acceptance(loan_id, current_user.id)
+        ### FOR DEMO ONLY #####
+        loan = current_app.db_session.query(RequestMoney).filter(RequestMoney.id == loan_id, RequestMoney.account_id == current_user.id).one_or_none()
+        loan.status = RequestMoney.ACTIVE
+        current_app.db_session.add(loan)
+        current_app.db_session.commit()
+        ### END DEMO ONLY #####
         return render_template('lending/loan_accepted_success.html')
     except Exception as e:
         traceback.print_exc()
@@ -145,7 +159,7 @@ def start_payoff():
         #return jsonify(payoff.to_map())
     except error.NoOpenLoanFoundError as e:
         logging.error('start_payoff failed with NoOpenLoanFoundError: %s' % (e.message))
-        util.flash_error('You don\'t have any loans taht are eligible for payoff.')
+        util.flash_error('You don\'t have any loans that are eligible for payoff.')
         return redirect(url_for('.dashboard'))
     except error.HasInProgressTransactionError as e:
         logging.error('start_payoff failed with HasInProgressTransactionError: %s' % (e.message))

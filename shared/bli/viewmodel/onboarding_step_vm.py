@@ -33,7 +33,7 @@ class OnboardingStepVM:
         self.init_onboarding_steps()
 
         # additional data for some of the steps
-        # self.verify_bank_id = None?
+        self.verify_bank_id = None
 
     def init_signup_steps(self):
         for step in OnboardingStepVM.STEPS:

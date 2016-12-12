@@ -65,6 +65,17 @@
             </li>
           </ul>
         </div>
+        {% else %}
+        <div class="offset-md-5 col-md-3 text-md-right">
+            <ul>
+                <li class="ml-1">
+                    <a href={{url_for('home_blueprint.index')}}>Home</a>
+                </li>
+                <li class="ml-1">
+                    <a href={{url_for('account_bp.login')}}>Login</a>
+                </li>
+            </ul>
+        </div>
         {% endif %}
       </div>
     </nav>

@@ -137,10 +137,14 @@ def need_primary_bank(account):
 
 def is_signup_complete(account):
     LOGGER.info('is_application_complete entry')
-    if not account or \
-        not account.employers or \
-        not account.get_usable_fis() or \
-        not account.is_active_primary_bank_verified():
+    if not account:
+        LOGGER.info('is_application_complete:False exit')
+        return False
+    # for completing signup Employer info, link bank and verify bank should be completed
+    steps = signup_steps(account)
+    if not steps.is_complete(OnboardingStepVM.ENTER_EMPLOYER_INFORMATION) or \
+        not steps.is_complete(OnboardingStepVM.LINK_BANK_ACCOUNT) or \
+        not steps.is_complete(OnboardingStepVM.VERIFY_BANK_ACCOUNT):
         LOGGER.info('is_application_complete:False exit')
         return False
     LOGGER.info('is_application_complete:True exit')
@@ -153,13 +157,13 @@ def signup_steps(account):
     steps.set_signup_state(OnboardingStepVM.PERSONAL_INFORMATION, True)
     if account.employers:
         steps.set_signup_state(OnboardingStepVM.ENTER_EMPLOYER_INFORMATION, True)
-    if account.get_usable_fis():
+    fis = account.get_usable_fis()
+    if fis:
         steps.set_signup_state(OnboardingStepVM.LINK_BANK_ACCOUNT, True)
-    # active_primary_bank = account.get_active_primary_bank()
-    if account.is_active_primary_bank_verified():
-        steps.set_signup_state(OnboardingStepVM.VERIFY_BANK_ACCOUNT, True)
-        # if active_primary_bank:
-        #     steps.verify_bank_id = active_primary_bank.id
+        if account.get_usable_fis(Fi.VERIFIED):
+            steps.set_signup_state(OnboardingStepVM.VERIFY_BANK_ACCOUNT, True)
+        else:
+            steps.verify_bank_id = fis[0].id
     if account.get_open_loans():
         steps.set_signup_state(OnboardingStepVM.APPLY_LOAN, True)
     LOGGER.info('application_next_step for exit')

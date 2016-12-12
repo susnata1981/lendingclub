@@ -7,6 +7,7 @@ import string
 import traceback
 import re
 from shared.bli.viewmodel.notification import Notification
+from wtforms.validators import ValidationError
 
 def PhoneNumberValidator():
     patt = re.compile('\d{3}-\d{3}-\d{4}')

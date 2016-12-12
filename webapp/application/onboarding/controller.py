@@ -18,6 +18,11 @@ from shared.bli import bank as bankBLI
 from shared.bli.viewmodel.bank_data import *
 from shared.bli.viewmodel.onboarding_step_vm import *
 
+### FOR DEMO ONLY
+from flask.ext.login import login_user
+import random, string
+### END DEMO ONLY #####
+
 onboarding_bp = Blueprint('onboarding_bp', __name__, url_prefix='/onboarding')
 
 @onboarding_bp.route('/verify/resend', methods=['GET', 'POST'])
@@ -78,7 +83,23 @@ def signup():
 
     form = SignupForm(request.form)
     print 'errors - ',form.errors
-    if form.validate_on_submit():
+    if request.method == 'GET':
+        ### FOR DEMO ONLY #####
+        form.first_name.data = 'Jane'
+        form.last_name.data = 'Doe'
+        form.phone_number.data = '408-345-3248'
+        t1 = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+        form.email.data = 'demo_'+t1+'@ziplly.com'
+        form.dob.data = datetime.strptime('01/01/1970', "%m/%d/%Y")
+        form.ssn.data = '453-56-4321'
+        #form.password.data = '123456789'
+        form.consent.data = True
+        form.street1.data = '1122 Demo way'
+        form.city.data = 'San Jose'
+        form.state.data = 'CA'
+        form.postal_code.data = '95101'
+        ### END DEMO ONLY #####
+    elif form.validate_on_submit():
         try:
             now = datetime.now()
             account = Account(
@@ -99,9 +120,9 @@ def signup():
                 city = form.city.data,
                 state = form.state.data,
                 postal_code = form.postal_code.data,
-                address_type = Address.EMPLOYER,
-               time_created = now,
-               time_updated = now)
+                address_type = Address.INDIVIDUAL,
+                time_created = now,
+                time_updated = now)
 
             account.addresses.append(address)
 
@@ -124,11 +145,28 @@ def signup():
             util.flash_error(constants.GENERIC_ERROR)
             return render_template('onboarding/signup.html', form=form)
 
-        # verify email sent message
-        data = {}
-        data['email_sent'] = True
-        email_form = ResendEmailVerificationForm(request.form)
-        return render_template('onboarding/verify_email.html', data=data, form=email_form)
+        # # verify email sent message
+        # data = {}
+        # data['email_sent'] = True
+        # email_form = ResendEmailVerificationForm(request.form)
+        # return render_template('onboarding/verify_email.html', data=data, form=email_form)
+
+        #### FOR DEMO ONLY
+        #verify the account
+        try:
+            accountBLI.verify_email(account.id + constants.EMAIL_ACCOUNT_ID_CONSTANT, account.email_verification_token)
+        except error.DatabaseError as e:
+            print 'ERROR: General Exception: %s' % (e.message)
+            util.flash_error(constants.GENERIC_ERROR)
+            return render_template('onboarding/signup.html', form=form)
+        except Exception as e:
+            print 'ERROR: General Exception: %s' % (e.message)
+            util.flash_error(constants.GENERIC_ERROR)
+            return render_template('onboarding/signup.html', form=form)
+        #login account
+        login_user(account)
+        return redirect(url_for('lending_bp.dashboard'))
+        ### END DEMO ONLY #####
 
     return render_template('onboarding/signup.html', form=form)
 
@@ -184,7 +222,12 @@ def add_random_deposit():
     onboardingStepVM.set_onboarding_state(OnboardingStepVM.LINK_BANK_ACCOUNT, True)
     data['onboarding_steps'] = onboardingStepVM.get_onboarding_steps()
     data['institutions'] = get_all_iav_supported_institutions()
-    if form.validate_on_submit():
+    if request.method == 'GET':
+        ### FOR DEMO ONLY #####
+        form.name.data = current_user.first_name + ' ' + current_user.last_name
+        return render_template('onboarding/add_random_deposit.html', form = form, data = data)
+        ### END DEMO ONLY #####
+    elif form.validate_on_submit():
         try:
             bank = BankData(
                 account_number = form.account_number.data,
@@ -301,7 +344,16 @@ def enter_employer_information():
     data = {}
     data['onboarding_steps'] = onboardingStepVM.get_onboarding_steps()
     form = EmployerInformationForm(request.form)
-    if form.validate_on_submit():
+    if request.method == 'GET':
+        ### FOR DEMO ONLY #####
+        form.employer_name.data = 'Best Inc'
+        form.employer_phone_number.data = '408-111-2222'
+        form.street1.data = '1122 Demo Dr'
+        form.city.data = 'San Jose'
+        form.state.data = 'CA'
+        form.postal_code.data = '95102'
+        ### END DEMO ONLY #####
+    elif form.validate_on_submit():
         try:
             now = datetime.now()
             employer = Employer(

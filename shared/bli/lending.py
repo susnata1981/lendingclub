@@ -77,6 +77,7 @@ def create_request(account, req_money):
         LOGGER.error(e.message)
         raise error.DatabaseError(constants.GENERIC_ERROR,e)
     LOGGER.info('create_request exit')
+    return req_money
 
 def fake_loan_summary():
     data = [{'schedule': [{'amount': 166.56,
@@ -368,7 +369,7 @@ def get_payoff_information(account):
     loan = account.get_payoff_eligible_loan()
     if not loan:
         LOGGER.error('No payoff eligible loan found for user:%s' % (account.id))
-        raise error.NoPayoffLoanFoundError('No open loans found for user:%s' % (account.id))
+        raise error.NoOpenLoanFoundError('No open loans found for user:%s' % (account.id))
 
     in_progress_trans = loan.get_in_progress_transaction()
     if in_progress_trans:
@@ -436,10 +437,16 @@ def get_payoff_information(account):
     return payoff
 
 def payoff(loan_id, account):
-    loan = account.get_payoff_eligible_loan()
+    LOGGER.info('payoff loan_id = '+str(loan_id)+' account_id:'+str(account.id)+' : Enter')
+    try:
+        loan = current_app.db_session.query(RequestMoney).filter(
+        RequestMoney.id == loan_id, RequestMoney.account_id == account.id).one_or_none()
+    except Exception as e:
+        LOGGER.error(e.message)
+        raise error.DatabaseError(constants.GENERIC_ERROR,e)
     if not loan:
         LOGGER.error('No payoff eligible loan found for user:%s' % (account.id))
-        raise error.NoPayoffLoanFoundError('No open loans found for user:%s' % (account.id))
+        raise error.NoOpenLoanFoundError('No open loans found for user:%s' % (account.id))
     now = datetime.now()
     for tran in loan.transactions:
         if tran.status == Transaction.PENDING:
